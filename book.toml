@@ -1,0 +1,15 @@
+[book]
+authors = ["Codex"]
+language = "zh-TW"
+multilingual = false
+src = "src"
+title = "跟煎魚學 Go"
+
+[build]
+build-dir = "book"
+create-missing = false
+
+[output.html]
+default-theme = "light"
+git-repository-url = "https://eddycjy.gitbook.io/golang"
+site-url = "/"

@@ -1,0 +1,16 @@
+# 第1課 雜談
+
+- [1.1 聊一聊，Go 的相對路徑問題](di-1-ke-za-tan/golang-relatively-path.md)
+- [1.2 Go 的 fake-useragent 瞭解一下](di-1-ke-za-tan/go-fake-useragent.md)
+- [1.3 用 Go 來了解一下 Redis 通訊協議](di-1-ke-za-tan/go-redis-protocol.md)
+- [1.4 使用 Gomock 進行單元測試](di-1-ke-za-tan/gomock.md)
+- [1.5 在 Go 中恰到好處的記憶體對齊](di-1-ke-za-tan/go-memory-align.md)
+- [1.6 來，控制一下 goroutine 的併發數量](di-1-ke-za-tan/control-goroutine.md)
+- [1.7 for-loop 與 json.Unmarshal 效能分析概要](di-1-ke-za-tan/for-loop-json-unmarshal.md)
+- [1.8 簡單圍觀一下有趣的 //go: 指令](di-1-ke-za-tan/go-ins.md)
+- [1.9 我要在棧上。不，你應該在堆上](di-1-ke-za-tan/stack-heap.md)
+- [1.10 defer 會有效能損耗，儘量不要用](di-1-ke-za-tan/defer-loss.md)
+- [1.11 從實踐到原理，帶你參透 gRPC](di-1-ke-za-tan/talking-grpc.md)
+- [1.12 Go1.13 defer 的效能是如何提高的？](di-1-ke-za-tan/go1.13-defer.md)
+- [1.13 Go 應用記憶體佔用太多，讓排查？（VSZ篇）](di-1-ke-za-tan/why-vsz-large.md)
+- [1.14 乾貨滿滿的 Go Modules 和 goproxy.cn](di-1-ke-za-tan/goproxy-cn.md)
