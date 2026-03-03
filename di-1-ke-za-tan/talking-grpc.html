@@ -1,0 +1,908 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>1.11 從實踐到原理，帶你參透 gRPC - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="111-從實踐到原理帶你參透-grpc"><a class="header" href="#111-從實踐到原理帶你參透-grpc">1.11 從實踐到原理，帶你參透 gRPC</a></h1>
+<p><img src="../images/58a73edf4aa8-cjLNsWj.png" alt="image" /></p>
+<p>gRPC 在 Go 語言中大放異彩，越來越多的小夥伴在使用，最近也在公司安利了一波，希望這一篇文章能帶你一覽 gRPC 的巧妙之處，本文篇幅比較長，請做好閱讀準備。本文目錄如下：</p>
+<p><img src="../images/68143019d31e-TYvrtlc.jpg" alt="image" /></p>
+<h2 id="簡述"><a class="header" href="#簡述">簡述</a></h2>
+<p>gRPC 是一個高效能、開源和通用的 RPC 框架，面向移動和 HTTP/2 設計。目前提供 C、Java 和 Go 語言版本，分別是：grpc, grpc-java, grpc-go. 其中 C 版本支援 C, C++, Node.js, Python, Ruby, Objective-C, PHP 和 C# 支援。</p>
+<p>gRPC 基於 HTTP/2 標準設計，帶來諸如雙向流、流控、頭部壓縮、單 TCP 連線上的多複用請求等特性。這些特性使得其在移動裝置上表現更好，更省電和節省空間佔用。</p>
+<h2 id="呼叫模型"><a class="header" href="#呼叫模型">呼叫模型</a></h2>
+<p><img src="../images/2ce359d68759-grpc_concept_diagram_00.png" alt="image" /></p>
+<p>1、客戶端（gRPC Stub）呼叫 A 方法，發起 RPC 呼叫。</p>
+<p>2、對請求資訊使用 Protobuf 進行物件序列化壓縮（IDL）。</p>
+<p>3、服務端（gRPC Server）接收到請求後，解碼請求體，進行業務邏輯處理並返回。</p>
+<p>4、對響應結果使用 Protobuf 進行物件序列化壓縮（IDL）。</p>
+<p>5、客戶端接受到服務端響應，解碼請求體。回撥被呼叫的 A 方法，喚醒正在等待響應（阻塞）的客戶端呼叫並返回響應結果。</p>
+<h2 id="呼叫方式"><a class="header" href="#呼叫方式">呼叫方式</a></h2>
+<h3 id="一unary-rpc一元-rpc"><a class="header" href="#一unary-rpc一元-rpc">一、Unary RPC：一元 RPC</a></h3>
+<p><img src="../images/269a5200bbce-Z3V3hl1.png" alt="image" /></p>
+<h4 id="server"><a class="header" href="#server">Server</a></h4>
+<pre><code class="language-go">type SearchService struct{}
+
+func (s *SearchService) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
+    return &amp;pb.SearchResponse{Response: r.GetRequest() + " Server"}, nil
+}
+
+const PORT = "9001"
+
+func main() {
+    server := grpc.NewServer()
+    pb.RegisterSearchServiceServer(server, &amp;SearchService{})
+
+    lis, err := net.Listen("tcp", ":"+PORT)
+    ...
+
+    server.Serve(lis)
+}
+</code></pre>
+<ul>
+<li>建立 gRPC Server 物件，你可以理解為它是 Server 端的抽象物件。</li>
+<li>將 SearchService（其包含需要被呼叫的服務端介面）註冊到 gRPC Server。 的內部註冊中心。這樣可以在接受到請求時，透過內部的 “服務發現”，發現該服務端介面並轉接進行邏輯處理。</li>
+<li>建立 Listen，監聽 TCP 埠。</li>
+<li>gRPC Server 開始 lis.Accept，直到 Stop 或 GracefulStop。</li>
+</ul>
+<h4 id="client"><a class="header" href="#client">Client</a></h4>
+<pre><code class="language-go">func main() {
+    conn, err := grpc.Dial(":"+PORT, grpc.WithInsecure())
+    ...
+    defer conn.Close()
+
+    client := pb.NewSearchServiceClient(conn)
+    resp, err := client.Search(context.Background(), &amp;pb.SearchRequest{
+        Request: "gRPC",
+    })
+    ...
+}
+</code></pre>
+<ul>
+<li>建立與給定目標（服務端）的連線控制代碼。</li>
+<li>建立 SearchService 的客戶端物件。</li>
+<li>傳送 RPC 請求，等待同步響應，得到回撥後返回響應結果。</li>
+</ul>
+<h3 id="二server-side-streaming-rpc服務端流式-rpc"><a class="header" href="#二server-side-streaming-rpc服務端流式-rpc">二、Server-side streaming RPC：服務端流式 RPC</a></h3>
+<p><img src="../images/ed0a93f517d2-W7g3kSC.png" alt="image" /></p>
+<h4 id="server-1"><a class="header" href="#server-1">Server</a></h4>
+<pre><code class="language-go">func (s *StreamService) List(r *pb.StreamRequest, stream pb.StreamService_ListServer) error {
+    for n := 0; n &lt;= 6; n++ {
+        stream.Send(&amp;pb.StreamResponse{
+            Pt: &amp;pb.StreamPoint{
+                ...
+            },
+        })
+    }
+
+    return nil
+}
+</code></pre>
+<h4 id="client-1"><a class="header" href="#client-1">Client</a></h4>
+<pre><code class="language-go">func printLists(client pb.StreamServiceClient, r *pb.StreamRequest) error {
+    stream, err := client.List(context.Background(), r)
+    ...
+
+    for {
+        resp, err := stream.Recv()
+        if err == io.EOF {
+            break
+        }
+        ...
+    }
+
+    return nil
+}
+</code></pre>
+<h3 id="三client-side-streaming-rpc客戶端流式-rpc"><a class="header" href="#三client-side-streaming-rpc客戶端流式-rpc">三、Client-side streaming RPC：客戶端流式 RPC</a></h3>
+<p><img src="../images/73f8bb18fc07-e60IAxT.png" alt="image" /></p>
+<h4 id="server-2"><a class="header" href="#server-2">Server</a></h4>
+<pre><code class="language-go">func (s *StreamService) Record(stream pb.StreamService_RecordServer) error {
+    for {
+        r, err := stream.Recv()
+        if err == io.EOF {
+            return stream.SendAndClose(&amp;pb.StreamResponse{Pt: &amp;pb.StreamPoint{...}})
+        }
+        ...
+
+    }
+
+    return nil
+}
+</code></pre>
+<h4 id="client-2"><a class="header" href="#client-2">Client</a></h4>
+<pre><code class="language-go">func printRecord(client pb.StreamServiceClient, r *pb.StreamRequest) error {
+    stream, err := client.Record(context.Background())
+    ...
+
+    for n := 0; n &lt; 6; n++ {
+        stream.Send(r)
+    }
+
+    resp, err := stream.CloseAndRecv()
+    ...
+
+    return nil
+}
+</code></pre>
+<h3 id="四bidirectional-streaming-rpc雙向流式-rpc"><a class="header" href="#四bidirectional-streaming-rpc雙向流式-rpc">四、Bidirectional streaming RPC：雙向流式 RPC</a></h3>
+<p><img src="../images/912498e1d385-DCcxwfj.png" alt="image" /></p>
+<h4 id="server-3"><a class="header" href="#server-3">Server</a></h4>
+<pre><code class="language-go">func (s *StreamService) Route(stream pb.StreamService_RouteServer) error {
+    for {
+        stream.Send(&amp;pb.StreamResponse{...})
+        r, err := stream.Recv()
+        if err == io.EOF {
+            return nil
+        }
+        ...
+    }
+
+    return nil
+}
+</code></pre>
+<h4 id="client-3"><a class="header" href="#client-3">Client</a></h4>
+<pre><code class="language-go">func printRoute(client pb.StreamServiceClient, r *pb.StreamRequest) error {
+    stream, err := client.Route(context.Background())
+    ...
+
+    for n := 0; n &lt;= 6; n++ {
+        stream.Send(r)
+        resp, err := stream.Recv()
+        if err == io.EOF {
+            break
+        }
+        ...
+    }
+
+    stream.CloseSend()
+
+    return nil
+}
+</code></pre>
+<h2 id="客戶端與服務端是如何互動的"><a class="header" href="#客戶端與服務端是如何互動的">客戶端與服務端是如何互動的</a></h2>
+<p>在開始分析之前，我們要先 gRPC 的呼叫有一個初始印象。那麼最簡單的就是對 Client 端呼叫 Server 端進行抓包去剖析，看看整個過程中它都做了些什麼事。如下圖：</p>
+<p><img src="../images/090a4b477db4-H0HPgv9.jpg" alt="image" /></p>
+<ul>
+<li>Magic</li>
+<li>SETTINGS</li>
+<li>HEADERS</li>
+<li>DATA</li>
+<li>SETTINGS</li>
+<li>WINDOW_UPDATE</li>
+<li>PING</li>
+<li>HEADERS </li>
+<li>DATA</li>
+<li>HEADERS</li>
+<li>WINDOW_UPDATE</li>
+<li>PING</li>
+</ul>
+<p>我們略加整理發現共有十二個行為，是比較重要的。在開始分析之前，建議你自己先想一下，它們的作用都是什麼？大膽猜測一下，帶著疑問去學習效果更佳。</p>
+<h3 id="行為分析"><a class="header" href="#行為分析">行為分析</a></h3>
+<h4 id="magic"><a class="header" href="#magic">Magic</a></h4>
+<p><img src="../images/824e2bde8166-fFkwLPK.jpg" alt="image" /></p>
+<p>Magic 幀的主要作用是建立 HTTP/2 請求的前言。在 HTTP/2 中，要求兩端都要傳送一個連線前言，作為對所使用協議的最終確認，並確定 HTTP/2 連線的初始設定，客戶端和服務端各自發送不同的連線前言。</p>
+<p>而上圖中的 Magic 幀是客戶端的前言之一，內容為 <code>PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n</code>，以確定啟用 HTTP/2 連線。</p>
+<h4 id="settings"><a class="header" href="#settings">SETTINGS</a></h4>
+<p><img src="../images/20a7da61be0d-wSCvLtb.jpg" alt="image" /></p>
+<p><img src="../images/9ec44d83ca5b-0780hAb.jpg" alt="image" /></p>
+<p>SETTINGS 幀的主要作用是設定這一個連線的引數，作用域是整個連線而並非單一的流。</p>
+<p>而上圖的 SETTINGS 幀都是空 SETTINGS 幀，圖一是客戶端連線的前言（Magic 和 SETTINGS 幀分別組成連線前言）。圖二是服務端的。另外我們從圖中可以看到多個 SETTINGS 幀，這是為什麼呢？是因為傳送完連線前言後，客戶端和服務端還需要有一步互動確認的動作。對應的就是帶有 ACK 標識 SETTINGS 幀。</p>
+<h4 id="headers"><a class="header" href="#headers">HEADERS</a></h4>
+<p><img src="../images/25077cde8d03-cfDGkPS.jpg" alt="image" /></p>
+<p>HEADERS 幀的主要作用是儲存和傳播 HTTP 的標頭資訊。我們關注到 HEADERS 裡有一些眼熟的資訊，分別如下：</p>
+<ul>
+<li>method：POST</li>
+<li>scheme：http</li>
+<li>path：/proto.SearchService/Search</li>
+<li>authority：:10001</li>
+<li>content-type：application/grpc</li>
+<li>user-agent：grpc-go/1.20.0-dev</li>
+</ul>
+<p>你會發現這些東西非常眼熟，其實都是 gRPC 的基礎屬性，實際上遠遠不止這些，只是設定了多少展示多少。例如像平時常見的 <code>grpc-timeout</code>、<code>grpc-encoding</code> 也是在這裡設定的。</p>
+<h4 id="data"><a class="header" href="#data">DATA</a></h4>
+<p><img src="../images/5d0d64ba193b-EbsbREx.jpg" alt="image" /></p>
+<p>DATA 幀的主要作用是裝填主體資訊，是資料幀。而在上圖中，可以很明顯看到我們的請求引數 gRPC 儲存在裡面。只需要瞭解到這一點就可以了。</p>
+<h4 id="headers-data-headers"><a class="header" href="#headers-data-headers">HEADERS, DATA, HEADERS</a></h4>
+<p><img src="../images/fac78649628f-ZHGY0K6.jpg" alt="image" /></p>
+<p>在上圖中 HEADERS 幀比較簡單，就是告訴我們 HTTP 響應狀態和響應的內容格式。</p>
+<p><img src="../images/5e31d779958c-u0Js4iF.jpg" alt="imgae" /></p>
+<p>在上圖中 DATA 幀主要承載了響應結果的資料集，圖中的 gRPC Server 就是我們 RPC 方法的響應結果。</p>
+<p><img src="../images/1f68b1a35e01-5SPNVYk.jpg" alt="image" /></p>
+<p>在上圖中 HEADERS 幀主要承載了 gRPC 狀態 和 gRPC 狀態訊息，圖中的 <code>grpc-status</code> 和 <code>grpc-message</code> 就是我們的 gRPC 呼叫狀態的結果。</p>
+<h3 id="其它步驟"><a class="header" href="#其它步驟">其它步驟</a></h3>
+<h4 id="window_update"><a class="header" href="#window_update">WINDOW_UPDATE</a></h4>
+<p>主要作用是管理和流的視窗控制。通常情況下開啟一個連線後，伺服器和客戶端會立即交換 SETTINGS 幀來確定流控制視窗的大小。預設情況下，該大小設定為約 65 KB，但可透過發出一個 WINDOW_UPDATE 幀為流控制設定不同的大小。</p>
+<p><img src="../images/a99061c67e57-MVsSKSx.jpg" alt="image" /></p>
+<h4 id="pingpong"><a class="header" href="#pingpong">PING/PONG</a></h4>
+<p>主要作用是判斷當前連線是否仍然可用，也常用於計算往返時間。其實也就是 PING/PONG，大家對此應該很熟。</p>
+<h3 id="小結"><a class="header" href="#小結">小結</a></h3>
+<p><img src="../images/8d5241ded9d8-FrA8EW4.png" alt="image" /></p>
+<ul>
+<li>在建立連線之前，客戶端/服務端都會發送<strong>連線前言</strong>（Magic+SETTINGS），確立協議和設定項。</li>
+<li>在傳輸資料時，是會涉及滑動視窗（WINDOW_UPDATE）等流控策略的。</li>
+<li>傳播 gRPC 附加資訊時，是基於 HEADERS 幀進行傳播和設定；而具體的請求/響應資料是儲存的 DATA 幀中的。</li>
+<li>請求/響應結果會分為 HTTP 和 gRPC 狀態響應兩種型別。</li>
+<li>客戶端發起 PING，服務端就會回應 PONG，反之亦可。</li>
+</ul>
+<p>這塊 gRPC 的基礎使用，你可以看看我另外的 <a href="https://github.com/EDDYCJY/blog#grpc%E7%B3%BB%E5%88%97%E7%9B%AE%E5%BD%95">《gRPC 入門系列》</a>，相信對你一定有幫助。</p>
+<h2 id="淺談理解"><a class="header" href="#淺談理解">淺談理解</a></h2>
+<h3 id="服務端"><a class="header" href="#服務端">服務端</a></h3>
+<p><img src="../images/94a2bf8e6a44-xgcsjiQ.png" alt="image" /></p>
+<p>為什麼四行程式碼，就能夠起一個 gRPC Server，內部做了什麼邏輯。你有想過嗎？接下來我們一步步剖析，看看裡面到底是何方神聖。</p>
+<h3 id="一初始化"><a class="header" href="#一初始化">一、初始化</a></h3>
+<pre><code class="language-go">// grpc.NewServer()
+func NewServer(opt ...ServerOption) *Server {
+    opts := defaultServerOptions
+    for _, o := range opt {
+        o(&amp;opts)
+    }
+    s := &amp;Server{
+        lis:    make(map[net.Listener]bool),
+        opts:   opts,
+        conns:  make(map[io.Closer]bool),
+        m:      make(map[string]*service),
+        quit:   make(chan struct{}),
+        done:   make(chan struct{}),
+        czData: new(channelzData),
+    }
+    s.cv = sync.NewCond(&amp;s.mu)
+    ...
+
+    return s
+}
+</code></pre>
+<p>這塊比較簡單，主要是例項 grpc.Server 並進行初始化動作。涉及如下：</p>
+<ul>
+<li>lis：監聽地址列表。</li>
+<li>opts：服務選項，這塊包含 Credentials、Interceptor 以及一些基礎設定。</li>
+<li>conns：客戶端連線控制代碼列表。</li>
+<li>m：服務資訊對映。</li>
+<li>quit：退出訊號。</li>
+<li>done：完成訊號。</li>
+<li>czData：用於儲存 ClientConn，addrConn 和 Server 的channelz 相關資料。</li>
+<li>cv：當優雅退出時，會等待這個訊號量，直到所有 RPC 請求都處理並斷開才會繼續處理。</li>
+</ul>
+<h3 id="二註冊"><a class="header" href="#二註冊">二、註冊</a></h3>
+<pre><code>pb.RegisterSearchServiceServer(server, &amp;SearchService{})
+</code></pre>
+<h4 id="步驟一service-api-interface"><a class="header" href="#步驟一service-api-interface">步驟一：Service API interface</a></h4>
+<pre><code class="language-go">// search.pb.go
+type SearchServiceServer interface {
+    Search(context.Context, *SearchRequest) (*SearchResponse, error)
+}
+
+func RegisterSearchServiceServer(s *grpc.Server, srv SearchServiceServer) {
+    s.RegisterService(&amp;_SearchService_serviceDesc, srv)
+}
+</code></pre>
+<p>還記得我們平時編寫的 Protobuf 嗎？在生成出來的 <code>.pb.go</code> 檔案中，會定義出 Service APIs interface 的具體實作約束。而我們在 gRPC Server 進行註冊時，會傳入應用 Service 的功能介面實作，此時生成的 <code>RegisterServer</code> 方法就會保證兩者之間的一致性。</p>
+<h4 id="步驟二service-api-idl"><a class="header" href="#步驟二service-api-idl">步驟二：Service API IDL</a></h4>
+<p>你想亂傳糊弄一下？不可能的，請乖乖定義與 Protobuf 一致的介面方法。但是那個 <code>&amp;_SearchService_serviceDesc</code> 又有什麼作用呢？程式碼如下：</p>
+<pre><code>// search.pb.go
+var _SearchService_serviceDesc = grpc.ServiceDesc{
+    ServiceName: "proto.SearchService",
+    HandlerType: (*SearchServiceServer)(nil),
+    Methods: []grpc.MethodDesc{
+        {
+            MethodName: "Search",
+            Handler:    _SearchService_Search_Handler,
+        },
+    },
+    Streams:  []grpc.StreamDesc{},
+    Metadata: "search.proto",
+}
+</code></pre>
+<p>這看上去像服務的描述程式碼，用來向內部表述 “我” 都有什麼。涉及如下:</p>
+<ul>
+<li>ServiceName：服務名稱</li>
+<li>HandlerType：服務介面，用於檢查使用者提供的實作是否滿足介面要求</li>
+<li>Methods：一元方法集，注意結構內的 <code>Handler</code> 方法，其對應最終的 RPC 處理方法，在執行 RPC 方法的階段會使用。</li>
+<li>Streams：流式方法集</li>
+<li>Metadata：元資料，是一個描述資料屬性的東西。在這裡主要是描述 <code>SearchServiceServer</code> 服務</li>
+</ul>
+<h4 id="步驟三register-service"><a class="header" href="#步驟三register-service">步驟三：Register Service</a></h4>
+<pre><code class="language-go">func (s *Server) register(sd *ServiceDesc, ss interface{}) {
+    ...
+    srv := &amp;service{
+        server: ss,
+        md:     make(map[string]*MethodDesc),
+        sd:     make(map[string]*StreamDesc),
+        mdata:  sd.Metadata,
+    }
+    for i := range sd.Methods {
+        d := &amp;sd.Methods[i]
+        srv.md[d.MethodName] = d
+    }
+    for i := range sd.Streams {
+        ...
+    }
+    s.m[sd.ServiceName] = srv
+}
+</code></pre>
+<p>在最後一步中，我們會將先前的服務介面資訊、服務描述資訊給註冊到內部 <code>service</code> 去，以便於後續實際呼叫的使用。涉及如下：</p>
+<ul>
+<li>server：服務的介面資訊</li>
+<li>md：一元服務的 RPC 方法集</li>
+<li>sd：流式服務的 RPC 方法集</li>
+<li>mdata：metadata，元資料</li>
+</ul>
+<h4 id="小結-1"><a class="header" href="#小結-1">小結</a></h4>
+<p>在這一章節中，主要介紹的是 gRPC Server 在啟動前的整理和註冊行為，看上去很簡單，但其實一切都是為了後續的實際執行的預先準備。因此我們整理一下思路，將其串聯起來看看，如下：</p>
+<p><img src="../images/c9262b91dbcf-vvBWEyx.png" alt="image" /></p>
+<h3 id="三監聽"><a class="header" href="#三監聽">三、監聽</a></h3>
+<p>接下來到了整個流程中，最重要也是大家最關注的監聽/處理階段，核心程式碼如下：</p>
+<pre><code class="language-go">func (s *Server) Serve(lis net.Listener) error {
+    ...
+    var tempDelay time.Duration 
+    for {
+        rawConn, err := lis.Accept()
+        if err != nil {
+            if ne, ok := err.(interface {
+                Temporary() bool
+            }); ok &amp;&amp; ne.Temporary() {
+                if tempDelay == 0 {
+                    tempDelay = 5 * time.Millisecond
+                } else {
+                    tempDelay *= 2
+                }
+                if max := 1 * time.Second; tempDelay &gt; max {
+                    tempDelay = max
+                }
+                ...
+                timer := time.NewTimer(tempDelay)
+                select {
+                case &lt;-timer.C:
+                case &lt;-s.quit:
+                    timer.Stop()
+                    return nil
+                }
+                continue
+            }
+            ...
+            return err
+        }
+        tempDelay = 0
+
+        s.serveWG.Add(1)
+        go func() {
+            s.handleRawConn(rawConn)
+            s.serveWG.Done()
+        }()
+    }
+}
+</code></pre>
+<p>Serve 會根據外部傳入的 Listener 不同而呼叫不同的監聽模式，這也是 <code>net.Listener</code> 的魅力，靈活性和擴充套件性會比較高。而在 gRPC Server 中最常用的就是 <code>TCPConn</code>，基於 TCP Listener 去做。接下來我們一起看看具體的處理邏輯，如下：</p>
+<p><img src="../images/4fdea7422b84-SYrkt0d.png" alt="image" /></p>
+<ul>
+<li>迴圈處理連線，透過 <code>lis.Accept</code> 取出連線，如果佇列中沒有需處理的連線時，會形成阻塞等待。</li>
+<li>若 <code>lis.Accept</code> 失敗，則觸發休眠機制，若為第一次失敗那麼休眠 5ms，否則翻倍，再次失敗則不斷翻倍直至上限休眠時間 1s，而休眠完畢後就會嘗試去取下一個 “它”。</li>
+<li>若 <code>lis.Accept</code> 成功，則重置休眠的時間計數和啟動一個新的 goroutine 呼叫 <code>handleRawConn</code> 方法去執行/處理新的請求，也就是大家很喜歡說的 “每一個請求都是不同的 goroutine 在處理”。</li>
+<li>在迴圈過程中，包含了 “退出” 服務的場景，主要是硬關閉和優雅重啟服務兩種情況。</li>
+</ul>
+<h2 id="客戶端"><a class="header" href="#客戶端">客戶端</a></h2>
+<p><img src="../images/f82d91d3562f-xK0QsIm.png" alt="image" /></p>
+<h3 id="一建立撥號連線"><a class="header" href="#一建立撥號連線">一、建立撥號連線</a></h3>
+<pre><code class="language-go">// grpc.Dial(":"+PORT, grpc.WithInsecure())
+func DialContext(ctx context.Context, target string, opts ...DialOption) (conn *ClientConn, err error) {
+    cc := &amp;ClientConn{
+        target:            target,
+        csMgr:             &amp;connectivityStateManager{},
+        conns:             make(map[*addrConn]struct{}),
+        dopts:             defaultDialOptions(),
+        blockingpicker:    newPickerWrapper(),
+        czData:            new(channelzData),
+        firstResolveEvent: grpcsync.NewEvent(),
+    }
+    ...
+    chainUnaryClientInterceptors(cc)
+    chainStreamClientInterceptors(cc)
+
+    ...
+}
+</code></pre>
+<p><code>grpc.Dial</code> 方法實際上是對於 <code>grpc.DialContext</code> 的封裝，區別在於 <code>ctx</code> 是直接傳入 <code>context.Background</code>。其主要功能是<strong>建立</strong>與給定目標的客戶端連線，其承擔了以下職責：</p>
+<ul>
+<li>初始化 ClientConn</li>
+<li>初始化（基於程序 LB）負載均衡設定</li>
+<li>初始化 channelz </li>
+<li>初始化重試規則和客戶端一元/流式攔截器</li>
+<li>初始化協議棧上的基礎資訊</li>
+<li>相關 context 的超時控制</li>
+<li>初始化並解析地址資訊</li>
+<li>建立與服務端之間的連線</li>
+</ul>
+<h4 id="連沒連"><a class="header" href="#連沒連">連沒連</a></h4>
+<p>之前聽到有的人說呼叫 <code>grpc.Dial</code> 後客戶端就已經與服務端建立起了連線，但這對不對呢？我們先鳥瞰全貌，看看正在跑的 goroutine。如下：</p>
+<p><img src="../images/e0e0ce1ab2f4-yPK1KZn.jpg" alt="image" /></p>
+<p>我們可以有幾個核心方法一直在等待/處理訊號，透過分析底層原始碼可得知。涉及如下：</p>
+<pre><code>func (ac *addrConn) connect()
+func (ac *addrConn) resetTransport()
+func (ac *addrConn) createTransport(addr resolver.Address, copts transport.ConnectOptions, connectDeadline time.Time)
+func (ac *addrConn) getReadyTransport()
+</code></pre>
+<p>在這裡主要分析 goroutine 提示的 <code>resetTransport</code> 方法，看看都做了啥。核心程式碼如下：</p>
+<pre><code class="language-go">func (ac *addrConn) resetTransport() {
+    for i := 0; ; i++ {
+        if ac.state == connectivity.Shutdown {
+            return
+        }
+        ...
+        connectDeadline := time.Now().Add(dialDuration)
+        ac.updateConnectivityState(connectivity.Connecting)
+        newTr, addr, reconnect, err := ac.tryAllAddrs(addrs, connectDeadline)
+        if err != nil {
+            if ac.state == connectivity.Shutdown {
+                return
+            }
+            ac.updateConnectivityState(connectivity.TransientFailure)
+            timer := time.NewTimer(backoffFor)
+            select {
+            case &lt;-timer.C:
+                ...
+            }
+            continue
+        }
+
+        if ac.state == connectivity.Shutdown {
+            newTr.Close()
+            return
+        }
+        ...
+        if !healthcheckManagingState {
+            ac.updateConnectivityState(connectivity.Ready)
+        }
+        ...
+
+        if ac.state == connectivity.Shutdown {
+            return
+        }
+        ac.updateConnectivityState(connectivity.TransientFailure)
+    }
+}
+</code></pre>
+<p>在該方法中會不斷地去嘗試建立連線，若成功則結束。否則不斷地根據 <code>Backoff</code> 演算法的重試機制去嘗試建立連線，直到成功為止。從結論上來講，單純呼叫 <code>DialContext</code> 是非同步建立連線的，也就是並不是馬上生效，處於 <code>Connecting</code> 狀態，而正式下要到達 <code>Ready</code> 狀態才可用。</p>
+<h4 id="真的連了嗎"><a class="header" href="#真的連了嗎">真的連了嗎</a></h4>
+<p><img src="../images/2431ffc038e7-hYklktM.jpg" alt="image" /></p>
+<p>在抓包工具上提示一個包都沒有，那麼這算真正連線了嗎？我認為這是一個表述問題，我們應該儘可能的嚴謹。如果你真的想透過 <code>DialContext</code> 方法就打通與服務端的連線，則需要呼叫 <code>WithBlock</code> 方法，雖然會導致阻塞等待，但最終連線會到達 <code>Ready</code> 狀態（握手成功）。如下圖：</p>
+<p><img src="../images/f5e4c6fb56a5-jHNuIYR.jpg" alt="image" /></p>
+<h3 id="二例項化-service-api"><a class="header" href="#二例項化-service-api">二、例項化 Service API</a></h3>
+<pre><code class="language-go">type SearchServiceClient interface {
+    Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*SearchResponse, error)
+}
+
+type searchServiceClient struct {
+    cc *grpc.ClientConn
+}
+
+func NewSearchServiceClient(cc *grpc.ClientConn) SearchServiceClient {
+    return &amp;searchServiceClient{cc}
+}
+</code></pre>
+<p>這塊就是例項 Service API interface，比較簡單。</p>
+<h3 id="三呼叫"><a class="header" href="#三呼叫">三、呼叫</a></h3>
+<pre><code class="language-go">// search.pb.go
+func (c *searchServiceClient) Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*SearchResponse, error) {
+    out := new(SearchResponse)
+    err := c.cc.Invoke(ctx, "/proto.SearchService/Search", in, out, opts...)
+    if err != nil {
+        return nil, err
+    }
+    return out, nil
+}
+</code></pre>
+<p>proto 生成的 RPC 方法更像是一個包裝盒，把需要的東西放進去，而實際上呼叫的還是 <code>grpc.invoke</code> 方法。如下：</p>
+<pre><code class="language-go">func invoke(ctx context.Context, method string, req, reply interface{}, cc *ClientConn, opts ...CallOption) error {
+    cs, err := newClientStream(ctx, unaryStreamDesc, cc, method, opts...)
+    if err != nil {
+        return err
+    }
+    if err := cs.SendMsg(req); err != nil {
+        return err
+    }
+    return cs.RecvMsg(reply)
+}
+</code></pre>
+<p>透過概覽，可以關注到三塊呼叫。如下：</p>
+<ul>
+<li>newClientStream：取得傳輸層 Trasport 並組合封裝到 ClientStream 中返回，在這塊會涉及負載均衡、超時控制、 Encoding、 Stream 的動作，與服務端基本一致的行為。</li>
+<li>cs.SendMsg：傳送 RPC 請求出去，但其並不承擔等待響應的功能。</li>
+<li>cs.RecvMsg：阻塞等待接受到的 RPC 方法響應結果。</li>
+</ul>
+<h4 id="連線"><a class="header" href="#連線">連線</a></h4>
+<pre><code class="language-go">// clientconn.go
+func (cc *ClientConn) getTransport(ctx context.Context, failfast bool, method string) (transport.ClientTransport, func(balancer.DoneInfo), error) {
+    t, done, err := cc.blockingpicker.pick(ctx, failfast, balancer.PickOptions{
+        FullMethodName: method,
+    })
+    if err != nil {
+        return nil, nil, toRPCErr(err)
+    }
+    return t, done, nil
+}
+</code></pre>
+<p>在 <code>newClientStream</code> 方法中，我們透過 <code>getTransport</code> 方法取得了 Transport 層中抽象出來的 ClientTransport 和 ServerTransport，實際上就是取得一個連線給後續 RPC 呼叫傳輸使用。</p>
+<h3 id="四關閉連線"><a class="header" href="#四關閉連線">四、關閉連線</a></h3>
+<pre><code class="language-go">// conn.Close()
+func (cc *ClientConn) Close() error {
+    defer cc.cancel()
+    ...
+    cc.csMgr.updateState(connectivity.Shutdown)
+    ...
+    cc.blockingpicker.close()
+    if rWrapper != nil {
+        rWrapper.close()
+    }
+    if bWrapper != nil {
+        bWrapper.close()
+    }
+
+    for ac := range conns {
+        ac.tearDown(ErrClientConnClosing)
+    }
+    if channelz.IsOn() {
+        ...
+        channelz.AddTraceEvent(cc.channelzID, ted)
+        channelz.RemoveEntry(cc.channelzID)
+    }
+    return nil
+}
+</code></pre>
+<p>該方法會取消 ClientConn 上下文，同時關閉所有底層傳輸。涉及如下：</p>
+<ul>
+<li>Context Cancel</li>
+<li>清空並關閉客戶端連線</li>
+<li>清空並關閉解析器連線</li>
+<li>清空並關閉負載均衡連線</li>
+<li>新增跟蹤引用</li>
+<li>移除當前通道資訊</li>
+</ul>
+<h2 id="qa"><a class="header" href="#qa">Q&amp;A</a></h2>
+<h3 id="1-grpc-metadata-是透過什麼傳輸"><a class="header" href="#1-grpc-metadata-是透過什麼傳輸">1. gRPC Metadata 是透過什麼傳輸？</a></h3>
+<p><img src="../images/77710106385f-N7xx2JH.jpg" alt="image" /></p>
+<h3 id="2-呼叫-grpcdial-會真正的去連線服務端嗎"><a class="header" href="#2-呼叫-grpcdial-會真正的去連線服務端嗎">2. 呼叫 grpc.Dial 會真正的去連線服務端嗎？</a></h3>
+<p>會，但是是非同步連線的，連線狀態為正在連線。但如果你設定了 <code>grpc.WithBlock</code> 選項，就會阻塞等待（等待握手成功）。另外你需要注意，當未設定 <code>grpc.WithBlock</code> 時，ctx 超時控制對其無任何效果。</p>
+<h3 id="3-呼叫-clientconn-不-close-會導致洩露嗎"><a class="header" href="#3-呼叫-clientconn-不-close-會導致洩露嗎">3. 呼叫 ClientConn 不 Close 會導致洩露嗎？</a></h3>
+<p>會，除非你的客戶端不是常駐程序，那麼在應用結束時會被動地回收資源。但如果是常駐程序，你又真的忘記執行 <code>Close</code> 語句，會造成的洩露。如下圖：</p>
+<p><strong>3.1. 客戶端</strong></p>
+<p><img src="../images/99927d04c379-YFMv93J.jpg" alt="image" /></p>
+<p><strong>3.2. 服務端</strong></p>
+<p><img src="../images/bc5e63045208-mu65CZL.png" alt="image" /></p>
+<p><strong>3.3. TCP</strong></p>
+<p><img src="../images/c35d157483cb-0Wg6ZY7.jpg" alt="image" /></p>
+<h3 id="4-不控制超時呼叫的話會出現什麼問題"><a class="header" href="#4-不控制超時呼叫的話會出現什麼問題">4. 不控制超時呼叫的話，會出現什麼問題？</a></h3>
+<p>短時間內不會出現問題，但是會不斷積蓄洩露，積蓄到最後當然就是服務無法提供響應了。如下圖：</p>
+<p><img src="../images/a27e09930119-GIgP062.jpg" alt="image" /></p>
+<h3 id="5-為什麼預設的攔截器不可以傳多個"><a class="header" href="#5-為什麼預設的攔截器不可以傳多個">5. 為什麼預設的攔截器不可以傳多個？</a></h3>
+<pre><code class="language-go">func chainUnaryClientInterceptors(cc *ClientConn) {
+    interceptors := cc.dopts.chainUnaryInts
+    if cc.dopts.unaryInt != nil {
+        interceptors = append([]UnaryClientInterceptor{cc.dopts.unaryInt}, interceptors...)
+    }
+    var chainedInt UnaryClientInterceptor
+    if len(interceptors) == 0 {
+        chainedInt = nil
+    } else if len(interceptors) == 1 {
+        chainedInt = interceptors[0]
+    } else {
+        chainedInt = func(ctx context.Context, method string, req, reply interface{}, cc *ClientConn, invoker UnaryInvoker, opts ...CallOption) error {
+            return interceptors[0](ctx, method, req, reply, cc, getChainUnaryInvoker(interceptors, 0, invoker), opts...)
+        }
+    }
+    cc.dopts.unaryInt = chainedInt
+}
+</code></pre>
+<p>當存在多個攔截器時，取的就是第一個攔截器。因此結論是允許傳多個，但並沒有用。</p>
+<h3 id="6-真的需要用到多個攔截器的話怎麼辦"><a class="header" href="#6-真的需要用到多個攔截器的話怎麼辦">6. 真的需要用到多個攔截器的話，怎麼辦？</a></h3>
+<p>可以使用 <a href="https://github.com/grpc-ecosystem/go-grpc-middleware">go-grpc-middleware</a> 提供的 <code>grpc.UnaryInterceptor</code> 和 <code>grpc.StreamInterceptor</code> 鏈式方法，方便快捷省心。</p>
+<p>單單會用還不行，我們再深剖一下，看看它是怎麼實作的。核心程式碼如下：</p>
+<pre><code class="language-go">func ChainUnaryClient(interceptors ...grpc.UnaryClientInterceptor) grpc.UnaryClientInterceptor {
+    n := len(interceptors)
+    if n &gt; 1 {
+        lastI := n - 1
+        return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+            var (
+                chainHandler grpc.UnaryInvoker
+                curI         int
+            )
+
+            chainHandler = func(currentCtx context.Context, currentMethod string, currentReq, currentRepl interface{}, currentConn *grpc.ClientConn, currentOpts ...grpc.CallOption) error {
+                if curI == lastI {
+                    return invoker(currentCtx, currentMethod, currentReq, currentRepl, currentConn, currentOpts...)
+                }
+                curI++
+                err := interceptors[curI](currentCtx, currentMethod, currentReq, currentRepl, currentConn, chainHandler, currentOpts...)
+                curI--
+                return err
+            }
+
+            return interceptors[0](ctx, method, req, reply, cc, chainHandler, opts...)
+        }
+    }
+    ...
+}
+</code></pre>
+<p>當攔截器數量大於 1 時，從 <code>interceptors[1]</code> 開始遞迴，每一個遞迴的攔截器 <code>interceptors[i]</code> 會不斷地執行，最後才真正的去執行 <code>handler</code> 方法。同時也經常有人會問攔截器的執行順序是什麼，透過這段程式碼你得出結論了嗎？</p>
+<h3 id="7-頻繁建立-clientconn-有什麼問題"><a class="header" href="#7-頻繁建立-clientconn-有什麼問題">7. 頻繁建立 ClientConn 有什麼問題？</a></h3>
+<p>這個問題我們可以反向驗證一下，假設不公用 ClientConn 看看會怎麼樣？如下:</p>
+<pre><code class="language-go">func BenchmarkSearch(b *testing.B) {
+    for i := 0; i &lt; b.N; i++ {
+        conn, err := GetClientConn()
+        if err != nil {
+            b.Errorf("GetClientConn err: %v", err)
+        }
+        _, err = Search(context.Background(), conn)
+        if err != nil {
+            b.Errorf("Search err: %v", err)
+        }
+    }
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>    ... connection error: desc = "transport: Error while dialing dial tcp :10001: socket: too many open files"
+    ... connection error: desc = "transport: Error while dialing dial tcp :10001: socket: too many open files"
+    ... connection error: desc = "transport: Error while dialing dial tcp :10001: socket: too many open files"
+    ... connection error: desc = "transport: Error while dialing dial tcp :10001: socket: too many open files"
+FAIL
+exit status 1
+</code></pre>
+<p>當你的應用場景是存在高頻次同時生成/呼叫 ClientConn 時，可能會導致系統的檔案控制代碼佔用過多。這種情況下你可以變更應用程式生成/呼叫 ClientConn 的模式，又或是池化它，這塊可以參考 <a href="https://github.com/EDDYCJY/blog/tree/9cb91be11af7dee7c0069f3758e82beea0a35b1e/talk/github.com/processout/grpc-go-pool/README.md">grpc-go-pool</a> 專案。</p>
+<h3 id="8-客戶端請求失敗後會預設重試嗎"><a class="header" href="#8-客戶端請求失敗後會預設重試嗎">8. 客戶端請求失敗後會預設重試嗎？</a></h3>
+<p>會不斷地進行重試，直到上下文取消。而重試時間方面採用 backoff 演算法作為的重連機制，預設的最大重試時間間隔是 120s。</p>
+<h3 id="9-為什麼要用-http2-作為傳輸協議"><a class="header" href="#9-為什麼要用-http2-作為傳輸協議">9. 為什麼要用 HTTP/2 作為傳輸協議？</a></h3>
+<p>許多客戶端要透過 HTTP 代理來訪問網路，gRPC 全部用 HTTP/2 實作，等到代理開始支援 HTTP/2 就能透明轉發 gRPC 的資料。不光如此，負責負載均衡、訪問控制等等的反向代理都能無縫相容 gRPC，比起自己設計 wire protocol 的 Thrift，這樣做科學不少。@ctiller @滕亦飛</p>
+<h3 id="10-在-kubernetes-中-grpc-負載均衡有問題"><a class="header" href="#10-在-kubernetes-中-grpc-負載均衡有問題">10. 在 Kubernetes 中 gRPC 負載均衡有問題？</a></h3>
+<p>gRPC 的 RPC 協議是基於 HTTP/2 標準實作的，HTTP/2 的一大特性就是不需要像 HTTP/1.1 一樣，每次發出請求都要重新建立一個新連線，而是會複用原有的連線。</p>
+<p>所以這將導致 kube-proxy 只有在連線建立時才會做負載均衡，而在這之後的每一次 RPC 請求都會利用原本的連線，那麼實際上後續的每一次的 RPC 請求都跑到了同一個地方。</p>
+<p>注：使用 k8s service 做負載均衡的情況下</p>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<ul>
+<li>gRPC 基於 HTTP/2 + Protobuf。</li>
+<li>gRPC 有四種呼叫方式，分別是一元、服務端/客戶端流式、雙向流式。</li>
+<li>gRPC 的附加資訊都會體現在 HEADERS 幀，資料在 DATA 幀上。</li>
+<li>Client 請求若使用 grpc.Dial 預設是非同步建立連線，當時狀態為 Connecting。</li>
+<li>Client 請求若需要同步則呼叫 WithBlock()，完成狀態為 Ready。</li>
+<li>Server 監聽是迴圈等待連線，若沒有則休眠，最大休眠時間 1s；若接收到新請求則起一個新的 goroutine 去處理。</li>
+<li>grpc.ClientConn 不關閉連線，會導致 goroutine 和 Memory 等洩露。</li>
+<li>任何內/外呼叫如果不加超時控制，會出現洩漏和客戶端不斷重試。</li>
+<li>特定場景下，如果不對 grpc.ClientConn 加以調控，會影響呼叫。</li>
+<li>攔截器如果不用 go-grpc-middleware 鏈式處理，會覆蓋。</li>
+<li>在選擇 gRPC 的負載均衡模式時，需要謹慎。</li>
+</ul>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<ul>
+<li><a href="http://doc.oschina.net/grpc">http://doc.oschina.net/grpc</a></li>
+<li><a href="https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md">https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md</a></li>
+<li><a href="https://juejin.im/post/5b88a4f56fb9a01a0b31a67e">https://juejin.im/post/5b88a4f56fb9a01a0b31a67e</a></li>
+<li><a href="https://www.ibm.com/developerworks/cn/web/wa-http2-under-the-hood/index.html">https://www.ibm.com/developerworks/cn/web/wa-http2-under-the-hood/index.html</a></li>
+<li><a href="https://github.com/grpc/grpc-go/issues/1953">https://github.com/grpc/grpc-go/issues/1953</a></li>
+<li><a href="https://www.zhihu.com/question/52670041">https://www.zhihu.com/question/52670041</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-1-ke-za-tan/defer-loss.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-1-ke-za-tan/go1.13-defer.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-1-ke-za-tan/defer-loss.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-1-ke-za-tan/go1.13-defer.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,514 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>1.5 在 Go 中恰到好處的記憶體對齊 - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="15-在-go-中恰到好處的記憶體對齊"><a class="header" href="#15-在-go-中恰到好處的記憶體對齊">1.5 在 Go 中恰到好處的記憶體對齊</a></h1>
+<p><img src="../images/0bb797c282e5-SyctY6Q.png" alt="image" /></p>
+<h2 id="問題"><a class="header" href="#問題">問題</a></h2>
+<pre><code class="language-go">type Part1 struct {
+    a bool
+    b int32
+    c int8
+    d int64
+    e byte
+}
+</code></pre>
+<p>在開始之前，希望你計算一下 <code>Part1</code> 共佔用的大小是多少呢？</p>
+<pre><code class="language-go">func main() {
+    fmt.Printf("bool size: %d\n", unsafe.Sizeof(bool(true)))
+    fmt.Printf("int32 size: %d\n", unsafe.Sizeof(int32(0)))
+    fmt.Printf("int8 size: %d\n", unsafe.Sizeof(int8(0)))
+    fmt.Printf("int64 size: %d\n", unsafe.Sizeof(int64(0)))
+    fmt.Printf("byte size: %d\n", unsafe.Sizeof(byte(0)))
+    fmt.Printf("string size: %d\n", unsafe.Sizeof("EDDYCJY"))
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>bool size: 1
+int32 size: 4
+int8 size: 1
+int64 size: 8
+byte size: 1
+string size: 16
+</code></pre>
+<p>這麼一算，<code>Part1</code> 這一個結構體的佔用記憶體大小為 1+4+1+8+1 = 15 個位元組。相信有的小夥伴是這麼算的，看上去也沒什麼毛病</p>
+<p>真實情況是怎麼樣的呢？我們實際呼叫看看，如下：</p>
+<pre><code class="language-go">type Part1 struct {
+    a bool
+    b int32
+    c int8
+    d int64
+    e byte
+}
+
+func main() {
+    part1 := Part1{}
+
+    fmt.Printf("part1 size: %d, align: %d\n", unsafe.Sizeof(part1), unsafe.Alignof(part1))
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>part1 size: 32, align: 8
+</code></pre>
+<p>最終輸出為佔用 32 個位元組。這與前面所預期的結果完全不一樣。這充分地說明了先前的計算方式是錯誤的。為什麼呢？</p>
+<p>在這裡要提到 “記憶體對齊” 這一概念，才能夠用正確的姿勢去計算，接下來我們詳細的講講它是什麼</p>
+<h2 id="記憶體對齊"><a class="header" href="#記憶體對齊">記憶體對齊</a></h2>
+<p>有的小夥伴可能會認為記憶體讀取，就是一個簡單的位元組陣列擺放</p>
+<p><img src="../images/6ccc1c66b546-SZHQJK7.png" alt="image" /></p>
+<p>上圖表示一個坑一個蘿蔔的記憶體讀取方式。但實際上 CPU 並不會以一個一個位元組去讀取和寫入記憶體。相反 CPU 讀取記憶體是<strong>一塊一塊讀取</strong>的，塊的大小可以為 2、4、6、8、16 位元組等大小。塊大小我們稱其為<strong>記憶體訪問粒度</strong>。如下圖：</p>
+<p><img src="../images/7fb5ed88adba-mCFZWe8.png" alt="image" /></p>
+<p>在樣例中，假設訪問粒度為 4。 CPU 是以每 4 個位元組大小的訪問粒度去讀取和寫入記憶體的。這才是正確的姿勢</p>
+<h3 id="為什麼要關心對齊"><a class="header" href="#為什麼要關心對齊">為什麼要關心對齊</a></h3>
+<ul>
+<li>你正在編寫的程式碼在效能（CPU、Memory）方面有一定的要求</li>
+<li>你正在處理向量方面的指令</li>
+<li>某些硬體平臺（ARM）體系不支援未對齊的記憶體訪問</li>
+</ul>
+<p>另外作為一個工程師，你也很有必要學習這塊知識點哦 :)</p>
+<h3 id="為什麼要做對齊"><a class="header" href="#為什麼要做對齊">為什麼要做對齊</a></h3>
+<ul>
+<li>平臺（移植性）原因：不是所有的硬體平臺都能夠訪問任意地址上的任意資料。例如：特定的硬體平臺只允許在特定地址取得特定型別的資料，否則會導致異常情況</li>
+<li>效能原因：若訪問未對齊的記憶體，將會導致 CPU 進行兩次記憶體訪問，並且要花費額外的時鐘週期來處理對齊及運算。而本身就對齊的記憶體僅需要一次訪問就可以完成讀取動作</li>
+</ul>
+<p><img src="../images/faa2d5f6083a-g1RxUTz.png" alt="image" /></p>
+<p>在上圖中，假設從 Index 1 開始讀取，將會出現很崩潰的問題。因為它的記憶體訪問邊界是不對齊的。因此 CPU 會做一些額外的處理工作。如下：</p>
+<ol>
+<li>CPU <strong>首次</strong>讀取未對齊地址的第一個記憶體塊，讀取 0-3 位元組。並移除不需要的位元組 0</li>
+<li>CPU <strong>再次</strong>讀取未對齊地址的第二個記憶體塊，讀取 4-7 位元組。並移除不需要的位元組 5、6、7 位元組</li>
+<li>合併 1-4 位元組的資料</li>
+<li>合併後放入暫存器</li>
+</ol>
+<p>從上述流程可得出，不做 “記憶體對齊” 是一件有點 "麻煩" 的事。因為它會增加許多耗費時間的動作</p>
+<p>而假設做了記憶體對齊，從 Index 0 開始讀取 4 個位元組，只需要讀取一次，也不需要額外的運算。這顯然高效很多，是標準的<strong>空間換時間</strong>做法</p>
+<h3 id="預設係數"><a class="header" href="#預設係數">預設係數</a></h3>
+<p>在不同平臺上的編譯器都有自己預設的 “對齊係數”，可透過預編譯命令 <code>#pragma pack(n)</code> 進行變更，n 就是代指 “對齊係數”。一般來講，我們常用的平臺的係數如下：</p>
+<ul>
+<li>32 位：4</li>
+<li>64 位：8</li>
+</ul>
+<p>另外要注意，不同硬體平臺佔用的大小和對齊值都可能是不一樣的。因此本文的值不是唯一的，除錯的時候需按本機的實際情況考慮</p>
+<h3 id="成員對齊"><a class="header" href="#成員對齊">成員對齊</a></h3>
+<pre><code class="language-go">func main() {
+    fmt.Printf("bool align: %d\n", unsafe.Alignof(bool(true)))
+    fmt.Printf("int32 align: %d\n", unsafe.Alignof(int32(0)))
+    fmt.Printf("int8 align: %d\n", unsafe.Alignof(int8(0)))
+    fmt.Printf("int64 align: %d\n", unsafe.Alignof(int64(0)))
+    fmt.Printf("byte align: %d\n", unsafe.Alignof(byte(0)))
+    fmt.Printf("string align: %d\n", unsafe.Alignof("EDDYCJY"))
+    fmt.Printf("map align: %d\n", unsafe.Alignof(map[string]string{}))
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>bool align: 1
+int32 align: 4
+int8 align: 1
+int64 align: 8
+byte align: 1
+string align: 8
+map align: 8
+</code></pre>
+<p>在 Go 中可以呼叫 <code>unsafe.Alignof</code> 來返回相應型別的對齊係數。透過觀察輸出結果，可得知基本都是 <code>2^n</code>，最大也不會超過 8。這是因為我手提（64 位）編譯器預設對齊係數是 8，因此最大值不會超過這個數</p>
+<h3 id="整體對齊"><a class="header" href="#整體對齊">整體對齊</a></h3>
+<p>在上小節中，提到了結構體中的成員變數要做位元組對齊。那麼想當然身為最終結果的結構體，也是需要做位元組對齊的</p>
+<h3 id="對齊規則"><a class="header" href="#對齊規則">對齊規則</a></h3>
+<ul>
+<li>結構體的成員變數，第一個成員變數的偏移量為 0。往後的每個成員變數的對齊值必須為<strong>編譯器預設對齊長度</strong>（<code>#pragma pack(n)</code>）或<strong>當前成員變數型別的長度</strong>（<code>unsafe.Sizeof</code>），取<strong>最小值作為當前型別的對齊值</strong>。其偏移量必須為對齊值的整數倍</li>
+<li>結構體本身，對齊值必須為<strong>編譯器預設對齊長度</strong>（<code>#pragma pack(n)</code>）或<strong>結構體的所有成員變數型別中的最大長度</strong>，取<strong>最大數的最小整數倍</strong>作為對齊值</li>
+<li>結合以上兩點，可得知若<strong>編譯器預設對齊長度</strong>（<code>#pragma pack(n)</code>）超過結構體內成員變數的型別最大長度時，預設對齊長度是沒有任何意義的</li>
+</ul>
+<h2 id="分析流程"><a class="header" href="#分析流程">分析流程</a></h2>
+<p>接下來我們一起分析一下，“它” 到底經歷了些什麼，影響了 “預期” 結果</p>
+<div class="table-wrapper"><table><thead><tr><th>成員變數</th><th>型別</th><th>偏移量</th><th>自身佔用</th></tr></thead><tbody>
+<tr><td>a</td><td>bool</td><td>0</td><td>1</td></tr>
+<tr><td>位元組對齊</td><td>無</td><td>1</td><td>3</td></tr>
+<tr><td>b</td><td>int32</td><td>4</td><td>4</td></tr>
+<tr><td>c</td><td>int8</td><td>8</td><td>1</td></tr>
+<tr><td>位元組對齊</td><td>無</td><td>9</td><td>7</td></tr>
+<tr><td>d</td><td>int64</td><td>16</td><td>8</td></tr>
+<tr><td>e</td><td>byte</td><td>24</td><td>1</td></tr>
+<tr><td>位元組對齊</td><td>無</td><td>25</td><td>7</td></tr>
+<tr><td>總佔用大小</td><td>-</td><td>-</td><td>32</td></tr>
+</tbody></table>
+</div>
+<h3 id="成員對齊-1"><a class="header" href="#成員對齊-1">成員對齊</a></h3>
+<ul>
+<li>第一個成員 a
+<ul>
+<li>型別為 bool</li>
+<li>大小/對齊值為 1 位元組</li>
+<li>初始地址，偏移量為 0。佔用了第 1 位</li>
+</ul>
+</li>
+<li>第二個成員 b
+<ul>
+<li>型別為 int32</li>
+<li>大小/對齊值為 4 位元組</li>
+<li>根據規則 1，其偏移量必須為 4 的整數倍。確定偏移量為 4，因此 2-4 位為 Padding。而當前數值從第 5 位開始填充，到第 8 位。如下：axxx|bbbb</li>
+</ul>
+</li>
+<li>第三個成員 c
+<ul>
+<li>型別為 int8</li>
+<li>大小/對齊值為 1 位元組</li>
+<li>根據規則1，其偏移量必須為 1 的整數倍。當前偏移量為 8。不需要額外對齊，填充 1 個位元組到第 9 位。如下：axxx|bbbb|c...</li>
+</ul>
+</li>
+<li>第四個成員 d
+<ul>
+<li>
+<p>型別為 int64</p>
+</li>
+<li>
+<p>大小/對齊值為 8 位元組</p>
+</li>
+<li>
+<p>根據規則 1，其偏移量必須為 8 的整數倍。確定偏移量為 16，因此</p>
+<p>9-16 位為 Padding。而當前數值從第 17 位開始寫入，到第 24 位。如下：axxx|bbbb|cxxx|xxxx|dddd|dddd</p>
+</li>
+</ul>
+</li>
+<li>第五個成員 e
+<ul>
+<li>型別為 byte</li>
+<li>大小/對齊值為 1 位元組</li>
+<li>根據規則 1，其偏移量必須為 1 的整數倍。當前偏移量為 24。不需要額外對齊，填充 1 個位元組到第 25 位。如下：axxx|bbbb|cxxx|xxxx|dddd|dddd|e...</li>
+</ul>
+</li>
+</ul>
+<h3 id="整體對齊-1"><a class="header" href="#整體對齊-1">整體對齊</a></h3>
+<p>在每個成員變數進行對齊後，根據規則 2，整個結構體本身也要進行位元組對齊，因為可發現它可能並不是 <code>2^n</code>，不是偶數倍。顯然不符合對齊的規則</p>
+<p>根據規則 2，可得出對齊值為 8。現在的偏移量為 25，不是 8 的整倍數。因此確定偏移量為 32。對結構體進行對齊</p>
+<h3 id="結果"><a class="header" href="#結果">結果</a></h3>
+<p>Part1 記憶體佈局：axxx|bbbb|cxxx|xxxx|dddd|dddd|exxx|xxxx</p>
+<h3 id="小結"><a class="header" href="#小結">小結</a></h3>
+<p>透過本節的分析，可得知先前的 “推算” 為什麼錯誤？</p>
+<p>是因為實際記憶體管理並非 “一個蘿蔔一個坑” 的思想。而是一塊一塊。透過空間換時間（效率）的思想來完成這塊讀取、寫入。另外也需要兼顧不同平臺的記憶體操作情況</p>
+<h2 id="巧妙的結構體"><a class="header" href="#巧妙的結構體">巧妙的結構體</a></h2>
+<p>在上一小節，可得知根據成員變數的型別不同，其結構體的記憶體會產生對齊等動作。那假設欄位順序不同，會不會有什麼變化呢？我們一起來試試吧 :-)</p>
+<pre><code class="language-go">type Part1 struct {
+    a bool
+    b int32
+    c int8
+    d int64
+    e byte
+}
+
+type Part2 struct {
+    e byte
+    c int8
+    a bool
+    b int32
+    d int64
+}
+
+func main() {
+    part1 := Part1{}
+    part2 := Part2{}
+
+    fmt.Printf("part1 size: %d, align: %d\n", unsafe.Sizeof(part1), unsafe.Alignof(part1))
+    fmt.Printf("part2 size: %d, align: %d\n", unsafe.Sizeof(part2), unsafe.Alignof(part2))
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>part1 size: 32, align: 8
+part2 size: 16, align: 8
+</code></pre>
+<p>透過結果可以驚喜的發現，只是 “簡單” 對成員變數的欄位順序進行改變，就改變了結構體佔用大小</p>
+<p>接下來我們一起剖析一下 <code>Part2</code>，看看它的內部到底和上一位之間有什麼區別，才導致了這樣的結果？</p>
+<h3 id="分析流程-1"><a class="header" href="#分析流程-1">分析流程</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>成員變數</th><th>型別</th><th>偏移量</th><th>自身佔用</th></tr></thead><tbody>
+<tr><td>e</td><td>byte</td><td>0</td><td>1</td></tr>
+<tr><td>c</td><td>int8</td><td>1</td><td>1</td></tr>
+<tr><td>a</td><td>bool</td><td>2</td><td>1</td></tr>
+<tr><td>位元組對齊</td><td>無</td><td>3</td><td>1</td></tr>
+<tr><td>b</td><td>int32</td><td>4</td><td>4</td></tr>
+<tr><td>d</td><td>int64</td><td>8</td><td>8</td></tr>
+<tr><td>總佔用大小</td><td>-</td><td>-</td><td>16</td></tr>
+</tbody></table>
+</div>
+<h4 id="成員對齊-2"><a class="header" href="#成員對齊-2">成員對齊</a></h4>
+<ul>
+<li>第一個成員 e
+<ul>
+<li>型別為 byte</li>
+<li>大小/對齊值為 1 位元組</li>
+<li>初始地址，偏移量為 0。佔用了第 1 位</li>
+</ul>
+</li>
+<li>第二個成員 c
+<ul>
+<li>型別為 int8</li>
+<li>大小/對齊值為 1 位元組</li>
+<li>根據規則1，其偏移量必須為 1 的整數倍。當前偏移量為 2。不需要額外對齊</li>
+</ul>
+</li>
+<li>第三個成員 a
+<ul>
+<li>型別為 bool</li>
+<li>大小/對齊值為 1 位元組</li>
+<li>根據規則1，其偏移量必須為 1 的整數倍。當前偏移量為 3。不需要額外對齊</li>
+</ul>
+</li>
+<li>第四個成員 b
+<ul>
+<li>型別為 int32</li>
+<li>大小/對齊值為 4 位元組</li>
+<li>根據規則1，其偏移量必須為 4 的整數倍。確定偏移量為 4，因此第 3 位為 Padding。而當前數值從第 4 位開始填充，到第 8 位。如下：ecax|bbbb</li>
+</ul>
+</li>
+<li>第五個成員 d
+<ul>
+<li>型別為 int64</li>
+<li>大小/對齊值為 8 位元組</li>
+<li>根據規則1，其偏移量必須為 8 的整數倍。當前偏移量為 8。不需要額外對齊，從 9-16 位填充 8 個位元組。如下：ecax|bbbb|dddd|dddd</li>
+</ul>
+</li>
+</ul>
+<h4 id="整體對齊-2"><a class="header" href="#整體對齊-2">整體對齊</a></h4>
+<p>符合規則 2，不需要額外對齊</p>
+<h4 id="結果-1"><a class="header" href="#結果-1">結果</a></h4>
+<p>Part2 記憶體佈局：ecax|bbbb|dddd|dddd</p>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>透過對比 <code>Part1</code> 和 <code>Part2</code> 的記憶體佈局，你會發現兩者有很大的不同。如下：</p>
+<ul>
+<li>Part1：axxx|bbbb|cxxx|xxxx|dddd|dddd|exxx|xxxx</li>
+<li>Part2：ecax|bbbb|dddd|dddd</li>
+</ul>
+<p>仔細一看，<code>Part1</code> 存在許多 Padding。顯然它佔據了不少空間，那麼 Padding 是怎麼出現的呢？</p>
+<p>透過本文的介紹，可得知是由於不同型別導致需要進行位元組對齊，以此保證記憶體的訪問邊界</p>
+<p>那麼也不難理解，為什麼<strong>調整結構體內成員變數的欄位順序</strong>就能達到縮小結構體佔用大小的疑問了，是因為巧妙地減少了 Padding 的存在。讓它們更 “緊湊” 了。這一點對於加深 Go 的記憶體佈局印象和大物件的最佳化非常有幫</p>
+<p>當然了，沒什麼特殊問題，你可以不關注這一塊。但你要知道這塊知識點 😄</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Data_structure_alignment">Data structure alignment</a></li>
+<li><a href="https://www.ibm.com/developerworks/library/pa-dalign/">Data alignment</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-1-ke-za-tan/gomock.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-1-ke-za-tan/control-goroutine.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-1-ke-za-tan/gomock.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-1-ke-za-tan/control-goroutine.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

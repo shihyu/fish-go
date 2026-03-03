@@ -1,0 +1,476 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>4.2 gRPC Client and Server - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="42-grpc-client-and-server"><a class="header" href="#42-grpc-client-and-server">4.2 gRPC Client and Server</a></h1>
+<p>專案地址：<a href="https://github.com/EDDYCJY/go-grpc-example">https://github.com/EDDYCJY/go-grpc-example</a></p>
+<h2 id="前言"><a class="header" href="#前言">前言</a></h2>
+<p>本章節將使用 Go 來編寫 gRPC Server 和 Client，讓其互相通訊。在此之上會使用到如下庫：</p>
+<ul>
+<li>google.golang.org/grpc</li>
+<li>github.com/golang/protobuf/protoc-gen-go</li>
+</ul>
+<h2 id="安裝"><a class="header" href="#安裝">安裝</a></h2>
+<h3 id="grpc"><a class="header" href="#grpc">gRPC</a></h3>
+<pre><code>go get -u google.golang.org/grpc
+</code></pre>
+<h3 id="protocol-buffers-v3"><a class="header" href="#protocol-buffers-v3">Protocol Buffers v3</a></h3>
+<pre><code>wget https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-all-3.5.1.zip
+unzip protobuf-all-3.5.1.zip
+cd protobuf-3.5.1/
+./configure
+make
+make install
+</code></pre>
+<p>檢查是否安裝成功</p>
+<pre><code>protoc --version
+</code></pre>
+<p>若出現以下錯誤，執行 <code>ldconfig</code> 命名就能解決這問題</p>
+<pre><code>protoc: error while loading shared libraries: libprotobuf.so.15: cannot open shared object file: No such file or directory
+</code></pre>
+<h3 id="protoc-plugin"><a class="header" href="#protoc-plugin">Protoc Plugin</a></h3>
+<pre><code>go get -u github.com/golang/protobuf/protoc-gen-go
+</code></pre>
+<p>安裝環境若有問題，可參考我先前的文章 <a href="https://segmentfault.com/a/1190000013339403">《介紹與環境安裝》</a> 內有詳細介紹，不再贅述</p>
+<h2 id="grpc-1"><a class="header" href="#grpc-1">gRPC</a></h2>
+<p>本小節開始正式編寫 gRPC 相關的程式，一起上車吧 😄</p>
+<h3 id="圖示"><a class="header" href="#圖示">圖示</a></h3>
+<p><img src="../images/d54e2f53c243-415d9544fce1e774e1095ab99b6cc015.png" alt="image" /></p>
+<h3 id="目錄結構"><a class="header" href="#目錄結構">目錄結構</a></h3>
+<pre><code>$ tree go-grpc-example 
+go-grpc-example
+├── client
+├── proto
+│   └── search.proto
+└── server.go
+</code></pre>
+<h3 id="idl"><a class="header" href="#idl">IDL</a></h3>
+<h4 id="編寫"><a class="header" href="#編寫">編寫</a></h4>
+<p>在 proto 資料夾下的 search.proto 檔案中，寫入如下內容：</p>
+<pre><code class="language-go">syntax = "proto3";
+
+package proto;
+
+service SearchService {
+    rpc Search(SearchRequest) returns (SearchResponse) {}
+}
+
+message SearchRequest {
+    string request = 1;
+}
+
+message SearchResponse {
+    string response = 1;
+}
+</code></pre>
+<h4 id="生成"><a class="header" href="#生成">生成</a></h4>
+<p>在 proto 資料夾下執行如下命令：</p>
+<pre><code>$ protoc --go_out=plugins=grpc:. *.proto
+</code></pre>
+<ul>
+<li>plugins=plugin1+plugin2：指定要載入的子外掛列表</li>
+</ul>
+<p>我們定義的 proto 檔案是涉及了 RPC 服務的，而預設是不會生成 RPC 程式碼的，因此需要給出 <code>plugins</code> 引數傳遞給 <code>protoc-gen-go</code>，告訴它，請支援 RPC（這裡指定了 gRPC）</p>
+<ul>
+<li>--go_out=.：設定 Go 程式碼輸出的目錄</li>
+</ul>
+<p>該指令會載入 protoc-gen-go 外掛達到生成 Go 程式碼的目的，生成的檔案以 .pb.go 為檔案字尾</p>
+<ul>
+<li>: （冒號）</li>
+</ul>
+<p>冒號充當分隔符的作用，後跟所需要的引數集。如果這處不涉及 RPC，命令可簡化為：</p>
+<pre><code>$ protoc --go_out=. *.proto
+</code></pre>
+<p>注：建議你看看兩條命令生成的 .pb.go 檔案，分別有什麼區別</p>
+<h4 id="生成後"><a class="header" href="#生成後">生成後</a></h4>
+<p>執行完畢命令後，將得到一個 .pb.go 檔案，檔案內容如下：</p>
+<pre><code class="language-go">type SearchRequest struct {
+    Request              string   `protobuf:"bytes,1,opt,name=request" json:"request,omitempty"`
+    XXX_NoUnkeyedLiteral struct{} `json:"-"`
+    XXX_unrecognized     []byte   `json:"-"`
+    XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SearchRequest) Reset()         { *m = SearchRequest{} }
+func (m *SearchRequest) String() string { return proto.CompactTextString(m) }
+func (*SearchRequest) ProtoMessage()    {}
+func (*SearchRequest) Descriptor() ([]byte, []int) {
+    return fileDescriptor_search_8b45f79ee13ff6a3, []int{0}
+}
+
+func (m *SearchRequest) GetRequest() string {
+    if m != nil {
+        return m.Request
+    }
+    return ""
+}
+</code></pre>
+<p>透過閱讀這一部分程式碼，可以知道主要涉及如下方面：</p>
+<ul>
+<li>欄位名稱從小寫下劃線轉換為大寫駝峰模式（欄位匯出）</li>
+<li>生成一組 Getters 方法，能便於處理一些空指標取值的情況</li>
+<li>ProtoMessage 方法實作 proto.Message 的介面</li>
+<li>生成 Rest 方法，便於將 Protobuf 結構體恢復為零值</li>
+<li>Repeated 轉換為切片</li>
+</ul>
+<pre><code class="language-go">type SearchRequest struct {
+    Request              string   `protobuf:"bytes,1,opt,name=request" json:"request,omitempty"`
+}
+
+func (*SearchRequest) Descriptor() ([]byte, []int) {
+    return fileDescriptor_search_8b45f79ee13ff6a3, []int{0}
+}
+
+type SearchResponse struct {
+    Response             string   `protobuf:"bytes,1,opt,name=response" json:"response,omitempty"`
+}
+
+func (*SearchResponse) Descriptor() ([]byte, []int) {
+    return fileDescriptor_search_8b45f79ee13ff6a3, []int{1}
+}
+
+...
+
+func init() { proto.RegisterFile("search.proto", fileDescriptor_search_8b45f79ee13ff6a3) }
+
+var fileDescriptor_search_8b45f79ee13ff6a3 = []byte{
+    // 131 bytes of a gzipped FileDescriptorProto
+    0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x29, 0x4e, 0x4d, 0x2c,
+    0x4a, 0xce, 0xd0, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x05, 0x53, 0x4a, 0x9a, 0x5c, 0xbc,
+    0xc1, 0x60, 0xe1, 0xa0, 0xd4, 0xc2, 0xd2, 0xd4, 0xe2, 0x12, 0x21, 0x09, 0x2e, 0xf6, 0x22, 0x08,
+    0x53, 0x82, 0x51, 0x81, 0x51, 0x83, 0x33, 0x08, 0xc6, 0x55, 0xd2, 0xe1, 0xe2, 0x83, 0x29, 0x2d,
+    0x2e, 0xc8, 0xcf, 0x2b, 0x4e, 0x15, 0x92, 0xe2, 0xe2, 0x28, 0x82, 0xb2, 0xa1, 0x8a, 0xe1, 0x7c,
+    0x23, 0x0f, 0x98, 0xc1, 0xc1, 0xa9, 0x45, 0x65, 0x99, 0xc9, 0xa9, 0x42, 0xe6, 0x5c, 0x6c, 0x10,
+    0x01, 0x21, 0x11, 0x88, 0x13, 0xf4, 0x50, 0x2c, 0x96, 0x12, 0x45, 0x13, 0x85, 0x98, 0xa3, 0xc4,
+    0x90, 0xc4, 0x06, 0x16, 0x37, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff, 0xf3, 0xba, 0x74, 0x95, 0xc0,
+    0x00, 0x00, 0x00,
+}
+</code></pre>
+<p>而這一部分程式碼主要是圍繞 <code>fileDescriptor</code> 進行，在這裡 <code>fileDescriptor_search_8b45f79ee13ff6a3</code> 表示一個編譯後的 proto 檔案，而每一個方法都包含 Descriptor 方法，代表著這一個方法在 <code>fileDescriptor</code> 中具體的 Message Field</p>
+<h3 id="server"><a class="header" href="#server">Server</a></h3>
+<p>這一小節將編寫 gRPC Server 的基礎模板，完成一個方法的呼叫。對 server.go 寫入如下內容：</p>
+<pre><code class="language-go">package main
+
+import (
+    "context"
+    "log"
+    "net"
+
+    "google.golang.org/grpc"
+
+    pb "github.com/EDDYCJY/go-grpc-example/proto"
+)
+
+type SearchService struct{}
+
+func (s *SearchService) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
+    return &amp;pb.SearchResponse{Response: r.GetRequest() + " Server"}, nil
+}
+
+const PORT = "9001"
+
+func main() {
+    server := grpc.NewServer()
+    pb.RegisterSearchServiceServer(server, &amp;SearchService{})
+
+    lis, err := net.Listen("tcp", ":"+PORT)
+    if err != nil {
+        log.Fatalf("net.Listen err: %v", err)
+    }
+
+    server.Serve(lis)
+}
+</code></pre>
+<ul>
+<li>建立 gRPC Server 物件，你可以理解為它是 Server 端的抽象物件</li>
+<li>將 SearchService（其包含需要被呼叫的服務端介面）註冊到 gRPC Server 的內部註冊中心。這樣可以在接受到請求時，透過內部的服務發現，發現該服務端介面並轉接進行邏輯處理</li>
+<li>建立 Listen，監聽 TCP 埠</li>
+<li>gRPC Server 開始 lis.Accept，直到 Stop 或 GracefulStop</li>
+</ul>
+<h3 id="client"><a class="header" href="#client">Client</a></h3>
+<p>接下來編寫 gRPC Go Client 的基礎模板，開啟 client/client.go 檔案，寫入以下內容：</p>
+<pre><code class="language-go">package main
+
+import (
+    "context"
+    "log"
+
+    "google.golang.org/grpc"
+
+    pb "github.com/EDDYCJY/go-grpc-example/proto"
+)
+
+const PORT = "9001"
+
+func main() {
+    conn, err := grpc.Dial(":"+PORT, grpc.WithInsecure())
+    if err != nil {
+        log.Fatalf("grpc.Dial err: %v", err)
+    }
+    defer conn.Close()
+
+    client := pb.NewSearchServiceClient(conn)
+    resp, err := client.Search(context.Background(), &amp;pb.SearchRequest{
+        Request: "gRPC",
+    })
+    if err != nil {
+        log.Fatalf("client.Search err: %v", err)
+    }
+
+    log.Printf("resp: %s", resp.GetResponse())
+}
+</code></pre>
+<ul>
+<li>建立與給定目標（服務端）的連線互動</li>
+<li>建立 SearchService 的客戶端物件</li>
+<li>傳送 RPC 請求，等待同步響應，得到回撥後返回響應結果</li>
+<li>輸出響應結果</li>
+</ul>
+<h2 id="驗證"><a class="header" href="#驗證">驗證</a></h2>
+<h3 id="啟動-server"><a class="header" href="#啟動-server">啟動 Server</a></h3>
+<pre><code class="language-bash">$ pwd
+$GOPATH/github.com/EDDYCJY/go-grpc-example
+$ go run server.go
+</code></pre>
+<h3 id="啟動-client"><a class="header" href="#啟動-client">啟動 Client</a></h3>
+<pre><code class="language-bash">$ pwd             
+$GOPATH/github.com/EDDYCJY/go-grpc-example/client
+$ go run client.go 
+2018/09/23 11:06:23 resp: gRPC Server
+</code></pre>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>在本章節，我們對 Protobuf、gRPC Client/Server 分別都進行了介紹。希望你結合文中講述內容再寫一個 Demo 進行深入瞭解，肯定會更棒 🤔</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<h3 id="本系列示例程式碼"><a class="header" href="#本系列示例程式碼">本系列示例程式碼</a></h3>
+<ul>
+<li><a href="https://github.com/EDDYCJY/go-grpc-example">go-grpc-example</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-4-ke-grpc/install.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-4-ke-grpc/stream-client-server.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-4-ke-grpc/install.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-4-ke-grpc/stream-client-server.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

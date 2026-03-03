@@ -1,0 +1,403 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>1.12 Go1.13 defer 的效能是如何提高的？ - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="112-go113-defer-的效能是如何提高的"><a class="header" href="#112-go113-defer-的效能是如何提高的">1.12 Go1.13 defer 的效能是如何提高的？</a></h1>
+<p>最近 Go1.13 終於釋出了，其中一個值得關注的特性就是 <strong>defer 在大部分的場景下效能提升了30%</strong>，但是官方並沒有具體寫是怎麼提升的，這讓大家非常的疑惑。而我因為之前寫過<a href="https://book.eddycjy.com/golang/defer/defer.html">《深入理解 Go defer》</a> 和 <a href="https://book.eddycjy.com/golang/talk/defer-loss.html">《Go defer 會有效能損耗，儘量不要用？》</a> 這類文章，因此我挺感興趣它是做了什麼改變才能得到這樣子的結果，所以今天和大家一起探索其中奧妙。</p>
+<h2 id="一測試"><a class="header" href="#一測試">一、測試</a></h2>
+<h3 id="go112"><a class="header" href="#go112">Go1.12</a></h3>
+<pre><code>$ go test -bench=. -benchmem -run=none
+goos: darwin
+goarch: amd64
+pkg: github.com/EDDYCJY/awesomeDefer
+BenchmarkDoDefer-4          20000000            91.4 ns/op          48 B/op           1 allocs/op
+BenchmarkDoNotDefer-4       30000000            41.6 ns/op          48 B/op           1 allocs/op
+PASS
+ok      github.com/EDDYCJY/awesomeDefer    3.234s
+</code></pre>
+<h3 id="go113"><a class="header" href="#go113">Go1.13</a></h3>
+<pre><code>$ go test -bench=. -benchmem -run=none
+goos: darwin
+goarch: amd64
+pkg: github.com/EDDYCJY/awesomeDefer
+BenchmarkDoDefer-4          15986062            74.7 ns/op          48 B/op           1 allocs/op
+BenchmarkDoNotDefer-4       29231842            40.3 ns/op          48 B/op           1 allocs/op
+PASS
+ok      github.com/EDDYCJY/awesomeDefer    3.444s
+</code></pre>
+<p>在開場，我先以不標準的測試基準驗證了先前的測試用例，確確實實在這兩個版本中，<code>defer</code> 的效能得到了提高，但是看上去似乎不是百分百提高 30 %。</p>
+<h2 id="二看一下"><a class="header" href="#二看一下">二、看一下</a></h2>
+<h3 id="之前go112"><a class="header" href="#之前go112">之前（Go1.12）</a></h3>
+<pre><code>    0x0070 00112 (main.go:6)    CALL    runtime.deferproc(SB)
+    0x0075 00117 (main.go:6)    TESTL    AX, AX
+    0x0077 00119 (main.go:6)    JNE    137
+    0x0079 00121 (main.go:7)    XCHGL    AX, AX
+    0x007a 00122 (main.go:7)    CALL    runtime.deferreturn(SB)
+    0x007f 00127 (main.go:7)    MOVQ    56(SP), BP
+</code></pre>
+<h3 id="現在go113"><a class="header" href="#現在go113">現在（Go1.13）</a></h3>
+<pre><code>    0x006e 00110 (main.go:4)    MOVQ    AX, (SP)
+    0x0072 00114 (main.go:4)    CALL    runtime.deferprocStack(SB)
+    0x0077 00119 (main.go:4)    TESTL    AX, AX
+    0x0079 00121 (main.go:4)    JNE    139
+    0x007b 00123 (main.go:7)    XCHGL    AX, AX
+    0x007c 00124 (main.go:7)    CALL    runtime.deferreturn(SB)
+    0x0081 00129 (main.go:7)    MOVQ    112(SP), BP
+</code></pre>
+<p>從彙編的角度來看，像是 <code>runtime.deferproc</code> 改成了 <code>runtime.deferprocStack</code> 呼叫，難道是做了什麼最佳化，我們<strong>抱著疑問</strong>繼續看下去。</p>
+<h2 id="三觀察原始碼"><a class="header" href="#三觀察原始碼">三、觀察原始碼</a></h2>
+<h3 id="_defer"><a class="header" href="#_defer">_defer</a></h3>
+<pre><code class="language-go">type _defer struct {
+    siz     int32
+    siz     int32 // includes both arguments and results
+    started bool
+    heap    bool
+    sp      uintptr // sp at time of defer
+    pc      uintptr
+    fn      *funcval
+    ...
+</code></pre>
+<p>相較於以前的版本，最小單元的 <code>_defer</code> 結構體主要是新增了 <code>heap</code> 欄位，用於標識這個 <code>_defer</code> 是在堆上，還是在棧上進行分配，其餘欄位並沒有明確變更，那我們可以把聚焦點放在 <code>defer</code> 的堆疊分配上了，看看是做了什麼事。</p>
+<h3 id="deferprocstack"><a class="header" href="#deferprocstack">deferprocStack</a></h3>
+<pre><code class="language-go">func deferprocStack(d *_defer) {
+    gp := getg()
+    if gp.m.curg != gp {
+        throw("defer on system stack")
+    }
+
+    d.started = false
+    d.heap = false
+    d.sp = getcallersp()
+    d.pc = getcallerpc()
+
+    *(*uintptr)(unsafe.Pointer(&amp;d._panic)) = 0
+    *(*uintptr)(unsafe.Pointer(&amp;d.link)) = uintptr(unsafe.Pointer(gp._defer))
+    *(*uintptr)(unsafe.Pointer(&amp;gp._defer)) = uintptr(unsafe.Pointer(d))
+
+    return0()
+}
+</code></pre>
+<p>這一塊程式碼挺常規的，主要是取得呼叫 <code>defer</code> 函式的函式棧指標、傳入函式的引數具體地址以及PC（程式計數器），這塊在前文 <a href="https://book.eddycjy.com/golang/defer/defer.html">《深入理解 Go defer》</a> 有詳細介紹過，這裡就不再贅述了。</p>
+<p>那這個 <code>deferprocStack</code> 特殊在哪呢，我們可以看到它把 <code>d.heap</code> 設定為了 <code>false</code>，也就是代表 <code>deferprocStack</code> 方法是針對將 <code>_defer</code> 分配在棧上的應用場景的。</p>
+<h3 id="deferproc"><a class="header" href="#deferproc">deferproc</a></h3>
+<p>那麼問題來了，它又在哪裡處理分配到堆上的應用場景呢？</p>
+<pre><code class="language-go">func newdefer(siz int32) *_defer {
+    ...
+    d.heap = true
+    d.link = gp._defer
+    gp._defer = d
+    return d
+}
+</code></pre>
+<p>那麼 <code>newdefer</code> 是在哪裡呼叫的呢，如下：</p>
+<pre><code class="language-go">func deferproc(siz int32, fn *funcval) { // arguments of fn follow fn
+    ...
+    sp := getcallersp()
+    argp := uintptr(unsafe.Pointer(&amp;fn)) + unsafe.Sizeof(fn)
+    callerpc := getcallerpc()
+
+    d := newdefer(siz)
+    ...
+}
+</code></pre>
+<p>非常明確，先前的版本中呼叫的 <code>deferproc</code> 方法，現在被用於對應分配到堆上的場景了。</p>
+<h3 id="小結"><a class="header" href="#小結">小結</a></h3>
+<ul>
+<li>第一點：可以確定的是 <code>deferproc</code> 並沒有被去掉，而是流程被優化了。</li>
+<li>第二點：編譯器會根據應用場景去選擇使用 <code>deferproc</code> 還是 <code>deferprocStack</code> 方法，他們分別是針對分配在堆上和棧上的使用場景。</li>
+</ul>
+<h2 id="四編譯器如何選擇"><a class="header" href="#四編譯器如何選擇">四、編譯器如何選擇</a></h2>
+<h3 id="esc"><a class="header" href="#esc">esc</a></h3>
+<pre><code>// src/cmd/compile/internal/gc/esc.go
+case ODEFER:
+    if e.loopdepth == 1 { // top level
+        n.Esc = EscNever // force stack allocation of defer record (see ssa.go)
+        break
+    }
+</code></pre>
+<h3 id="ssa"><a class="header" href="#ssa">ssa</a></h3>
+<pre><code>// src/cmd/compile/internal/gc/ssa.go
+case ODEFER:
+    d := callDefer
+    if n.Esc == EscNever {
+        d = callDeferStack
+    }
+    s.call(n.Left, d)
+</code></pre>
+<h3 id="小結-1"><a class="header" href="#小結-1">小結</a></h3>
+<p>這塊結合來看，核心就是當 <code>e.loopdepth == 1</code> 時，會將逃逸分析結果 <code>n.Esc</code> 設定為 <code>EscNever</code>，也就是將 <code>_defer</code> 分配到棧上，那這個 <code>e.loopdepth</code> 到底又是何方神聖呢，我們再詳細看看程式碼，如下：</p>
+<pre><code class="language-go">// src/cmd/compile/internal/gc/esc.go
+type NodeEscState struct {
+    Curfn             *Node
+    Flowsrc           []EscStep 
+    Retval            Nodes    
+    Loopdepth         int32  
+    Level             Level
+    Walkgen           uint32
+    Maxextraloopdepth int32
+}
+</code></pre>
+<p>這裡重點檢視 <code>Loopdepth</code> 欄位，目前它共有三個值標識，分別是:</p>
+<ul>
+<li>-1：全域性。</li>
+<li>0：返回變數。</li>
+<li>1：頂級函式，又或是內部函式的不斷增長值。</li>
+</ul>
+<p>這個讀起來有點繞，結合我們上述 <code>e.loopdepth == 1</code> 的表述來看，也就是當 <code>defer func</code> 是頂級函式時，將會分配到棧上。但是若在 <code>defer func</code> 外層出現顯式的迭代迴圈，又或是出現隱式迭代，將會分配到堆上。其實深層表示的還是迭代深度的意思，我們可以來證實一下剛剛說的方向，顯式迭代的程式碼如下：</p>
+<pre><code class="language-go">func main() {
+    for p := 0; p &lt; 10; p++ {
+        defer func() {
+            for i := 0; i &lt; 20; i++ {
+                log.Println("EDDYCJY")
+            }
+        }()
+    }
+}
+</code></pre>
+<p>檢視彙編情況：</p>
+<pre><code>$ go tool compile -S main.go
+"".main STEXT size=122 args=0x0 locals=0x20
+    0x0000 00000 (main.go:15)    TEXT    "".main(SB), ABIInternal, $32-0
+    ...
+    0x0048 00072 (main.go:17)    CALL    runtime.deferproc(SB)
+    0x004d 00077 (main.go:17)    TESTL    AX, AX
+    0x004f 00079 (main.go:17)    JNE    83
+    0x0051 00081 (main.go:17)    JMP    33
+    0x0053 00083 (main.go:17)    XCHGL    AX, AX
+    0x0054 00084 (main.go:17)    CALL    runtime.deferreturn(SB)
+    ...
+</code></pre>
+<p>顯然，最終 <code>defer</code> 呼叫的是 <code>runtime.deferproc</code> 方法，也就是分配到堆上了，沒毛病。而隱式迭代的話，你可以藉助 <code>goto</code> 語句去實作這個功能，再自己驗證一遍，這裡就不再贅述了。</p>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>從分析的結果上來看，官方說明的 Go1.13 defer 效能提高 30%，主要來源於其延遲物件的堆疊分配規則的改變，措施是由編譯器透過對 <code>defer</code> 的 <code>for-loop</code> 迭代深度進行分析，如果 <code>loopdepth</code> 為 1，則設定逃逸分析的結果，將分配到棧上，否則分配到堆上。</p>
+<p>的確，我個人覺得對大部分的使用場景來講，是優化了不少，也解決了一些人吐槽 <code>defer</code> 效能 “差” 的問題。另外，我想從 Go1.13 起，你也需要稍微瞭解一下它這塊的機制，別隨隨便便就來個狂野版巢狀迭代 <code>defer</code>，可能沒法效能最大化。</p>
+<p>如果你還想了解更多細節，可以看看 <code>defer</code> 這塊的的<a href="https://github.com/golang/go/commit/fff4f599fe1c21e411a99de5c9b3777d06ce0ce6">提交內容</a>，官方的測試用例也包含在裡面。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-1-ke-za-tan/talking-grpc.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-1-ke-za-tan/why-vsz-large.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-1-ke-za-tan/talking-grpc.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-1-ke-za-tan/why-vsz-large.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,671 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>8.1 fmt - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="81-fmt"><a class="header" href="#81-fmt">8.1 fmt</a></h1>
+<h2 id="前言"><a class="header" href="#前言">前言</a></h2>
+<pre><code class="language-go">package main
+
+import (
+    "fmt"
+)
+
+func main() {
+    fmt.Println("Hello World!")
+}
+</code></pre>
+<p>標準開場見多了，那內部標準庫又是怎麼輸出這段英文的呢？今天一起來圍觀下原始碼吧 🤭</p>
+<h2 id="原型"><a class="header" href="#原型">原型</a></h2>
+<pre><code class="language-go">func Print(a ...interface{}) (n int, err error) {
+    return Fprint(os.Stdout, a...)
+}
+
+func Println(a ...interface{}) (n int, err error) {
+    return Fprintln(os.Stdout, a...)
+}
+
+func Printf(format string, a ...interface{}) (n int, err error) {
+    return Fprintf(os.Stdout, format, a...)
+}
+</code></pre>
+<ul>
+<li>Print：使用預設格式說明符列印格式並寫入標準輸出。當兩者都不是字串時，在運算元之間新增空格</li>
+<li>Println：同上，不同的地方是始終在運算元之間新增空格，並附加換行符</li>
+<li>Printf：根據格式說明符進行格式化並寫入標準輸出</li>
+</ul>
+<p>以上三類就是最常見的格式化 I/O 的方法，我們將基於此去進行拆解描述</p>
+<h2 id="執行流程"><a class="header" href="#執行流程">執行流程</a></h2>
+<h3 id="案例一print"><a class="header" href="#案例一print">案例一：Print</a></h3>
+<p>在這裡我們使用 <code>Print</code> 方法做一個分析，便於後面的加深理解 😄</p>
+<pre><code class="language-go">func Print(a ...interface{}) (n int, err error) {
+    return Fprint(os.Stdout, a...)
+}
+</code></pre>
+<p><code>Print</code> 使用預設格式說明符列印格式並寫入標準輸出。另外當兩者都為非空字串時將插入一個空格</p>
+<h4 id="原型-1"><a class="header" href="#原型-1">原型</a></h4>
+<pre><code class="language-go">func Fprint(w io.Writer, a ...interface{}) (n int, err error) {
+    p := newPrinter()
+    p.doPrint(a)
+    n, err = w.Write(p.buf)
+    p.free()
+    return
+}
+</code></pre>
+<p>該函式一共有兩個形參：</p>
+<ul>
+<li>w：輸出流，只要實作 io.Writer 就可以（抽象）為流的寫入</li>
+<li>a：任意型別的多個值</li>
+</ul>
+<h4 id="分析主幹流程"><a class="header" href="#分析主幹流程">分析主幹流程</a></h4>
+<p>1、 p := newPrinter(): 申請一個臨時物件池（sync.Pool）</p>
+<pre><code class="language-go">var ppFree = sync.Pool{
+    New: func() interface{} { return new(pp) },
+}
+
+func newPrinter() *pp {
+    p := ppFree.Get().(*pp)
+    p.panicking = false
+    p.erroring = false
+    p.fmt.init(&amp;p.buf)
+    return p
+}
+</code></pre>
+<ul>
+<li>ppFree.Get()：基於 sync.Pool 實作 *pp 的臨時物件池，每次取得一定會返回一個新的 pp 物件用於接下來的處理</li>
+<li>*pp.panicking：用於解決無限遞迴的 panic、recover 問題，會根據該引數在 catchPanic 及時掐斷</li>
+<li>*pp.erroring：用於表示正在處理錯誤無效的 verb 識別符號，主要作用是防止呼叫 handleMethods 方法</li>
+<li>*pp.fmt.init(&amp;p.buf)：初始化 fmt 設定，會設定 buf 並且清空 fmtFlags 標誌位</li>
+</ul>
+<p>2、 p.doPrint(a): 執行約定的格式化動作（引數間增加一個空格、最後一個引數增加換行符）</p>
+<pre><code class="language-go">func (p *pp) doPrint(a []interface{}) {
+    prevString := false
+    for argNum, arg := range a {
+        true &amp;&amp; false
+        isString := arg != nil &amp;&amp; reflect.TypeOf(arg).Kind() == reflect.String
+        // Add a space between two non-string arguments.
+        if argNum &gt; 0 &amp;&amp; !isString &amp;&amp; !prevString {
+            p.buf.WriteByte(' ')
+        }
+        p.printArg(arg, 'v')
+        prevString = isString
+    }
+}
+</code></pre>
+<p>可以看到底層透過判斷該入參，<strong>同時</strong>滿足以下條件就會新增分隔符（空格）：</p>
+<ul>
+<li>當前入參為多個引數（例如：Slice）</li>
+<li>當前入參不為 nil 且不為字串（透過反射確定）</li>
+<li>當前入參不為首項或上一個入參不為字串</li>
+</ul>
+<p>而在 <code>Print</code> 方法中，不需要指定格式符。實際上在該方法內直接指定為 <code>v</code>。也就是預設格式的值</p>
+<pre><code>p.printArg(arg, 'v')
+</code></pre>
+<ol>
+<li>w.Write(p.buf): 寫入標準輸出（io.Writer）</li>
+<li>*pp.free(): 釋放已快取的內容。在使用完臨時物件後，會將 buf、arg、value 清空再重新存放到 ppFree 中。以便於後面再取出重用（利用 sync.Pool 的臨時物件特性）</li>
+</ol>
+<h3 id="案例二printf"><a class="header" href="#案例二printf">案例二：Printf</a></h3>
+<h4 id="識別符號"><a class="header" href="#識別符號">識別符號</a></h4>
+<p><strong>Verbs</strong></p>
+<pre><code>%v    the value in a default format
+    when printing structs, the plus flag (%+v) adds field names
+%#v    a Go-syntax representation of the value
+%T    a Go-syntax representation of the type of the value
+%%    a literal percent sign; consumes no value
+%t    the word true or false
+</code></pre>
+<p><strong>Flags</strong></p>
+<pre><code>+    always print a sign for numeric values;
+    guarantee ASCII-only output for %q (%+q)
+-    pad with spaces on the right rather than the left (left-justify the field)
+#    alternate format: add leading 0 for octal (%#o), 0x for hex (%#x);
+    0X for hex (%#X); suppress 0x for %p (%#p);
+    for %q, print a raw (backquoted) string if strconv.CanBackquote
+    returns true;
+    always print a decimal point for %e, %E, %f, %F, %g and %G;
+    do not remove trailing zeros for %g and %G;
+    write e.g. U+0078 'x' if the character is printable for %U (%#U).
+' '    (space) leave a space for elided sign in numbers (% d);
+    put spaces between bytes printing strings or slices in hex (% x, % X)
+0    pad with leading zeros rather than spaces;
+    for numbers, this moves the padding after the sign
+</code></pre>
+<p>詳細建議參見 <a href="https://golang.org/pkg/fmt/#hdr-Printing">Godoc</a></p>
+<h4 id="原型-2"><a class="header" href="#原型-2">原型</a></h4>
+<pre><code class="language-go">func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error) {
+    p := newPrinter()
+    p.doPrintf(format, a)
+    n, err = w.Write(p.buf)
+    p.free()
+    return
+}
+</code></pre>
+<p>與 Print 相比，最大的不同就是 doPrintf 方法了。在這裡我們來詳細看看其程式碼，如下：</p>
+<pre><code class="language-go">func (p *pp) doPrintf(format string, a []interface{}) {
+    end := len(format)
+    argNum := 0         // we process one argument per non-trivial format
+    afterIndex := false // previous item in format was an index like [3].
+    p.reordered = false
+formatLoop:
+    for i := 0; i &lt; end; {
+        p.goodArgNum = true
+        lasti := i
+        for i &lt; end &amp;&amp; format[i] != '%' {
+            i++
+        }
+        if i &gt; lasti {
+            p.buf.WriteString(format[lasti:i])
+        }
+        if i &gt;= end {
+            // done processing format string
+            break
+        }
+
+        // Process one verb
+        i++
+
+        // Do we have flags?
+        p.fmt.clearflags()
+    simpleFormat:
+        for ; i &lt; end; i++ {
+            c := format[i]
+            switch c {
+            case '#':   //'#'、'0'、'+'、'-'、' '
+                ...
+            default:
+                if 'a' &lt;= c &amp;&amp; c &lt;= 'z' &amp;&amp; argNum &lt; len(a) {
+                    ...
+                    p.printArg(a[argNum], rune(c))
+                    argNum++
+                    i++
+                    continue formatLoop
+                }
+
+                break simpleFormat
+            }
+        }
+
+        // Do we have an explicit argument index?
+        argNum, i, afterIndex = p.argNumber(argNum, format, i, len(a))
+
+        // Do we have width?
+        if i &lt; end &amp;&amp; format[i] == '*' {
+            ...
+        }
+
+        // Do we have precision?
+        if i+1 &lt; end &amp;&amp; format[i] == '.' {
+            ...
+        }
+
+        if !afterIndex {
+            argNum, i, afterIndex = p.argNumber(argNum, format, i, len(a))
+        }
+
+        if i &gt;= end {
+            p.buf.WriteString(noVerbString)
+            break
+        }
+
+        ...
+
+        switch {
+        case verb == '%': // Percent does not absorb operands and ignores f.wid and f.prec.
+            p.buf.WriteByte('%')
+        case !p.goodArgNum:
+            p.badArgNum(verb)
+        case argNum &gt;= len(a): // No argument left over to print for the current verb.
+            p.missingArg(verb)
+        case verb == 'v':
+            ...
+            fallthrough
+        default:
+            p.printArg(a[argNum], verb)
+            argNum++
+        }
+    }
+
+    if !p.reordered &amp;&amp; argNum &lt; len(a) {
+        ...
+    }
+}
+</code></pre>
+<h4 id="分析主幹流程-1"><a class="header" href="#分析主幹流程-1">分析主幹流程</a></h4>
+<ol>
+<li>寫入 % 之前的字元內容</li>
+<li>如果所有標誌位處理完畢（到達字元尾部），則跳出處理邏輯</li>
+<li>（往後移）跳過 % ，開始處理其他 verb 標誌位</li>
+<li>清空（重新初始化） fmt 設定</li>
+<li>處理一些基礎的 verb 識別符號（simpleFormat）。如：'#'、'0'、'+'、'-'、' ' 以及<strong>簡單的 verbs 識別符號（不包含精度、寬度和引數索引）。需要注意的是，若當前字元為簡單 verb 識別符號。則直接進行處理。完成後會直接後移到下一個字元</strong>。其餘標誌位則變更 fmt 設定項，便於後續處理</li>
+<li>處理引數索引（argument index）</li>
+<li>處理引數寬度（width）</li>
+<li>處理引數精度（precision）</li>
+<li>% 之後若不存在 verbs 識別符號則返回 <code>noVerbString</code>。值為 %!(NOVERB)</li>
+<li>處理特殊 verbs 識別符號（如：'%%'、'%#v'、'%+v'）、錯誤情況（如：引數索引指定錯誤、引數集個數與 verbs 識別符號數量不匹配）或進行格式化引數集</li>
+<li>常規流程處理完畢</li>
+</ol>
+<p>在特殊情況下，若提供的引數集比 verb 識別符號多。fmt 將會貪婪檢查下去，將多出的引數集以特定的格式輸出，如下：</p>
+<pre><code>fmt.Printf("%d", 1, 2, 3)
+// 1%!(EXTRA int=2, int=3)
+</code></pre>
+<ul>
+<li>約定字首額外標誌：%!(EXTRA</li>
+<li>當前引數的型別</li>
+<li>約定格式符：=</li>
+<li>當前引數的值（預設以 %v 格式化）</li>
+<li>約定格式符：)</li>
+</ul>
+<p>值得注意的是，當指定了引數索引或實際處理的引數小於入參的引數集時，就不會進行貪婪匹配來展示</p>
+<h3 id="案例三println"><a class="header" href="#案例三println">案例三：Println</a></h3>
+<h4 id="原型-3"><a class="header" href="#原型-3">原型</a></h4>
+<pre><code class="language-go">func Fprintln(w io.Writer, a ...interface{}) (n int, err error) {
+    p := newPrinter()
+    p.doPrintln(a)
+    n, err = w.Write(p.buf)
+    p.free()
+    return
+}
+</code></pre>
+<p>在這個方法中，最大的區別就是 doPrintln，我們一起來看看，如下：</p>
+<pre><code class="language-go">func (p *pp) doPrintln(a []interface{}) {
+    for argNum, arg := range a {
+        if argNum &gt; 0 {
+            p.buf.WriteByte(' ')
+        }
+        p.printArg(arg, 'v')
+    }
+    p.buf.WriteByte('\n')
+}
+</code></pre>
+<h4 id="分析主幹流程-2"><a class="header" href="#分析主幹流程-2">分析主幹流程</a></h4>
+<ul>
+<li>迴圈入參的引數集，並以空格分隔</li>
+<li>格式化當前引數，預設以 <code>%v</code> 對引數進行格式化</li>
+<li>在結尾新增 <code>\n</code> 字元</li>
+</ul>
+<h2 id="如何格式化引數"><a class="header" href="#如何格式化引數">如何格式化引數</a></h2>
+<p>在上例的執行流程分析中，可以看到格式化引數這一步是在 <code>p.printArg(arg, verb)</code> 執行的，我們一起來看看它都做了些什麼？</p>
+<pre><code class="language-go">func (p *pp) printArg(arg interface{}, verb rune) {
+    p.arg = arg
+    p.value = reflect.Value{}
+
+    if arg == nil {
+        switch verb {
+        case 'T', 'v':
+            p.fmt.padString(nilAngleString)
+        default:
+            p.badVerb(verb)
+        }
+        return
+    }
+
+    switch verb {
+    case 'T':
+        p.fmt.fmt_s(reflect.TypeOf(arg).String())
+        return
+    case 'p':
+        p.fmtPointer(reflect.ValueOf(arg), 'p')
+        return
+    }
+
+    // Some types can be done without reflection.
+    switch f := arg.(type) {
+    case bool:
+        p.fmtBool(f, verb)
+    case float32:
+        p.fmtFloat(float64(f), 32, verb)
+    ...
+    case reflect.Value:
+        if f.IsValid() &amp;&amp; f.CanInterface() {
+            p.arg = f.Interface()
+            if p.handleMethods(verb) {
+                return
+            }
+        }
+        p.printValue(f, verb, 0)
+    default:
+        if !p.handleMethods(verb) {
+            p.printValue(reflect.ValueOf(f), verb, 0)
+        }
+    }
+}
+</code></pre>
+<p>在小節程式碼中可以看見，fmt 本身對不同的型別做了不同的處理。這樣子就避免了透過反射確定。相對的提高了效能</p>
+<p>其中有兩個特殊的方法，分別是 <code>handleMethods</code> 和 <code>badVerb</code>，接下來分別來看看他們的作用是什麼</p>
+<p>1、badVerb</p>
+<p>它主要用於格式化並處理錯誤的行為。我們可以一起來看看，程式碼如下：</p>
+<pre><code>func (p *pp) badVerb(verb rune) {
+    p.erroring = true
+    p.buf.WriteString(percentBangString)
+    p.buf.WriteRune(verb)
+    p.buf.WriteByte('(')
+    switch {
+    case p.arg != nil:
+        p.buf.WriteString(reflect.TypeOf(p.arg).String())
+        p.buf.WriteByte('=')
+        p.printArg(p.arg, 'v')
+    ...
+    default:
+        p.buf.WriteString(nilAngleString)
+    }
+    p.buf.WriteByte(')')
+    p.erroring = false
+}
+</code></pre>
+<p>在處理錯誤格式化時，我們可以對比以下例子：</p>
+<pre><code>fmt.Printf("%s", []int64{1, 2, 3})
+// [%!s(int64=1) %!s(int64=2) %!s(int64=3)]%
+</code></pre>
+<p>在 badVerb 中可以看到錯誤字串的處理主要分為以下部分：</p>
+<ul>
+<li>約定字首錯誤標誌：%!</li>
+<li>當前的格式化運算子</li>
+<li>約定格式符：(</li>
+<li>當前引數的型別</li>
+<li>約定格式符：=</li>
+<li>當前引數的值（預設以 %v 格式化）</li>
+<li>約定格式符：)</li>
+</ul>
+<p>2、handleMethods</p>
+<pre><code class="language-go">func (p *pp) handleMethods(verb rune) (handled bool) {
+    if p.erroring {
+        return
+    }
+    // Is it a Formatter?
+    if formatter, ok := p.arg.(Formatter); ok {
+        handled = true
+        defer p.catchPanic(p.arg, verb)
+        formatter.Format(p, verb)
+        return
+    }
+
+    // If we're doing Go syntax and the argument knows how to supply it, take care of it now.
+    ...
+
+    return false
+}
+</code></pre>
+<p>這個方法比較特殊，一般在自定義結構體和未知情況下進行呼叫。主要流程是：</p>
+<ul>
+<li>若當前引數為錯誤 verb 識別符號，則直接返回</li>
+<li>判斷是否實作了 Formatter </li>
+<li>實作，則利用自定義 Formatter 格式化引數</li>
+<li>未實作，則最大程度的利用 Go syntax 預設規則去格式化引數</li>
+</ul>
+<h2 id="拓展"><a class="header" href="#拓展">拓展</a></h2>
+<p>在 fmt 標準庫中可以透過自定義結構體來實作方法的自定義，大致如下幾種</p>
+<h3 id="fmtstate"><a class="header" href="#fmtstate">fmt.State</a></h3>
+<pre><code class="language-go">type State interface {
+    Write(b []byte) (n int, err error)
+
+    Width() (wid int, ok bool)
+
+    Precision() (prec int, ok bool)
+
+    Flag(c int) bool
+}
+</code></pre>
+<p>State 用於取得標誌位的狀態值，涉及如下：</p>
+<ul>
+<li>Write：將格式化完畢的字元寫入緩衝區中，等待下一步處理</li>
+<li>Width：返回寬度資訊和是否被設定</li>
+<li>Precision：返回精度資訊和是否被設定</li>
+<li>Flag：返回特殊標誌符（'#'、'0'、'+'、'-'、' '）是否被設定</li>
+</ul>
+<h3 id="fmtformatter"><a class="header" href="#fmtformatter">fmt.Formatter</a></h3>
+<pre><code class="language-go">type Formatter interface {
+    Format(f State, c rune)
+}
+</code></pre>
+<p>Formatter 用於實作<strong>自定義格式化方法</strong>。可透過在自定義結構體中實作 Format 方法來實作這個目的</p>
+<p>另外，可以透過 f 取得到當前識別符號的寬度、精度等狀態值。c 為 verb 識別符號，可以得到其動作是什麼</p>
+<h3 id="fmtstringer"><a class="header" href="#fmtstringer">fmt.Stringer</a></h3>
+<pre><code class="language-go">type Stringer interface {
+    String() string
+}
+</code></pre>
+<p>當該物件為 String、Array、Slice 等型別時，將會呼叫 <code>String()</code> 方法對類字串進行格式化</p>
+<h3 id="fmtgostringer"><a class="header" href="#fmtgostringer">fmt.GoStringer</a></h3>
+<pre><code class="language-go">type GoStringer interface {
+    GoString() string
+}
+</code></pre>
+<p>當格式化特定 verb 識別符號（%v）時，將呼叫 <code>GoString()</code> 方法對其進行格式化</p>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>透過本文對 fmt 標準庫的分析，可以發現它有以下特點：</p>
+<ul>
+<li>在拓展性方面，可以自定義格式化方法等</li>
+<li>在完整度方面，儘可能的貪婪匹配，輸出引數集</li>
+<li>在效能方面，每種不同的引數型別，都實作了不同的格式化處理操作</li>
+<li>在效能方面，儘可能的最短匹配，格式化引數集</li>
+</ul>
+<p>總的來說，fmt 標準庫有許多值得推敲的細節，希望你能夠在本文學到 😄</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-8-ke-biao-zhun-ku.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-8-ke-biao-zhun-ku/log.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-8-ke-biao-zhun-ku.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-8-ke-biao-zhun-ku/log.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

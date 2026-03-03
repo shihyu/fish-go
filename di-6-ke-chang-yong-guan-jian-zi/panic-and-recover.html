@@ -1,0 +1,623 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>6.1 panic and recover - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="61-panic-and-recover"><a class="header" href="#61-panic-and-recover">6.1 panic and recover</a></h1>
+<p>作為一個 gophper，我相信你對於 <code>panic</code> 和 <code>recover</code> 肯定不陌生，但是你有沒有想過。當我們執行了這兩條語句之後。底層到底發生了什麼事呢？前幾天和同事剛好聊到相關的話題，發現其實大家對這塊理解還是比較模糊的。希望這篇文章能夠從更深入的角度告訴你為什麼，它到底做了什麼事？</p>
+<h2 id="思考"><a class="header" href="#思考">思考</a></h2>
+<h3 id="一為什麼會中止執行"><a class="header" href="#一為什麼會中止執行">一、為什麼會中止執行</a></h3>
+<pre><code class="language-go">func main() {
+    panic("EDDYCJY.")
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>$ go run main.go
+panic: EDDYCJY.
+
+goroutine 1 [running]:
+main.main()
+    /Users/eddycjy/go/src/github.com/EDDYCJY/awesomeProject/main.go:4 +0x39
+exit status 2
+</code></pre>
+<p>請思考一下，為什麼執行 <code>panic</code> 後會導致應用程式執行中止？（而不是單單說執行了 <code>panic</code> 所以就結束了這麼含糊）</p>
+<h3 id="二為什麼不會中止執行"><a class="header" href="#二為什麼不會中止執行">二、為什麼不會中止執行</a></h3>
+<pre><code class="language-go">func main() {
+    defer func() {
+        if err := recover(); err != nil {
+            log.Printf("recover: %v", err)
+        }
+    }()
+
+    panic("EDDYCJY.")
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>$ go run main.go 
+2019/05/11 23:39:47 recover: EDDYCJY.
+</code></pre>
+<p>請思考一下，為什麼加上 <code>defer</code> + <code>recover</code> 組合就可以保護應用程式？</p>
+<h3 id="三不設定-defer-行不"><a class="header" href="#三不設定-defer-行不">三、不設定 defer 行不</a></h3>
+<p>上面問題二是 <code>defer</code> + <code>recover</code> 組合，那我去掉 <code>defer</code> 是不是也可以呢？如下：</p>
+<pre><code class="language-go">func main() {
+    if err := recover(); err != nil {
+        log.Printf("recover: %v", err)
+    }
+
+    panic("EDDYCJY.")
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>$ go run main.go
+panic: EDDYCJY.
+
+goroutine 1 [running]:
+main.main()
+    /Users/eddycjy/go/src/github.com/EDDYCJY/awesomeProject/main.go:10 +0xa1
+exit status 2
+</code></pre>
+<p>竟然不行，啊呀畢竟入門教程都寫的 <code>defer</code> + <code>recover</code> 組合 “萬能” 捕獲。但是為什麼呢。去掉 <code>defer</code> 後為什麼就無法捕獲了？</p>
+<p>請思考一下，為什麼需要設定 <code>defer</code> 後 <code>recover</code> 才能起作用？</p>
+<p>同時你還需要仔細想想，我們設定 <code>defer</code> + <code>recover</code> 組合後就能無憂無慮了嗎，各種 “亂” 寫了嗎？</p>
+<h3 id="四為什麼起個-goroutine-就不行"><a class="header" href="#四為什麼起個-goroutine-就不行">四、為什麼起個 goroutine 就不行</a></h3>
+<pre><code class="language-go">func main() {
+    go func() {
+        defer func() {
+            if err := recover(); err != nil {
+                log.Printf("recover: %v", err)
+            }
+        }()
+    }()
+
+    panic("EDDYCJY.")
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>$ go run main.go 
+panic: EDDYCJY.
+
+goroutine 1 [running]:
+main.main()
+    /Users/eddycjy/go/src/github.com/EDDYCJY/awesomeProject/main.go:14 +0x51
+exit status 2
+</code></pre>
+<p>請思考一下，為什麼新起了一個 <code>Goroutine</code> 就無法捕獲到異常了？到底發生了什麼事...</p>
+<h2 id="原始碼"><a class="header" href="#原始碼">原始碼</a></h2>
+<p>接下來我們將帶著上述 4+1 個小思考題，開始對原始碼的剖析和分析，嘗試從閱讀原始碼中找到思考題的答案和更多為什麼</p>
+<h3 id="資料結構"><a class="header" href="#資料結構">資料結構</a></h3>
+<pre><code class="language-go">type _panic struct {
+    argp      unsafe.Pointer
+    arg       interface{} 
+    link      *_panic 
+    recovered bool
+    aborted   bool 
+}
+</code></pre>
+<p>在 <code>panic</code> 中是使用 <code>_panic</code> 作為其基礎單元的，每執行一次 <code>panic</code> 語句，都會建立一個 <code>_panic</code>。它包含了一些基礎的欄位用於儲存當前的 <code>panic</code> 呼叫情況，涉及的欄位如下：</p>
+<ul>
+<li>argp：指向 <code>defer</code> 延遲呼叫的引數的指標</li>
+<li>arg：<code>panic</code> 的原因，也就是呼叫 <code>panic</code> 時傳入的引數</li>
+<li>link：指向上一個呼叫的 <code>_panic</code></li>
+<li>recovered：<code>panic</code> 是否已經被處理，也就是是否被 <code>recover</code></li>
+<li>aborted：<code>panic</code> 是否被中止</li>
+</ul>
+<p>另外透過檢視 <code>link</code> 欄位，可得知其是一個連結串列的資料結構，如下圖：</p>
+<p><img src="../images/f048810bccec-006fVPCvly1g2muc73jp1j30hc099q2x.jpg" alt="image" /></p>
+<h3 id="恐慌-panic"><a class="header" href="#恐慌-panic">恐慌 panic</a></h3>
+<pre><code class="language-go">func main() {
+    panic("EDDYCJY.")
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>$ go run main.go
+panic: EDDYCJY.
+
+goroutine 1 [running]:
+main.main()
+    /Users/eddycjy/go/src/github.com/EDDYCJY/awesomeProject/main.go:4 +0x39
+exit status 2
+</code></pre>
+<p>我們去反查一下 <code>panic</code> 處理具體邏輯的地方在哪，如下：</p>
+<pre><code>$ go tool compile -S main.go
+"".main STEXT size=66 args=0x0 locals=0x18
+    0x0000 00000 (main.go:23)    TEXT    "".main(SB), ABIInternal, $24-0
+    0x0000 00000 (main.go:23)    MOVQ    (TLS), CX
+    0x0009 00009 (main.go:23)    CMPQ    SP, 16(CX)
+    ...
+    0x002f 00047 (main.go:24)    PCDATA    $2, $0
+    0x002f 00047 (main.go:24)    MOVQ    AX, 8(SP)
+    0x0034 00052 (main.go:24)    CALL    runtime.gopanic(SB)
+</code></pre>
+<p>顯然彙編程式碼直指內部實作是 <code>runtime.gopanic</code>，我們一起來看看這個方法做了什麼事，如下（省略了部分）：</p>
+<pre><code class="language-go">func gopanic(e interface{}) {
+    gp := getg()
+    ...
+    var p _panic
+    p.arg = e
+    p.link = gp._panic
+    gp._panic = (*_panic)(noescape(unsafe.Pointer(&amp;p)))
+
+    for {
+        d := gp._defer
+        if d == nil {
+            break
+        }
+
+        // defer...
+        ...
+        d._panic = (*_panic)(noescape(unsafe.Pointer(&amp;p)))
+
+        p.argp = unsafe.Pointer(getargp(0))
+        reflectcall(nil, unsafe.Pointer(d.fn), deferArgs(d), uint32(d.siz), uint32(d.siz))
+        p.argp = nil
+
+        // recover...
+        if p.recovered {
+            ...
+            mcall(recovery)
+            throw("recovery failed") // mcall should not return
+        }
+    }
+
+    preprintpanics(gp._panic)
+
+    fatalpanic(gp._panic) // should not return
+    *(*int)(nil) = 0      // not reached
+}
+</code></pre>
+<ul>
+<li>取得指向當前 <code>Goroutine</code> 的指標</li>
+<li>初始化一個 <code>panic</code> 的基本單位 <code>_panic</code> 用作後續的操作</li>
+<li>取得當前 <code>Goroutine</code> 上掛載的 <code>_defer</code>（資料結構也是連結串列）</li>
+<li>若當前存在 <code>defer</code> 呼叫，則呼叫 <code>reflectcall</code> 方法去執行先前 <code>defer</code> 中延遲執行的程式碼，若在執行過程中需要執行 <code>recover</code> 將會呼叫 <code>gorecover</code> 方法</li>
+<li>結束前，使用 <code>preprintpanics</code> 方法打印出所涉及的 <code>panic</code> 訊息</li>
+<li>最後呼叫 <code>fatalpanic</code> 中止應用程式，實際是執行 <code>exit(2)</code> 進行最終退出行為的</li>
+</ul>
+<p>透過對上述程式碼的執行分析，可得知 <code>panic</code> 方法實際上就是處理當前 <code>Goroutine(g)</code> 上所掛載的 <code>._panic</code> 連結串列（所以無法對其他 <code>Goroutine</code> 的異常事件響應），然後對其所屬的 <code>defer</code> 連結串列和 <code>recover</code> 進行檢測並處理，最後呼叫退出命令中止應用程式</p>
+<h3 id="無法恢復的恐慌-fatalpanic"><a class="header" href="#無法恢復的恐慌-fatalpanic">無法恢復的恐慌 fatalpanic</a></h3>
+<pre><code class="language-go">func fatalpanic(msgs *_panic) {
+    pc := getcallerpc()
+    sp := getcallersp()
+    gp := getg()
+    var docrash bool
+
+    systemstack(func() {
+        if startpanic_m() &amp;&amp; msgs != nil {
+            ...
+            printpanics(msgs)
+        }
+
+        docrash = dopanic_m(gp, pc, sp)
+    })
+
+    systemstack(func() {
+        exit(2)
+    })
+
+    *(*int)(nil) = 0
+}
+</code></pre>
+<p>我們看到在異常處理的最後會執行該方法，似乎它承擔了所有收尾工作。實際呢，它是在最後對程式執行 <code>exit</code> 指令來達到中止執行的作用，但在結束前它會透過 <code>printpanics</code> 遞迴輸出所有的異常訊息及引數。程式碼如下：</p>
+<pre><code class="language-go">func printpanics(p *_panic) {
+    if p.link != nil {
+        printpanics(p.link)
+        print("\t")
+    }
+    print("panic: ")
+    printany(p.arg)
+    if p.recovered {
+        print(" [recovered]")
+    }
+    print("\n")
+}
+</code></pre>
+<p>所以不要以為所有的異常都能夠被 <code>recover</code> 到，實際上像 <code>fatal error</code> 和 <code>runtime.throw</code> 都是無法被 <code>recover</code> 到的，甚至是 oom 也是直接中止程式的，也有反手就給你來個 <code>exit(2)</code> 教做人。因此在寫程式碼時你應該要相對注意些，“恐慌” 是存在無法恢復的場景的</p>
+<h3 id="恢復-recover"><a class="header" href="#恢復-recover">恢復 recover</a></h3>
+<pre><code class="language-go">func main() {
+    defer func() {
+        if err := recover(); err != nil {
+            log.Printf("recover: %v", err)
+        }
+    }()
+
+    panic("EDDYCJY.")
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>$ go run main.go 
+2019/05/11 23:39:47 recover: EDDYCJY.
+</code></pre>
+<p>和預期一致，成功捕獲到了異常。但是 <code>recover</code> 是怎麼恢復 <code>panic</code> 的呢？再看看彙編程式碼，如下：</p>
+<pre><code>$ go tool compile -S main.go
+"".main STEXT size=110 args=0x0 locals=0x18
+    0x0000 00000 (main.go:5)    TEXT    "".main(SB), ABIInternal, $24-0
+    ...
+    0x0024 00036 (main.go:6)    LEAQ    "".main.func1·f(SB), AX
+    0x002b 00043 (main.go:6)    PCDATA    $2, $0
+    0x002b 00043 (main.go:6)    MOVQ    AX, 8(SP)
+    0x0030 00048 (main.go:6)    CALL    runtime.deferproc(SB)
+    ...
+    0x0050 00080 (main.go:12)    CALL    runtime.gopanic(SB)
+    0x0055 00085 (main.go:12)    UNDEF
+    0x0057 00087 (main.go:6)    XCHGL    AX, AX
+    0x0058 00088 (main.go:6)    CALL    runtime.deferreturn(SB)
+    ...
+    0x0022 00034 (main.go:7)    MOVQ    AX, (SP)
+    0x0026 00038 (main.go:7)    CALL    runtime.gorecover(SB)
+    0x002b 00043 (main.go:7)    PCDATA    $2, $1
+    0x002b 00043 (main.go:7)    MOVQ    16(SP), AX
+    0x0030 00048 (main.go:7)    MOVQ    8(SP), CX
+    ...
+    0x0056 00086 (main.go:8)    LEAQ    go.string."recover: %v"(SB), AX
+    ...
+    0x0086 00134 (main.go:8)    CALL    log.Printf(SB)
+    ...
+</code></pre>
+<p>透過分析底層呼叫，可得知主要是如下幾個方法：</p>
+<ul>
+<li>runtime.deferproc</li>
+<li>runtime.gopanic</li>
+<li>runtime.deferreturn</li>
+<li>runtime.gorecover</li>
+</ul>
+<p>在上小節中，我們講述了簡單的流程，<code>gopanic</code> 方法會呼叫當前 <code>Goroutine</code> 下的 <code>defer</code> 連結串列，若 <code>reflectcall</code> 執行中遇到 <code>recover</code> 就會呼叫 <code>gorecover</code> 進行處理，該方法程式碼如下：</p>
+<pre><code class="language-go">func gorecover(argp uintptr) interface{} {
+    gp := getg()
+    p := gp._panic
+    if p != nil &amp;&amp; !p.recovered &amp;&amp; argp == uintptr(p.argp) {
+        p.recovered = true
+        return p.arg
+    }
+    return nil
+}
+</code></pre>
+<p>這程式碼，看上去挺簡單的，核心就是修改 <code>recovered</code> 欄位。該欄位是用於標識當前 <code>panic</code> 是否已經被 <code>recover</code> 處理。但是這和我們想象的並不一樣啊，程式是怎麼從 <code>panic</code> 流轉回去的呢？是不是在核心方法裡處理了呢？我們再看看 <code>gopanic</code> 的程式碼，如下：</p>
+<pre><code class="language-go">func gopanic(e interface{}) {
+    ...
+    for {
+        // defer...
+        ...
+        pc := d.pc
+        sp := unsafe.Pointer(d.sp) // must be pointer so it gets adjusted during stack copy
+        freedefer(d)
+
+        // recover...
+        if p.recovered {
+            atomic.Xadd(&amp;runningPanicDefers, -1)
+
+            gp._panic = p.link
+            for gp._panic != nil &amp;&amp; gp._panic.aborted {
+                gp._panic = gp._panic.link
+            }
+            if gp._panic == nil { 
+                gp.sig = 0
+            }
+
+            gp.sigcode0 = uintptr(sp)
+            gp.sigcode1 = pc
+            mcall(recovery)
+            throw("recovery failed") 
+        }
+    }
+    ...
+}
+</code></pre>
+<p>我們回到 <code>gopanic</code> 方法中再仔細看看，發現實際上是包含對 <code>recover</code> 流轉的處理程式碼的。恢復流程如下：</p>
+<ul>
+<li>判斷當前 <code>_panic</code> 中的 <code>recover</code> 是否已標註為處理</li>
+<li>從 <code>_panic</code> 連結串列中刪除已標註中止的 <code>panic</code> 事件，也就是刪除已經被恢復的 <code>panic</code> 事件</li>
+<li>將相關需要恢復的棧幀資訊傳遞給 <code>recovery</code> 方法的 <code>gp</code> 引數（每個棧幀對應著一個未執行完的函式。棧幀中儲存了該函式的返回地址和區域性變數）</li>
+<li>執行 <code>recovery</code> 進行恢復動作</li>
+</ul>
+<p>從流程來看，最核心的是 <code>recovery</code> 方法。它承擔了異常流轉控制的職責。程式碼如下：</p>
+<pre><code class="language-go">func recovery(gp *g) {
+    sp := gp.sigcode0
+    pc := gp.sigcode1
+
+    if sp != 0 &amp;&amp; (sp &lt; gp.stack.lo || gp.stack.hi &lt; sp) {
+        print("recover: ", hex(sp), " not in [", hex(gp.stack.lo), ", ", hex(gp.stack.hi), "]\n")
+        throw("bad recovery")
+    }
+
+    gp.sched.sp = sp
+    gp.sched.pc = pc
+    gp.sched.lr = 0
+    gp.sched.ret = 1
+    gogo(&amp;gp.sched)
+}
+</code></pre>
+<p>粗略一看，似乎就是很簡單的設定了一些值？但實際上設定的是編譯器中偽暫存器的值，常常被用於維護上下文等。在這裡我們需要結合 <code>gopanic</code> 方法一同觀察 <code>recovery</code> 方法。它所使用的棧指標 <code>sp</code> 和程式計數器 <code>pc</code> 是由當前 <code>defer</code> 在呼叫流程中的 <code>deferproc</code> 傳遞下來的，因此實際上最後是透過 <code>gogo</code> 方法跳回了 <code>deferproc</code> 方法。另外我們注意到：</p>
+<pre><code>gp.sched.ret = 1
+</code></pre>
+<p>在底層中程式將 <code>gp.sched.ret</code> 設定為了 1，也就是<strong>沒有實際呼叫</strong> <code>deferproc</code> 方法，直接修改了其返回值。意味著預設它已經處理完成。直接轉移到 <code>deferproc</code> 方法的下一條指令去。至此為止，異常狀態的流轉控制就已經結束了。接下來就是繼續走 <code>defer</code> 的流程了</p>
+<p>為了驗證這個想法，我們可以看一下核心的跳轉方法 <code>gogo</code> ，程式碼如下：</p>
+<pre><code>// void gogo(Gobuf*)
+// restore state from Gobuf; longjmp
+TEXT runtime·gogo(SB),NOSPLIT,$8-4
+    MOVW    buf+0(FP), R1
+    MOVW    gobuf_g(R1), R0
+    BL    setg&lt;&gt;(SB)
+
+    MOVW    gobuf_sp(R1), R13    // restore SP==R13
+    MOVW    gobuf_lr(R1), LR
+    MOVW    gobuf_ret(R1), R0
+    MOVW    gobuf_ctxt(R1), R7
+    MOVW    $0, R11
+    MOVW    R11, gobuf_sp(R1)    // clear to help garbage collector
+    MOVW    R11, gobuf_ret(R1)
+    MOVW    R11, gobuf_lr(R1)
+    MOVW    R11, gobuf_ctxt(R1)
+    MOVW    gobuf_pc(R1), R11
+    CMP    R11, R11 // set condition codes for == test, needed by stack split
+    B    (R11)
+</code></pre>
+<p>透過檢視程式碼可得知其主要作用是從 <code>Gobuf</code> 恢復狀態。簡單來講就是將暫存器的值修改為對應 <code>Goroutine(g)</code> 的值，而在文中講了很多次的 <code>Gobuf</code>，如下：</p>
+<pre><code class="language-go">type gobuf struct {
+    sp   uintptr
+    pc   uintptr
+    g    guintptr
+    ctxt unsafe.Pointer
+    ret  sys.Uintreg
+    lr   uintptr
+    bp   uintptr
+}
+</code></pre>
+<p>講道理，其實它儲存的就是 <code>Goroutine</code> 切換上下文時所需要的一些東西</p>
+<h2 id="拓展"><a class="header" href="#拓展">拓展</a></h2>
+<pre><code class="language-go">const(
+    OPANIC       // panic(Left)
+    ORECOVER     // recover()
+    ...
+)
+...
+func walkexpr(n *Node, init *Nodes) *Node {
+    ...
+    switch n.Op {
+    default:
+        Dump("walk", n)
+        Fatalf("walkexpr: switch 1 unknown op %+S", n)
+
+    case ONONAME, OINDREGSP, OEMPTY, OGETG:
+    case OTYPE, ONAME, OLITERAL:
+        ...
+    case OPANIC:
+        n = mkcall("gopanic", nil, init, n.Left)
+
+    case ORECOVER:
+        n = mkcall("gorecover", n.Type, init, nod(OADDR, nodfp, nil))
+    ...
+}
+</code></pre>
+<p>實際上在呼叫 <code>panic</code> 和 <code>recover</code> 關鍵字時，是在編譯階段先轉換為相應的 OPCODE 後，再由編譯器轉換為對應的執行時方法。並不是你所想像那樣一步到位，有興趣的小夥伴可以研究一下</p>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>本文主要針對 <code>panic</code> 和 <code>recover</code> 關鍵字進行了深入原始碼的剖析，而開頭的 4+1 個思考題，就是希望您能夠帶著疑問去學習，達到事半功倍的功效</p>
+<p>另外本文和 <code>defer</code> 有一定的關聯性，因此需要有一定的基礎知識。若剛剛看的時候這部分不理解，學習後可以再讀一遍加深印象</p>
+<p>在最後，現在的你可以回答這幾個思考題了嗎？說出來了才是真的懂 ：）</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-6-ke-chang-yong-guan-jian-zi.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-6-ke-chang-yong-guan-jian-zi/defer.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-6-ke-chang-yong-guan-jian-zi.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-6-ke-chang-yong-guan-jian-zi/defer.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,435 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>9.3 瞭解一下Golang的市場行情 - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="93-瞭解一下golang的市場行情"><a class="header" href="#93-瞭解一下golang的市場行情">9.3 瞭解一下Golang的市場行情</a></h1>
+<p>專案地址：<a href="https://github.com/go-crawler/lagou_jobs">https://github.com/go-crawler/lagou_jobs</a></p>
+<p>如果對你有所幫助，歡迎 Star，給文章來波贊，這樣可以讓更多的人看見 :)</p>
+<h2 id="目標"><a class="header" href="#目標">目標</a></h2>
+<p>在工作中 Golang 已是一份子，想讓大家瞭解一下 Golang 的市場行情，也想讓更多的人熟悉它。因此主要是展示資料分析的結果</p>
+<p>目標站點是 <a href="https://www.lagou.com/">某招聘網站</a> 的職位資料抓取和分析，爬取城市分別為 北京、上海、廣州、深圳、杭州、成都，再得出一個結論</p>
+<h3 id="分析"><a class="header" href="#分析">分析</a></h3>
+<p>首先需要進行頁面分析，找到我們的抓取方向</p>
+<p><img src="../images/93c63355cdb4-5ae1e28a3412a.jpeg" alt="image" /></p>
+<p>搜尋 golang 關鍵字，開啟頁面 F12 就能看到它傳送了四個請求，留意 positionAjax.json 這個請求</p>
+<p><img src="../images/24092d669650-5ae1efe538791.jpeg" alt="image" /></p>
+<p>我們仔細研判這個介面的入參和出參</p>
+<h3 id="入參"><a class="header" href="#入參">入參</a></h3>
+<p>1、Query String Param</p>
+<ul>
+<li>city：請求的城市</li>
+<li>needAddtionalResult：是否需要補充額外的引數，這裡預設 false</li>
+</ul>
+<p>2、Form Data</p>
+<ul>
+<li>first：是否首頁</li>
+<li>pn：頁碼</li>
+<li>kd：關鍵字</li>
+</ul>
+<h3 id="出參"><a class="header" href="#出參">出參</a></h3>
+<p><img src="../images/7653f2b49a2d-5ae1f4c9920a9.jpeg" alt="image" /></p>
+<p>就是它了，從返回結果可得出許多有用的資訊</p>
+<ul>
+<li>companyFullName：公司全稱</li>
+<li>companyLabelList：公司標籤</li>
+<li>companyShortName：公司簡稱</li>
+<li>companySize：公司規模</li>
+<li>education：學歷要求</li>
+<li>financeStage：融資階段</li>
+</ul>
+<p>等等~</p>
+<h3 id="分頁"><a class="header" href="#分頁">分頁</a></h3>
+<p>在上面兩張圖中，可以發現在 content 節點中包含 pageNo、pageSize 欄位，content.positionResult 節點有 totalCount 欄位，可以得知當前是第幾頁，每頁顯示多少條，當前的職位總條數</p>
+<p>需要注意一下，分頁的計算是要向上取整的</p>
+<h2 id="模擬瀏覽器頭"><a class="header" href="#模擬瀏覽器頭">模擬瀏覽器頭</a></h2>
+<p>User-Agent 可以用 <a href="https://github.com/EDDYCJY/fake-useragent">fake-useragent</a> 這個專案來隨機生成 UA 頭😄</p>
+<h2 id="資料"><a class="header" href="#資料">資料</a></h2>
+<h3 id="一分佈圖"><a class="header" href="#一分佈圖">一、分佈圖</a></h3>
+<p>不同工作、工種，自然也會遍佈在不同的工作區域，我們先了解一下各個城市的 Golang 工程師都主要在哪個區上班，心裡留個底</p>
+<h4 id="北京"><a class="header" href="#北京">北京</a></h4>
+<p><img src="../images/650216032ae6-5ae291859667c.jpeg" alt="image" /></p>
+<h4 id="上海"><a class="header" href="#上海">上海</a></h4>
+<p><img src="../images/f0a47c318207-5ae290856b774.jpeg" alt="image" /></p>
+<h4 id="廣州"><a class="header" href="#廣州">廣州</a></h4>
+<p><img src="../images/e50e558c26a2-5ae28f1ab3e0c.jpeg" alt="image" /></p>
+<h4 id="深圳"><a class="header" href="#深圳">深圳</a></h4>
+<p><img src="../images/6eaab6fc1458-5ae1fbebb1784.jpeg" alt="image" /></p>
+<h4 id="杭州"><a class="header" href="#杭州">杭州</a></h4>
+<p><img src="../images/64548a6a2afc-5ae29218c91dc.jpeg" alt="image" /></p>
+<h4 id="成都"><a class="header" href="#成都">成都</a></h4>
+<p><img src="../images/2f023e98dc0d-5ae295b1059ed.jpeg" alt="image" /></p>
+<h3 id="二招聘與職位數量對比"><a class="header" href="#二招聘與職位數量對比">二、招聘與職位數量對比</a></h3>
+<p><img src="../images/eb502aee9646-5ae296b750dd8.png" alt="image" /></p>
+<p>透過分析圖中的資料，我們可以得知各城市的招聘職位數量</p>
+<ul>
+<li>北京：348</li>
+<li>上海：145</li>
+<li>廣州：37</li>
+<li>成都：49</li>
+<li>杭州：45</li>
+<li>深圳：108</li>
+</ul>
+<p>總共招聘的職位數量為 732 個，數量順序分別為 北京 &gt; 上海 &gt; 深圳 &gt; 成都 &gt; 杭州 &gt; 廣州</p>
+<p>還有另外一個關注點，就是招聘公司數量與職位的數量對比，可以看到 北京 招聘的職位數量為 348 個，而招聘的公司數量為 191 個，約為 1.82 的比例，也就是一家公司能提供兩個 Golang 職位，它可能類別不同、（中級、中高階、高階）級別不同，具有一定可能性。而在廣州，為 31 對比 37，雖然差額不大，但仍然存在這種現象</p>
+<p>可以得出結果，Golang 在市場上具有一定的伸縮空間，也就是具有上升空間，一家公司會將 Golang 應用在多個不同的應用場景，也就是方向不同，需要的級別人才也就不同了</p>
+<p>但是需要注意的是，Golang 的市場招聘人數目前份額還是較低，六個城市總數僅為 732 個，與其他大熱語言相差有一定距離，需要謹慎</p>
+<p>同時，面試 Golang 的人與其他大熱語言相比會少些，職位的爭奪是否小點呢？</p>
+<h3 id="三招聘公司規模"><a class="header" href="#三招聘公司規模">三、招聘公司規模</a></h3>
+<p><img src="../images/be6e26c73524-5ae2ab2babbd9.png" alt="image" /></p>
+<p>透過檢視招聘 Golang 工程師的公司規模，可以很直觀的發現，微型公司使用 Golang 較少，其他類別的規模都有一定程度的應用，且差距不大。在 2000 人以上、50 - 150 人的公司規模中最受青睞</p>
+<p>為什麼呢，我認為有以下可能</p>
+<ul>
+<li>大型公司結合場景，想透過 Golang 的特性來解決一些痛點問題</li>
+<li>在小型公司 Golang 這顆新星實施起來更便捷，有一定的應用場景</li>
+</ul>
+<p>你覺得呢，是不是應該有更多的選擇它的原因？</p>
+<h3 id="四學歷要求"><a class="header" href="#四學歷要求">四、學歷要求</a></h3>
+<p><img src="../images/2afd85967a19-dYOz2xB.png" alt="image" /></p>
+<p>在招聘市場上，Golang 的招聘者更希望你是本科學歷，大專和不限也有一定的份額，但市場份額相差較大</p>
+<p>碩士學歷要求的為兩個，可以得出，在市場上 Golang 招聘者們對高學歷的需求並不高，或者並不強制高學歷</p>
+<h3 id="五行業領域"><a class="header" href="#五行業領域">五、行業領域</a></h3>
+<p><img src="../images/4526477b1433-VdpmS5a.png" alt="image" /></p>
+<p>在這裡，重點關注 Golang 工程師的招聘公司都分別在什麼行業領域，大頭移動網際網路是不容置疑的了，還可以驚喜的發現</p>
+<ul>
+<li>資料服務</li>
+<li>電子商務</li>
+<li>金融</li>
+<li>企業服務</li>
+<li>遊戲</li>
+</ul>
+<p>Golang 在這幾個方面都有所應用，說明了在市場上，Golang 的路子是比較廣闊的，前景不錯</p>
+<p>同時，如果可以涉及多個領域的內容，想必身為工程師的你，肯定很激動</p>
+<h3 id="六職位誘惑"><a class="header" href="#六職位誘惑">六、職位誘惑</a></h3>
+<p><img src="../images/fd93424a5071-KlkGFI4.png" alt="image" /></p>
+<p>職位誘惑是投簡歷時必看的一點了，可以看到高頻詞條基本都是 IT 從業者關心的話題了，這裡你懂的...</p>
+<p>重點，我看到了一個 “免費三餐” 的詞條命中 7 次，分別來自北京的海淀區、東城區、朝陽區，上海的黃浦區的七家不同的公司，辛苦了</p>
+<h3 id="七行業職位標籤"><a class="header" href="#七行業職位標籤">七、行業、職位標籤</a></h3>
+<p><img src="../images/2bb7c97d117a-8GGslq8.png" alt="image" /></p>
+<p>在招聘JD中，描述和標籤常用於給求職者瞭解這一職業的具體工作內容和其關聯性</p>
+<p>在圖中你可以看到 Golang 常常和什麼內容搭上邊，這點很有意義哦</p>
+<p>1、語言</p>
+<ul>
+<li>Java</li>
+<li>Python</li>
+<li>C/C++</li>
+<li>PHP</li>
+</ul>
+<p>在圖中可以看出，Golang 與以上四種語言有一定關聯性，而 Java 和 Python 分別第一、第二名，可以說明市場上對複合型人才的渴望度更高，也許你不懂也行，但你懂了就最好（加分項）。需要你自身有多語言的經驗，也便於和其他人對接</p>
+<p>同時 Golang 目前存在許多內部轉語言寫的情況，所以這一點可以參考</p>
+<p>2、職稱</p>
+<ul>
+<li>高階</li>
+<li>資深</li>
+<li>中級</li>
+</ul>
+<p>特意將職稱放在第二位，可以發現在市場上 Golang 標籤的需求是 高階 &gt; 資深 &gt; 中級，關聯第一項 “語言關聯” 不難得出這個結論，因為語言只是解決問題的工具，到了中級及以上的工程師都是懂多門語言的居多，再採取不同的方案去解決應用場景上的問題</p>
+<p>可得出結論，市場目前對 Golang 更期望是中高、高階、資深的人才，而中級的反而少一點點</p>
+<p>大家可以努力再往上衝擊衝擊</p>
+<p>3、元件</p>
+<ul>
+<li>Linux</li>
+<li>Redis</li>
+<li>Mysql</li>
+</ul>
+<p>4、行業</p>
+<ul>
+<li>雲計算</li>
+<li>資訊保安</li>
+<li>大資料</li>
+<li>金融</li>
+<li>軟體開發</li>
+</ul>
+<h4 id="八薪資與工作年限"><a class="header" href="#八薪資與工作年限">八、薪資與工作年限</a></h4>
+<p><img src="../images/db8f25c5bb84-CEYqOau.jpg" alt="image" /></p>
+<p>1、1-3年</p>
+<p>一個（成長）特殊的階段，有個位數也有雙位數的，大頭可以到15-30k，20-40k，而初級的也有8-16k</p>
+<p>2、3-5年</p>
+<p>厚積待發的階段，薪酬範疇的跨度是較大，10-60k的薪酬都有，這充分說明能力決定你的上下</p>
+<p>3、5-10年</p>
+<p>核心，招聘網站上的招聘數量反而少，都會走內推或獵頭，不需要特別介紹了</p>
+<p><strong>小結</strong></p>
+<p>這一部分，相信是很多人關注的地方</p>
+<p>在有的文章中會看到，他們的薪資部分是以平均值來展示的。我就很納悶，因為對平均值並不是很關心，<strong>重點是無法體現薪資幅度</strong>。因此這裡我會盡可能的把資料展現給你們看</p>
+<p>（正文）從圖表來看，Golang 當前的薪酬水平還是很不錯的，市場能根據不同階段（水平）的人給出一個好的價位</p>
+<p>（題外話）看完之後希望你能知道以下內容</p>
+<ul>
+<li>你當前工作年限的最高、最低薪資範疇</li>
+<li>你的下一階段的薪資範疇</li>
+<li>為什麼有的人高，有的人低</li>
+<li>在大頭部隊還是小頭，為什麼</li>
+<li>不要滿足於平均值</li>
+</ul>
+<h3 id="九融資階段"><a class="header" href="#九融資階段">九、融資階段</a></h3>
+<p><img src="../images/7be326a366d5-H3R9TvZ.png" alt="image" /></p>
+<p>選用 Golang 的公司大多數都較為穩定，有一部分比較刺激 :)</p>
+<h4 id="融資階段與薪資範疇對比"><a class="header" href="#融資階段與薪資範疇對比">融資階段與薪資範疇對比</a></h4>
+<p><strong>不需要融資</strong></p>
+<p><img src="../images/78a024d8fce7-FoiRau8.png" alt="image" /></p>
+<p><strong>上市公司</strong></p>
+<p><img src="../images/4de93fbf944b-ok22AsZ.png" alt="image" /></p>
+<p><strong>A輪</strong></p>
+<p><img src="../images/fa204a01d1e1-wA4YFmR.png" alt="image" /></p>
+<p><strong>B輪</strong></p>
+<p><img src="../images/89d7d502c554-kng4LTf.png" alt="image" /></p>
+<p><strong>C輪</strong></p>
+<p><img src="../images/ca44b25f050a-pYvpJuH.png" alt="image" /></p>
+<p><strong>D輪以上</strong></p>
+<p><img src="../images/e370fcdc262c-oKEDxif.png" alt="image" /></p>
+<h3 id="十附近的地鐵"><a class="header" href="#十附近的地鐵">十、附近的地鐵</a></h3>
+<p>Golang 工程師都駐紮在什麼地鐵站附近呢</p>
+<p>經常在地鐵上看到同行在看程式碼，來了解一下都分佈在哪 :)</p>
+<h4 id="北京-1"><a class="header" href="#北京-1">北京</a></h4>
+<p><img src="../images/6ef8156c2987-Bjzx8Nf.png" alt="image" /></p>
+<h4 id="上海-1"><a class="header" href="#上海-1">上海</a></h4>
+<p><img src="../images/a37eadc84777-CYHtWSi.png" alt="image" /></p>
+<h4 id="廣州-1"><a class="header" href="#廣州-1">廣州</a></h4>
+<p><img src="../images/a922c994b85b-pFuFMNy.png" alt="image" /></p>
+<h4 id="深圳-1"><a class="header" href="#深圳-1">深圳</a></h4>
+<p><img src="../images/b95376acbbd9-nPAoVil.png" alt="image" /></p>
+<h4 id="杭州-1"><a class="header" href="#杭州-1">杭州</a></h4>
+<p><img src="../images/0c765e811bee-7dGFfns.png" alt="image" /></p>
+<h4 id="成都-1"><a class="header" href="#成都-1">成都</a></h4>
+<p><img src="../images/4fcafe70454d-DvsKJuu.png" alt="image" /></p>
+<h2 id="結論"><a class="header" href="#結論">結論</a></h2>
+<p>如同官方所說 "Go has been on an amazing journey over the last 8+ years"，作為一門新生語言，一直在不斷地發展，<strong>缺點肯定是有的，你要去識別它</strong></p>
+<h3 id="從數量來看"><a class="header" href="#從數量來看">從數量來看</a></h3>
+<p>單從這個招聘網站上來看，數量方面，與大熱語言的招聘職位數量仍然有一定的差距，但 Golang 存在許多內部轉語言開發的情況，當前展現出來的資料，<strong>招聘數量不多，但質量不錯</strong></p>
+<h3 id="從分佈圖來看"><a class="header" href="#從分佈圖來看">從分佈圖來看</a></h3>
+<p>一線城市基本都有 Golang 的職位，雖然其他城市較少，但對於新語言來說是需要持續關注的過程，不能一刀切</p>
+<h3 id="從職稱級別來看"><a class="header" href="#從職稱級別來看">從職稱級別來看</a></h3>
+<p>Golang 中高、高階、資深仍然是佔大頭，給的薪資也基本符合市場行情</p>
+<h3 id="從方向來看"><a class="header" href="#從方向來看">從方向來看</a></h3>
+<p>Golang 涉及的行業領域廣泛，移動網際網路、資料服務、電子商務、金融、企業服務、雲計算等都是它的戰場之一</p>
+<h3 id="從開源專案來看"><a class="header" href="#從開源專案來看">從開源專案來看</a></h3>
+<p>docker、k8s、etcd、consul 都挺穩</p>
+<p>總的來說，Golang 處於一個發展的階段，市場行情也還行、應用場景較廣，不過招聘數量不多，你又怎麼看呢？</p>
+<p>最後放上今天新發布的 Logo :)</p>
+<p><img src="../images/529e375d4545-nWO32Bl.jpg" alt="image" /></p>
+<p>如果對你有所幫助，歡迎 Star，給文章點個贊，這樣可以讓更多的人看見這篇文章</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<ul>
+<li>專案地址：<a href="https://github.com/go-crawler/lagou_jobs">https://github.com/go-crawler/lagou_jobs</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-10-ke-pa-chong/cars.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-10-ke-pa-chong/cars.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,504 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>5.3 Swagger瞭解一下 - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="53-swagger瞭解一下"><a class="header" href="#53-swagger瞭解一下">5.3 Swagger瞭解一下</a></h1>
+<p>在<a href="https://segmentfault.com/a/1190000013408485">上一節</a>，我們完成了一個服務端同時支援<code>Rpc</code>和<code>RESTful Api</code>後，你以為自己大功告成了，結果突然發現要寫<code>Api</code>文件和前端同事對接= = 。。。</p>
+<p>你尋思有沒有什麼元件能夠自動化生成<code>Api</code>文件來解決這個問題，就在這時你發現了<code>Swagger</code>，一起了解一下吧！</p>
+<h2 id="介紹"><a class="header" href="#介紹">介紹</a></h2>
+<h3 id="swagger"><a class="header" href="#swagger">Swagger</a></h3>
+<p><code>Swagger</code>是全球最大的<code>OpenAPI</code>規範（OAS）API開發工具框架，支援從設計和文件到測試和部署的整個API生命週期的開發</p>
+<p><code>Swagger</code>是目前最受歡迎的<code>RESTful Api</code>文件生成工具之一，主要的原因如下</p>
+<ul>
+<li>跨平臺、跨語言的支援</li>
+<li>強大的社群</li>
+<li>生態圈 Swagger Tools（<a href="https://github.com/swagger-api/swagger-editor">Swagger Editor</a>、<a href="https://github.com/swagger-api/swagger-codegen">Swagger Codegen</a>、<a href="https://github.com/swagger-api/swagger-ui">Swagger UI</a> ...）</li>
+<li>強大的控制檯</li>
+</ul>
+<p>同時<code>grpc-gateway</code>也支援<code>Swagger</code></p>
+<p>[image]</p>
+<h3 id="openapi規範"><a class="header" href="#openapi規範"><code>OpenAPI</code>規範</a></h3>
+<p><code>OpenAPI</code>規範是<code>Linux</code>基金會的一個專案，試圖透過定義一種用來描述API格式或API定義的語言，來規範<code>RESTful</code>服務開發過程。<code>OpenAPI</code>規範幫助我們描述一個API的基本資訊，比如：</p>
+<ul>
+<li>有關該API的一般性描述</li>
+<li>可用路徑（/資源）</li>
+<li>在每個路徑上的可用操作（取得/提交...）</li>
+<li>每個操作的輸入/輸出格式</li>
+</ul>
+<p>目前V2.0版本的<a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md">OpenAPI規範</a>（也就是SwaggerV2.0規範）已經發布並開源在github上。該文件寫的非常好，結構清晰，方便隨時查閱。</p>
+<p>注：<code>OpenAPI</code>規範的介紹引用自<a href="https://huangwenchao.gitbooks.io/swagger/content/">原文</a></p>
+<h2 id="使用"><a class="header" href="#使用">使用</a></h2>
+<h3 id="生成swagger的說明檔案"><a class="header" href="#生成swagger的說明檔案">生成<code>Swagger</code>的說明檔案</a></h3>
+<p><strong>第一</strong>，我們需要檢查$GOBIN下是否包含<code>protoc-gen-swagger</code>可執行檔案</p>
+<p>若不存在則需要執行：</p>
+<pre><code>go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+</code></pre>
+<p>等待執行完畢後，可在<code>$GOPATH/bin</code>下發現該執行檔案，將其移動到<code>$GOBIN</code>下即可</p>
+<p><strong>第二</strong>，回到<code>$GOPATH/src/grpc-hello-world/proto</code>下，執行命令</p>
+<pre><code>protoc -I/usr/local/include -I. -I$GOPATH/src/grpc-hello-world/proto/google/api --swagger_out=logtostderr=true:. ./hello.proto
+</code></pre>
+<p>成功後執行<code>ls</code>即可看到<code>hello.swagger.json</code>檔案</p>
+<h3 id="下載swagger-ui檔案"><a class="header" href="#下載swagger-ui檔案">下載<code>Swagger UI</code>檔案</a></h3>
+<p><code>Swagger</code>提供視覺化的<code>API</code>管理平臺，就是<a href="https://github.com/swagger-api/swagger-ui">Swagger UI</a></p>
+<p>我們將其原始碼下載下來，並將其<code>dist</code>目錄下的所有檔案複製到我們專案中的<code>$GOPATH/src/grpc-hello-world/third_party/swagger-ui</code>去</p>
+<h3 id="將swagger-ui轉換為go原始碼"><a class="header" href="#將swagger-ui轉換為go原始碼">將<code>Swagger UI</code>轉換為<code>Go</code>原始碼</a></h3>
+<p>在這裡我們使用的轉換工具是<a href="https://github.com/jteeuwen/go-bindata">go-bindata</a></p>
+<p>它支援將任何檔案轉換為可管理的<code>Go</code>原始碼。用於將二進位制資料嵌入到<code>Go</code>程式中。並且在將檔案資料轉換為原始位元組片之前，可以選擇壓縮檔案資料</p>
+<h4 id="安裝"><a class="header" href="#安裝">安裝</a></h4>
+<pre><code>go get -u github.com/jteeuwen/go-bindata/...
+</code></pre>
+<p>完成後，將<code>$GOPATH/bin</code>下的<code>go-bindata</code>移動到<code>$GOBIN</code>下</p>
+<h4 id="轉換"><a class="header" href="#轉換">轉換</a></h4>
+<p>在專案下新建<code>pkg/ui/data/swagger</code>目錄，回到<code>$GOPATH/src/grpc-hello-world/third_party/swagger-ui</code>下，執行命令</p>
+<pre><code>go-bindata --nocompress -pkg swagger -o pkg/ui/data/swagger/datafile.go third_party/swagger-ui/...
+</code></pre>
+<h4 id="檢查"><a class="header" href="#檢查">檢查</a></h4>
+<p>回到<code>pkg/ui/data/swagger</code>目錄，檢查是否存在<code>datafile.go</code>檔案</p>
+<h3 id="swagger-ui檔案伺服器對外提供服務"><a class="header" href="#swagger-ui檔案伺服器對外提供服務"><code>Swagger UI</code>檔案伺服器（對外提供服務）</a></h3>
+<p>在這一步，我們需要使用與其配套的<a href="https://github.com/elazarl/go-bindata-assetfs/">go-bindata-assetfs</a></p>
+<p>它能夠使用<code>go-bindata</code>所生成<code>Swagger UI</code>的<code>Go</code>程式碼，結合<code>net/http</code>對外提供服務</p>
+<h4 id="安裝-1"><a class="header" href="#安裝-1">安裝</a></h4>
+<pre><code>go get github.com/elazarl/go-bindata-assetfs/...
+</code></pre>
+<h4 id="編寫"><a class="header" href="#編寫">編寫</a></h4>
+<p>透過分析，我們得知生成的檔案提供了一個<code>assetFS</code>函式，該函式返回一個封裝了嵌入檔案的<code>http.Filesystem</code>，可以用其來提供一個<code>HTTP</code>服務</p>
+<p>那麼我們來編寫<code>Swagger UI</code>的程式碼吧，主要是兩個部分，一個是<code>swagger.json</code>，另外一個是<code>swagger-ui</code>的響應</p>
+<p><strong>serveSwaggerFile</strong></p>
+<p>引用包<code>strings</code>、<code>path</code></p>
+<pre><code class="language-go">func serveSwaggerFile(w http.ResponseWriter, r *http.Request) {
+      if ! strings.HasSuffix(r.URL.Path, "swagger.json") {
+        log.Printf("Not Found: %s", r.URL.Path)
+        http.NotFound(w, r)
+        return
+    }
+
+    p := strings.TrimPrefix(r.URL.Path, "/swagger/")
+    p = path.Join("proto", p)
+
+    log.Printf("Serving swagger-file: %s", p)
+
+    http.ServeFile(w, r, p)
+}
+</code></pre>
+<p>在函式中，我們利用<code>r.URL.Path</code>進行路徑字尾判斷</p>
+<p>主要做了對<code>swagger.json</code>的檔案訪問支援（提供<code>https://127.0.0.1:50052/swagger/hello.swagger.json</code>的訪問）</p>
+<p><strong>serveSwaggerUI</strong></p>
+<p>引用包<code>github.com/elazarl/go-bindata-assetfs</code>、<code>grpc-hello-world/pkg/ui/data/swagger</code></p>
+<pre><code class="language-go">func serveSwaggerUI(mux *http.ServeMux) {
+    fileServer := http.FileServer(&amp;assetfs.AssetFS{
+        Asset:    swagger.Asset,
+        AssetDir: swagger.AssetDir,
+        Prefix:   "third_party/swagger-ui",
+    })
+    prefix := "/swagger-ui/"
+    mux.Handle(prefix, http.StripPrefix(prefix, fileServer))
+}
+</code></pre>
+<p>在函式中，我們使用了<a href="https://github.com/elazarl/go-bindata-assetfs/">go-bindata-assetfs</a>來排程先前生成的<code>datafile.go</code>，結合<code>net/http</code>來對外提供<code>swagger-ui</code>的服務</p>
+<h4 id="結合"><a class="header" href="#結合">結合</a></h4>
+<p>在完成功能後，我們發現<code>path.Join("proto", p)</code>是寫死引數的，這樣顯然不對，我們應該將其匯出成外部引數，那麼我們來最終改造一番</p>
+<p>首先我們在<code>server.go</code>新增包全域性變數<code>SwaggerDir</code>，修改<code>cmd/server.go</code>檔案：</p>
+<pre><code class="language-go">package cmd
+
+import (
+    "log"
+
+    "github.com/spf13/cobra"
+
+    "grpc-hello-world/server"
+)
+
+var serverCmd = &amp;cobra.Command{
+    Use:   "server",
+    Short: "Run the gRPC hello-world server",
+    Run: func(cmd *cobra.Command, args []string) {
+        defer func() {
+            if err := recover(); err != nil {
+                log.Println("Recover error : %v", err)
+            }
+        }()
+
+        server.Run()
+    },
+}
+
+func init() {
+    serverCmd.Flags().StringVarP(&amp;server.ServerPort, "port", "p", "50052", "server port")
+    serverCmd.Flags().StringVarP(&amp;server.CertPemPath, "cert-pem", "", "./conf/certs/server.pem", "cert-pem path")
+    serverCmd.Flags().StringVarP(&amp;server.CertKeyPath, "cert-key", "", "./conf/certs/server.key", "cert-key path")
+    serverCmd.Flags().StringVarP(&amp;server.CertServerName, "cert-server-name", "", "grpc server name", "server's hostname")
+    serverCmd.Flags().StringVarP(&amp;server.SwaggerDir, "swagger-dir", "", "proto", "path to the directory which contains swagger definitions")
+
+    rootCmd.AddCommand(serverCmd)
+}
+</code></pre>
+<p>修改<code>path.Join("proto", p)</code>為<code>path.Join(SwaggerDir, p)</code>，這樣的話我們<code>swagger.json</code>的檔案路徑就可以根據外部情況去修改它</p>
+<p>最終<code>server.go</code>檔案內容：</p>
+<pre><code class="language-go">package server
+
+import (
+    "crypto/tls"
+    "net"
+    "net/http"
+    "log"
+    "strings"
+    "path"
+
+    "golang.org/x/net/context"
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/credentials"
+    "github.com/grpc-ecosystem/grpc-gateway/runtime"
+    "github.com/elazarl/go-bindata-assetfs"
+
+    pb "grpc-hello-world/proto"
+    "grpc-hello-world/pkg/util"
+    "grpc-hello-world/pkg/ui/data/swagger"
+)
+
+var (
+    ServerPort string
+    CertServerName string
+    CertPemPath string
+    CertKeyPath string
+    SwaggerDir string
+    EndPoint string
+
+    tlsConfig *tls.Config
+)
+
+func Run() (err error) {
+    EndPoint = ":" + ServerPort
+    tlsConfig = util.GetTLSConfig(CertPemPath, CertKeyPath)
+
+    conn, err := net.Listen("tcp", EndPoint)
+    if err != nil {
+        log.Printf("TCP Listen err:%v\n", err)
+    }
+
+    srv := newServer(conn)
+
+    log.Printf("gRPC and https listen on: %s\n", ServerPort)
+
+    if err = srv.Serve(util.NewTLSListener(conn, tlsConfig)); err != nil {
+        log.Printf("ListenAndServe: %v\n", err)
+    }
+
+    return err
+}
+
+func newServer(conn net.Listener) (*http.Server) {
+    grpcServer := newGrpc()
+    gwmux, err := newGateway()
+    if err != nil {
+        panic(err)
+    }
+
+    mux := http.NewServeMux()
+    mux.Handle("/", gwmux)
+    mux.HandleFunc("/swagger/", serveSwaggerFile)
+    serveSwaggerUI(mux)
+
+    return &amp;http.Server{
+        Addr:      EndPoint,
+        Handler:   util.GrpcHandlerFunc(grpcServer, mux),
+        TLSConfig: tlsConfig,
+    }
+}
+
+func newGrpc() *grpc.Server {
+    creds, err := credentials.NewServerTLSFromFile(CertPemPath, CertKeyPath)
+    if err != nil {
+        panic(err)
+    }
+
+    opts := []grpc.ServerOption{
+        grpc.Creds(creds),
+    }
+    server := grpc.NewServer(opts...)
+
+    pb.RegisterHelloWorldServer(server, NewHelloService())
+
+    return server
+}
+
+func newGateway() (http.Handler, error) {
+    ctx := context.Background()
+    dcreds, err := credentials.NewClientTLSFromFile(CertPemPath, CertServerName)
+    if err != nil {
+        return nil, err
+    }
+    dopts := []grpc.DialOption{grpc.WithTransportCredentials(dcreds)}
+
+    gwmux := runtime.NewServeMux()
+    if err := pb.RegisterHelloWorldHandlerFromEndpoint(ctx, gwmux, EndPoint, dopts); err != nil {
+        return nil, err
+    }
+
+    return gwmux, nil
+}
+
+func serveSwaggerFile(w http.ResponseWriter, r *http.Request) {
+      if ! strings.HasSuffix(r.URL.Path, "swagger.json") {
+        log.Printf("Not Found: %s", r.URL.Path)
+        http.NotFound(w, r)
+        return
+    }
+
+    p := strings.TrimPrefix(r.URL.Path, "/swagger/")
+    p = path.Join(SwaggerDir, p)
+
+    log.Printf("Serving swagger-file: %s", p)
+
+    http.ServeFile(w, r, p)
+}
+
+func serveSwaggerUI(mux *http.ServeMux) {
+    fileServer := http.FileServer(&amp;assetfs.AssetFS{
+        Asset:    swagger.Asset,
+        AssetDir: swagger.AssetDir,
+        Prefix:   "third_party/swagger-ui",
+    })
+    prefix := "/swagger-ui/"
+    mux.Handle(prefix, http.StripPrefix(prefix, fileServer))
+}
+</code></pre>
+<h2 id="測試"><a class="header" href="#測試">測試</a></h2>
+<p>訪問路徑<code>https://127.0.0.1:50052/swagger/hello.swagger.json</code>，檢視輸出內容是否為<code>hello.swagger.json</code>的內容，例如： [image]</p>
+<p>訪問路徑<code>https://127.0.0.1:50052/swagger-ui/</code>，檢視內容 [image]</p>
+<h2 id="小結"><a class="header" href="#小結">小結</a></h2>
+<p>至此我們這一章節就完畢了，<code>Swagger</code>和其生態圈十分的豐富，有興趣研究的小夥伴可以到其<a href="https://swagger.io/">官網</a>認真研究</p>
+<p>而目前完成的程度也滿足了日常工作的需求了，可較自動化的生成<code>RESTful Api</code>文件，完成與介面對接</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<h3 id="示例程式碼"><a class="header" href="#示例程式碼">示例程式碼</a></h3>
+<ul>
+<li><a href="https://github.com/EDDYCJY/grpc-hello-world">grpc-hello-world</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-5-ke-grpcgateway/hello-world.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-5-ke-grpcgateway/grpc-gateway-tls.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-5-ke-grpcgateway/hello-world.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-5-ke-grpcgateway/grpc-gateway-tls.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

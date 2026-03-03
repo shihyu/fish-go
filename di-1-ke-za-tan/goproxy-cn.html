@@ -1,0 +1,483 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>1.14 乾貨滿滿的 Go Modules 和 goproxy.cn - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="114-乾貨滿滿的-go-modules-和-goproxycn"><a class="header" href="#114-乾貨滿滿的-go-modules-和-goproxycn">1.14 乾貨滿滿的 Go Modules 和 goproxy.cn</a></h1>
+<p>大家好，我是一隻普通的煎魚，週四晚上很有幸邀請到 goproxy.cn 的作者 @盛傲飛（@aofei） 到 Go 夜讀給我們進行第 61 期 《Go Modules、Go Module Proxy 和 goproxy.cn》的技術分享。</p>
+<p>本次 @盛傲飛 的夜讀分享，是對 Go Modules 的一次很好的解讀，比較貼近工程實踐，我必然希望把這塊的知識更多的分享給大家，因此有了今天本篇文章，同時大家也可以多關注 Go 夜讀，每週會透過 zoom 線上直播的方式分享 Go 相關的技術話題，希望對大家有所幫助。</p>
+<h2 id="前言"><a class="header" href="#前言">前言</a></h2>
+<p>Go 1.11 推出的模組（Modules）為 Go 語言開發者打開了一扇新的大門，理想化的依賴管理解決方案使得 Go 語言朝著計算機程式設計史上的第一個依賴烏托邦（Deptopia）邁進。隨著模組一起推出的還有模組代理協議（Module proxy protocol），透過這個協議我們可以實作 Go 模組代理（Go module proxy），也就是依賴映象。</p>
+<p>Go 1.13 的釋出為模組帶來了大量的改進，所以模組的扶正就是這次 Go 1.13 釋出中開發者能直接感覺到的最大變化。而問題在於，Go 1.13 中的 GOPROXY 環境變數擁有了一個在中國大陸無法訪問到的預設值 <code>proxy.golang.org</code>，經過大家在 golang/go#31755 中激烈的討論（有些人甚至將話提上升到了“自由世界”的層次），最終 Go 核心團隊仍然無法為中國開發者提供一個可在中國大陸訪問的官方模組代理。</p>
+<p>為了今後中國的 Go 語言開發者能更好地進行開發，七牛雲推出了非營利性專案 <code>goproxy.cn</code>，其目標是為中國和世界上其他地方的 Gopher 們提供一個免費的、可靠的、持續線上的且經過 CDN 加速的模組代理。可以預見未來是屬於模組化的，所以 Go 語言開發者能越早切入模組就能越早進入未來。</p>
+<p>如果說 Go 1.11 和 Go 1.12 時由於模組的不完善你不願意切入，那麼 Go 1.13 你則可以大膽地開始放心使用。本次分享將討論如何使用模組和模組代理，以及在它們的使用中會常遇見的坑，還會講解如何快速搭建自己的私有模組代理，並簡單地介紹一下七牛雲推出的 <code>goproxy.cn</code> 以及它的出現對於中國 Go 語言開發者來說重要在何處。</p>
+<h2 id="目錄"><a class="header" href="#目錄">目錄</a></h2>
+<ul>
+<li>Go Modules 簡介</li>
+<li>快速遷移專案至 Go Modules</li>
+<li>使用 Go Modules 時常遇見的坑
+<ul>
+<li>坑 1:判斷專案是否啟用了 Go Modules</li>
+<li>坑 2:管理 Go 的環境變數</li>
+<li>坑 3:從 dep、glide 等遷移至 Go Modules</li>
+<li>坑 4:拉取私有模組</li>
+<li>坑 5:更新現有的模組 </li>
+<li>坑 6:主版本號 </li>
+</ul>
+</li>
+<li>Go Module Proxy 簡介</li>
+<li>Goproxy 中國(goproxy.cn)</li>
+</ul>
+<h2 id="go-modules-簡介"><a class="header" href="#go-modules-簡介">Go Modules 簡介</a></h2>
+<p><img src="../images/ea8a22c3d579-765e3c7525bede127297a66e03cf3506.jpg" alt="image" /></p>
+<p>Go modules (前身 vgo) 是 Go team (Russ Cox) <strong>強推</strong>的一個<strong>理想化</strong>的<strong>類語言級</strong>依賴管理解決方案，它是和 Go1.11 一同釋出的，在 Go1.13 做了大量的最佳化和調整，目前已經變得比較不錯，如果你想用 Go modules，但還停留在 1.11/1.12 版本的話，強烈建議升級。</p>
+<h3 id="三個關鍵字"><a class="header" href="#三個關鍵字">三個關鍵字</a></h3>
+<h4 id="強推"><a class="header" href="#強推">強推</a></h4>
+<p>首先這並不是亂說的，因為 Go modules 確實是被強推出來的，如下：</p>
+<ul>
+<li>之前：大家都知道在 Go modules 之前還有一個叫 dep 的專案，它也是 Go 的一個官方的實驗性專案，目的同樣也是為了解決 Go 在依賴管理方面的短板。在 Russ Cox 還沒有提出 Go modules 的時候，社群裡面幾乎所有的人都認為 dep 肯定就是未來 Go 官方的依賴管理解決方案了。</li>
+<li>後來：誰都沒想到半路殺出個程咬金，Russ Cox 義無反顧地推出了 Go modules，這瞬間導致一石激起千層浪，讓社群炸了鍋。大家一致認為 Go team 實在是太霸道、太獨裁了，連個招呼都不打一聲。我記得當時有很多人在網上跟 Russ Cox 口水戰，各種依賴管理解決方案的專家都冒出來發表意見，討論範圍甚至一度超出了 Go 語言的圈子觸及到了其他語言的領域。</li>
+</ul>
+<h4 id="理想化"><a class="header" href="#理想化">理想化</a></h4>
+<p>從他強制要求使用語義化版本控制這一點來說就很理想化了，如下：</p>
+<ul>
+<li>Go modules 狠到如果你的 Tag 沒有遵循語義化版本控制那麼它就會忽略你的 Tag，然後根據你的 Commit 時間和雜湊值再為你生成一個假定的符合語義化版本控制的版本號。</li>
+<li>Go modules 還預設認為，只要你的主版本號不變，那這個模組版本肯定就不包含 Breaking changes，因為語義化版本控制就是這麼規定的啊。是不是很理想化。</li>
+</ul>
+<h4 id="類語言級"><a class="header" href="#類語言級">類語言級：</a></h4>
+<p>這個關鍵詞其實是我自己瞎編的，我只是單純地個人認為 Go modules 在設計上就像個語言級特性一樣，比如如果你的主版本號發生變更，那麼你的程式碼裡的 import path 也得跟著變，它認為主版本號不同的兩個模組版本是完全不同的兩個模組。此外，Go moduels 在設計上跟 go 整個命令都結合得相當緊密，無處不在，所以我才說它是一個有點兒像語言級的特性，雖然不是太嚴謹。</p>
+<h3 id="推-go-modules-的人是誰"><a class="header" href="#推-go-modules-的人是誰">推 Go Modules 的人是誰</a></h3>
+<p>那麼在上文中提到的 Russ Cox 何許人也呢，很多人應該都知道他，他是 Go 這個專案目前程式碼提交量最多的人，甚至是第二名的兩倍還要多。</p>
+<p>Russ Cox 還是 Go 現在的掌舵人（大家應該知道之前 Go 的掌舵人是 Rob Pike，但是聽說由於他本人不喜歡特朗普執政所以離開了美國，然後他歲數也挺大的了，所以也正在逐漸交權，不過現在還是在參與 Go 的發展）。</p>
+<p>Russ Cox 的個人能力相當強，看問題的角度也很獨特，這也就是為什麼他剛一提出 Go modules 的概念就能引起那麼大範圍的響應。雖然是被強推的，但事實也證明當下的 Go modules 表現得確實很優秀，所以這表明一定程度上的 “獨裁” 還是可以接受的，至少可以保證一個專案能更加專一地朝著一個方向發展。</p>
+<p>總之，無論如何 Go modules 現在都成了 Go 語言的一個密不可分的元件。</p>
+<h3 id="gopath"><a class="header" href="#gopath">GOPATH</a></h3>
+<p>Go modules 出現的目的之一就是為了解決 GOPATH 的問題，也就相當於是拋棄 GOPATH 了。</p>
+<h3 id="opt-in"><a class="header" href="#opt-in">Opt-in</a></h3>
+<p>Go modules 還處於 Opt-in 階段，就是你想用就用，不用就不用，不強制你。但是未來很有可能 Go2 就強制使用了。</p>
+<h3 id="module--package"><a class="header" href="#module--package">"module" != "package"</a></h3>
+<p>有一點需要糾正，就是“模組”和“包”，也就是 “module” 和 “package” 這兩個術語並不是等價的，是 “集合” 跟 “元素” 的關係，“模組” 包含 “包”，“包” 屬於 “模組”，一個 “模組” 是零個、一個或多個 “包” 的集合。</p>
+<h2 id="go-modules-相關屬性"><a class="header" href="#go-modules-相關屬性">Go Modules 相關屬性</a></h2>
+<p><img src="../images/53d7dd687889-6d9f959fbdf96cc4c8a064b08287e7bc.jpg" alt="image" /></p>
+<h3 id="gomod"><a class="header" href="#gomod">go.mod</a></h3>
+<pre><code>module example.com/foobar
+
+go 1.13
+
+require (
+    example.com/apple v0.1.2
+    example.com/banana v1.2.3
+    example.com/banana/v2 v2.3.4
+    example.com/pineapple v0.0.0-20190924185754-1b0db40df49a
+)
+
+exclude example.com/banana v1.2.4
+replace example.com/apple v0.1.2 =&gt; example.com/rda v0.1.0 
+replace example.com/banana =&gt; example.com/hugebanana
+</code></pre>
+<p>go.mod 是啟用了 Go moduels 的專案所必須的最重要的檔案，它描述了當前專案（也就是當前模組）的元資訊，每一行都以一個動詞開頭，目前有以下 5 個動詞:</p>
+<ul>
+<li>module：用於定義當前專案的模組路徑。</li>
+<li>go：用於設定預期的 Go 版本。</li>
+<li>require：用於設定一個特定的模組版本。</li>
+<li>exclude：用於從使用中排除一個特定的模組版本。</li>
+<li>replace：用於將一個模組版本替換為另外一個模組版本。</li>
+</ul>
+<p>這裡的填寫格式基本為包引用路徑+版本號，另外比較特殊的是 <code>go $version</code>，目前從 Go1.13 的程式碼裡來看，還只是個標識作用，暫時未知未來是否有更大的作用。</p>
+<h3 id="gosum"><a class="header" href="#gosum">go.sum</a></h3>
+<p>go.sum 是類似於比如 dep 的 Gopkg.lock 的一類檔案，它詳細羅列了當前專案直接或間接依賴的所有模組版本，並寫明瞭那些模組版本的 SHA-256 雜湊值以備 Go 在今後的操作中保證專案所依賴的那些模組版本不會被篡改。</p>
+<pre><code>example.com/apple v0.1.2 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ= 
+example.com/apple v0.1.2/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU= example.com/banana v1.2.3 h1:qHgHjyoNFV7jgucU8QZUuU4gcdhfs8QW1kw68OD2Lag= 
+example.com/banana v1.2.3/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU= example.com/banana/v2 v2.3.4 h1:zl/OfRA6nftbBK9qTohYBJ5xvw6C/oNKizR7cZGl3cI= example.com/banana/v2 v2.3.4/go.mod h1:eZbhyaAYD41SGSSsnmcpxVoRiQ/MPUTjUdIIOT9Um7Q= 
+...
+</code></pre>
+<p>我們可以看到一個模組路徑可能有如下兩種：</p>
+<pre><code>example.com/apple v0.1.2 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ= 
+example.com/apple v0.1.2/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+</code></pre>
+<p>前者為 Go modules 打包整個模組包檔案 zip 後再進行 hash 值，而後者為針對 go.mod 的 hash 值。他們兩者，要不就是同時存在，要不就是隻存在 go.mod hash。</p>
+<p>那什麼情況下會不存在 zip hash 呢，就是當 Go 認為肯定用不到某個模組版本的時候就會省略它的 zip hash，就會出現不存在 zip hash，只存在 go.mod hash 的情況。</p>
+<h3 id="go111module"><a class="header" href="#go111module">GO111MODULE</a></h3>
+<p>這個環境變數主要是 Go modules 的開關，主要有以下引數：</p>
+<ul>
+<li>auto：只在專案包含了 go.mod 檔案時啟用 Go modules，在 Go 1.13 中仍然是預設值，詳見 ：golang.org/issue/31857。</li>
+<li>on：無腦啟用 Go modules，推薦設定，未來版本中的預設值，讓 GOPATH 從此成為歷史。</li>
+<li>off：停用 Go modules。</li>
+</ul>
+<h3 id="goproxy"><a class="header" href="#goproxy">GOPROXY</a></h3>
+<p>這個環境變數主要是用於設定 Go 模組代理，主要如下：</p>
+<ul>
+<li>它的值是一個以英文逗號 “,” 分割的 Go module proxy 列表（稍後講解）
+<ul>
+<li>作用：用於使 Go 在後續拉取模組版本時能夠脫離傳統的 VCS 方式從映象站點快速拉取。它擁有一個預設：<code>https://proxy.golang.org,direct</code>，但很可惜 <code>proxy.golang.org</code> 在中國無法訪問，故而建議使用 <code>goproxy.cn</code> 作為替代，可以執行語句：<code>go env -w GOPROXY=https://goproxy.cn,direct</code>。</li>
+<li>設定為 “off” ：禁止 Go 在後續操作中使用任 何 Go module proxy。</li>
+</ul>
+</li>
+</ul>
+<p>剛剛在上面，我們可以發現值列表中有 “direct” ，它又有什麼作用呢。其實值列表中的 “direct” 為特殊指示符，用於指示 Go 回源到模組版本的源地址去抓取(比如 GitHub 等)，當值列表中上一個 Go module proxy 返回 404 或 410 錯誤時，Go 自動嘗試列表中的下一個，遇見 “direct” 時回源，遇見 EOF 時終止並丟擲類似 “invalid version: unknown revision...” 的錯誤。</p>
+<h3 id="gosumdb"><a class="header" href="#gosumdb">GOSUMDB</a></h3>
+<p>它的值是一個 Go checksum database，用於使 Go 在拉取模組版本時(無論是從源站拉取還是透過 Go module proxy 拉取)保證拉取到的模組版本資料未經篡改，也可以是“off”即禁止 Go 在後續操作中校驗模組版本</p>
+<ul>
+<li>格式 1：<code>&lt;SUMDB_NAME&gt;+&lt;PUBLIC_KEY&gt;</code>。</li>
+<li>格式 2：<code>&lt;SUMDB_NAME&gt;+&lt;PUBLIC_KEY&gt; &lt;SUMDB_URL&gt;</code>。</li>
+<li>擁有預設值：<code>sum.golang.org</code> (之所以沒有按照上面的格式是因為 Go 對預設值做了特殊處理)。</li>
+<li>可被 Go module proxy 代理 (詳見：Proxying a Checksum Database)。</li>
+<li><code>sum.golang.org</code> 在中國無法訪問，故而更加建議將 GOPROXY 設定為 <code>goproxy.cn</code>，因為 <code>goproxy.cn</code> 支援代理 <code>sum.golang.org</code>。</li>
+</ul>
+<h3 id="go-checksum-database"><a class="header" href="#go-checksum-database">Go Checksum Database</a></h3>
+<p>Go checksum database 主要用於保護 Go 不會從任何源頭拉到被篡改過的非法 Go 模組版本，其作用（左）和工作機制（右）如下圖：</p>
+<p><img src="../images/4332f94b9521-8a74a6aa59f5706c5c25836451538a12.jpg" alt="image" /></p>
+<p>如果有興趣的小夥伴可以看看 <a href="https://go.googlesource.com/proposal/+/master/design/25530-sumdb.md#proxying-a-checksum-database">Proposal: Secure the Public Go Module Ecosystem</a>，有詳細介紹其演算法機制，如果想簡單一點，檢視 <code>go help module-auth</code> 也是一個不錯的選擇。</p>
+<h3 id="gonoproxygonosumdbgoprivate"><a class="header" href="#gonoproxygonosumdbgoprivate">GONOPROXY/GONOSUMDB/GOPRIVATE</a></h3>
+<p>這三個環境變數都是用在當前專案依賴了私有模組，也就是依賴了由 GOPROXY 指定的 Go module proxy 或由 GOSUMDB 指定 Go checksum database 無法訪問到的模組時的場景</p>
+<ul>
+<li>它們三個的值都是一個以英文逗號 “,” 分割的模組路徑字首，匹配規則同 path.Match。</li>
+<li>其中 GOPRIVATE 較為特殊，它的值將作為 GONOPROXY 和 GONOSUMDB 的預設值，所以建議的最佳姿勢是隻是用 GOPRIVATE。</li>
+</ul>
+<p>在使用上來講，比如 <code>GOPRIVATE=*.corp.example.com</code> 表示所有模組路徑以 <code>corp.example.com</code> 的下一級域名 (如 <code>team1.corp.example.com</code>) 為字首的模組版本都將不經過 Go module proxy 和 Go checksum database，需要注意的是不包括 <code>corp.example.com</code> 本身。</p>
+<h3 id="global-caching"><a class="header" href="#global-caching">Global Caching</a></h3>
+<p>這個主要是針對 Go modules 的全域性快取資料說明，如下：</p>
+<ul>
+<li>同一個模組版本的資料只快取一份，所有其他模組共享使用。</li>
+<li>目前所有模組版本資料均快取在 <code>$GOPATH/pkg/mod</code>和 ​<code>$GOPATH/pkg/sum</code> 下，未來或將移至 <code>$GOCACHE/mod</code>和<code>$GOCACHE/sum</code> 下( 可能會在當 <code>$GOPATH</code> 被淘汰後)。</li>
+<li>可以使用 <code>go clean -modcache</code> 清理所有已快取的模組版本資料。</li>
+</ul>
+<p>另外在 Go1.11 之後 GOCACHE 已經不允許設定為 off 了，我想著這也是為了模組資料快取移動位置做準備，因此大家應該儘快做好適配。</p>
+<h2 id="快速遷移專案至-go-modules"><a class="header" href="#快速遷移專案至-go-modules">快速遷移專案至 Go Modules</a></h2>
+<ul>
+<li>第一步: 升級到 Go 1.13。</li>
+<li>第二步: 讓 GOPATH 從你的腦海中完全消失，早一步踏入未來。
+<ul>
+<li>修改 GOBIN 路徑（可選）：<code>go env -w GOBIN=$HOME/bin</code>。</li>
+<li>開啟 Go modules：<code>go env -w GO111MODULE=on</code>。</li>
+<li>設定 GOPROXY：<code>go env -w GOPROXY=https://goproxy.cn,direct</code> # 在中國是必須的，因為它的預設值被牆了。</li>
+</ul>
+</li>
+<li>第三步(可選): 按照你喜歡的目錄結構重新組織你的所有專案。</li>
+<li>第四步: 在你專案的根目錄下執行 <code>go mod init &lt;OPTIONAL_MODULE_PATH&gt;</code> 以生成 go.mod 檔案。</li>
+<li>第五步: 想辦法說服你身邊所有的人都去走一下前四步。</li>
+</ul>
+<h2 id="遷移後-go-get-行為的改變"><a class="header" href="#遷移後-go-get-行為的改變">遷移後 go get 行為的改變</a></h2>
+<ul>
+<li>用 <code>go help module-get</code> 和 <code>go help gopath-get</code>分別去了解 Go modules 啟用和未啟用兩種狀態下的 go get 的行為</li>
+<li>用 <code>go get</code> 拉取新的依賴
+<ul>
+<li>拉取最新的版本(優先擇取 tag)：<code>go get golang.org/x/text@latest</code></li>
+<li>拉取 <code>master</code> 分支的最新 commit：<code>go get golang.org/x/text@master</code></li>
+<li>拉取 tag 為 v0.3.2 的 commit：<code>go get golang.org/x/text@v0.3.2</code></li>
+<li>拉取 hash 為 342b231 的 commit，最終會被轉換為 v0.3.2：<code>go get golang.org/x/text@342b2e</code></li>
+<li>用 <code>go get -u</code> 更新現有的依賴</li>
+<li>用 <code>go mod download</code> 下載 go.mod 檔案中指明的所有依賴</li>
+<li>用 <code>go mod tidy</code> 整理現有的依賴</li>
+<li>用 <code>go mod graph</code> 檢視現有的依賴結構</li>
+<li>用 <code>go mod init</code> 生成 go.mod 檔案 (Go 1.13 中唯一一個可以生成 go.mod 檔案的子命令)</li>
+</ul>
+</li>
+<li>用 <code>go mod edit</code> 編輯 go.mod 檔案</li>
+<li>用 <code>go mod vendor</code> 匯出現有的所有依賴 (事實上 Go modules 正在淡化 Vendor 的概念)</li>
+<li>用 <code>go mod verify</code> 校驗一個模組是否被篡改過</li>
+</ul>
+<p>這裡我們注意到有兩點比較特別，分別是：</p>
+<ul>
+<li>第一點：為什麼 “拉取 hash 為 342b231 的 commit，最終會被轉換為 v0.3.2” 呢。這是因為雖然我們設定了拉取 @342b2e commit，但是因為 Go modules 會與 tag 進行對比，若發現對應的 commit 與 tag 有關聯，則進行轉換。</li>
+<li>第二點：為什麼不建議使用 <code>go mod vendor</code>，因為 Go modules 正在淡化 Vendor 的概念，很有可能 Go2 就去掉了。</li>
+</ul>
+<h2 id="使用-go-modules-時常遇見的坑"><a class="header" href="#使用-go-modules-時常遇見的坑">使用 Go Modules 時常遇見的坑</a></h2>
+<h3 id="坑-1-判斷專案是否啟用了-go-modules"><a class="header" href="#坑-1-判斷專案是否啟用了-go-modules">坑 1: 判斷專案是否啟用了 Go Modules</a></h3>
+<p><img src="../images/639b57732b40-0dda1c26b7aa3f9e8655c8e366f49116.jpg" alt="image" /></p>
+<h3 id="坑-2-管理-go-的環境變數"><a class="header" href="#坑-2-管理-go-的環境變數">坑 2: 管理 Go 的環境變數</a></h3>
+<p><img src="../images/3440b71e9721-78a93176b5e24dfde88327aebe63fe9c.jpg" alt="image" /></p>
+<p>這裡主要是提到 Go1.13 新增了 <code>go env -w</code> 用於寫入環境變數，而寫入的地方是 <code>os.UserConfigDir</code> 所返回的路徑，需要注意的是 <code>go env -w</code> 不會覆寫。</p>
+<h3 id="坑-3-從-depglide-等遷移至-go-modules"><a class="header" href="#坑-3-從-depglide-等遷移至-go-modules">坑 3: 從 dep、glide 等遷移至 Go Modules</a></h3>
+<p><img src="../images/07107fd6698f-67c83f5d4a3d936449a705921fcfe492.jpg" alt="image" /></p>
+<p>這裡主要是指從舊有的依賴包管理工具（dep/glide 等）進行遷移時，因為 BUG 的原因會導致不經過 GOPROXY 的代理，解決方法有如下兩個：</p>
+<ul>
+<li>手動建立一個 go.mod 檔案，再執行 go mod tidy 進行補充。</li>
+<li>上代理，相當於不使用 GOPROXY 了。</li>
+</ul>
+<h3 id="坑-4拉取私有模組"><a class="header" href="#坑-4拉取私有模組">坑 4:拉取私有模組</a></h3>
+<p><img src="../images/000de3dca238-075bdc3d3552c000981c9d4fdd8d0f3f.jpg" alt="image" /></p>
+<p>這裡主要想涉及兩塊知識點，如下：</p>
+<ul>
+<li>GOPROXY 是無權訪問到任何人的私有模組的，所以你放心，安全性沒問題。</li>
+<li>GOPROXY 除了設定模組代理的地址以外，還需要增加 “direct” 特殊標識才可以成功拉取私有庫。</li>
+</ul>
+<h3 id="坑-5更新現有的模組"><a class="header" href="#坑-5更新現有的模組">坑 5:更新現有的模組</a></h3>
+<p><img src="../images/593a401e4d34-d35e9f465d82a14c53fcca3ff5ebc557.jpg" alt="image" /></p>
+<h3 id="坑-6主版本號"><a class="header" href="#坑-6主版本號">坑 6:主版本號</a></h3>
+<p><img src="../images/66ce6a57f111-75778deb206803598e48693f6fea60b8.jpg" alt="image" /></p>
+<h2 id="go-module-proxy-簡介"><a class="header" href="#go-module-proxy-簡介">Go Module Proxy 簡介</a></h2>
+<p><img src="../images/75b84ab9b223-20cb4e449ab50de36a880e3b22e1e8d8.jpg" alt="image" /></p>
+<p>在這裡再次強調了 Go Module Proxy 的作用（圖左），以及其對應的協議互動流程（圖右），有興趣的小夥伴可以認真看一下。</p>
+<h2 id="goproxy-中國goproxycn"><a class="header" href="#goproxy-中國goproxycn">Goproxy 中國(goproxy.cn)</a></h2>
+<p>在這塊主要介紹了 Goproxy 的實踐操作以及 goproxy.cn 的一些 Q&amp;A 和 近況，如下：</p>
+<h3 id="qa"><a class="header" href="#qa">Q&amp;A</a></h3>
+<p><strong>Q：如果中國 Go 語言社群沒有咱們自己家的 Go Module Proxy 會怎麼樣？</strong></p>
+<p><strong>A：</strong>在 Go 1.13 中 GOPROXY 和 GOSUMDB 這兩個環境變數都有了在中國無法 訪問的預設值，儘管我在 golang.org/issue/31755 裡努力嘗 試過，但最終仍然無法為咱們中國的 Go 語言開發者謀得一個完美的解決方案。所以從今以後咱 們中國的所有 Go 語言開發者，只要是 使用了 Go modules 的，那麼都必須先修改 GOPROXY 和 GOSUMDB 才能正常使用 Go 做開發，否則可能連一個最簡單的程式都跑不起 來(只要它有依 賴第三方模 塊)。</p>
+<p><strong>Q： 我建立 Goproxy 中國(goproxy.cn)的主要原因？</strong></p>
+<p><strong>A：</strong>其實更早的時候，也就是今年年初我也曾 試圖在 golang.org/issue/31020 中請求 Go team 能想辦法避免那時的 GOPROXY 即將擁有的預設值可以在中國正常訪問，但 Go team 似乎也無能為力，為此我才堅定了建立 goproxy.cn 的信念。既然別人沒法兒幫忙，那咱們就 得自己動手，不為別的，就為了讓大家以後能夠更愉快地使用 Go 語言配合 Go modules 做開發。</p>
+<p>最初我先是和七牛雲的 許叔(七牛雲的 創始人兼 CEO 許式偉)提出了我打算 建立 goproxy.cn 的想法，本是抱著 試試看的目的，但沒想 到 許叔幾乎是沒有超過一分鐘的考慮便認可了我的想法並表示願意一起推 動。那一陣子剛好趕上我在寫畢業論文，所以專案開發完後就 一直沒和七牛雲做交接，一直跑在我的個人服 務器上。直到有一次 goproxy.cn 被攻擊了，一下午的功夫 燒了我一百多美元，然後我才 意識到這種專案真不能個人來做。個人來做不靠 譜，萬一依賴這個專案的人多了，專案再出什麼事兒，那就會給大家􏰁成不必要的損 失。所以我趕緊和七牛雲做了交接，把 goproxy.cn 完全交給了七牛雲，甚至連域名都過戶了去。</p>
+<h3 id="近況"><a class="header" href="#近況">近況</a></h3>
+<p><img src="../images/a75366b63795-7bf56751651d56edb989f7cfd64c0006.png" alt="image" /></p>
+<ul>
+<li>Goproxy 中國 (goproxy.cn) 是目前中國最可靠的 Go module proxy (真不是在自賣自誇)。</li>
+<li>為中國 Go 語言開發者量身打􏰁，支援代理 GOSUMDB 的預設值，經過全球 CDN 加速，高可用，可 應用進公司複雜的開發環境中，亦可用作上游代理。</li>
+<li>由中國倍受信賴的雲服務提供商七牛雲無償提供基礎設施支援的開源的非營利性專案。</li>
+<li>目標是為中國乃至全世界的 Go 語言開發者提供一個免 費的、可靠的、持 續線上的且經過 CDN 加􏰀的 Go module proxy。</li>
+<li>域名已由七牛雲進行了備案 (滬ICP備11037377號-56)。</li>
+</ul>
+<h3 id="情況"><a class="header" href="#情況">情況</a></h3>
+<p><img src="../images/a6a64bc050f7-aa517d9e93aff49762de76f601702eb1.jpg" alt="image" /></p>
+<p>此處呈現的是儲存大小，主要是針對模組包程式碼，而一般來講程式碼並不會有多大，0-10MB，10-50MB 佔最大頭，也是能夠理解，但是大於 100MB 的模組包程式碼就比較誇張了。</p>
+<p><img src="../images/e3383865a42f-94bbc93b83f87b43b254f5f15ff995e7.jpg" alt="image" /></p>
+<p>此時主要是展示了一下近期 goproxy.cn 的網路資料情況，我相信未來是會越來越高的，值得期待。</p>
+<h2 id="qa-1"><a class="header" href="#qa-1">Q&amp;A</a></h2>
+<p><strong>Q：如何解決 Go 1.13 在從 GitLab 拉取模組版本時遇到的，Go 錯誤地按照非期望值的路徑尋找目標模組版本結果致使最終目標模組拉取失敗的問題？</strong></p>
+<p><strong>A：</strong>GitLab 中配合 goget 而設定的 <code>&lt;meta&gt;</code> 存在些許問題，導致 Go 1.13 錯誤地識別了模組的具體路徑，這是個 Bug，據說在 GitLab 的新版本中已經被修復了，詳細內容可以看 <a href="https://github.com/golang/go/issues/34094">https://github.com/golang/go/issues/34094</a> 這個 Issue。然後目前的解決辦法的話除了升級 GitLab 的版本外，還可以參考 <a href="https://github.com/developer-learning/night-reading-go/issues/468#issuecomment-535850154">https://github.com/developer-learning/night-reading-go/issues/468#issuecomment-535850154</a> 這條回覆。</p>
+<p><strong>Q：使用 Go modules 時可以同時依賴同一個模組的不同的兩個或者多個小版本（修訂版本號不同）嗎？</strong></p>
+<p><strong>A：</strong>不可以的，Go modules 只可以同時依賴一個模組的不同的兩個或者多個大版本（主版本號不同）。比如可以同時依賴 example.com/foobar@v1.2.3 和 example.com/foobar/v2@v2.3.4，因為他們的模組路徑（module path）不同，Go modules 規定主版本號不是 v0 或者 v1 時，那麼主版本號必須顯式地出現在模組路徑的尾部。但是，同時依賴兩個或者多個小版本是不支援的。比如如果模組 A 同時直接依賴了模組 B 和模組 C，且模組 A 直接依賴的是模組 C 的 v1.0.0 版本，然後模組 B 直接依賴的是模組 C 的 v1.0.1 版本，那麼最終 Go modules 會為模組 A 選用模組 C 的 v1.0.1 版本而不是模組 A 的 go.mod 檔案中指明的 v1.0.0 版本。</p>
+<p>這是因為 Go modules 認為只要主版本號不變，那麼剩下的都可以直接升級採用最新的。但是如果採用了最新的結果導致專案 Break 掉了，那麼 Go modules 就會 Fallback 到上一個老的版本，比如在前面的例子中就會 Fallback 到 v1.0.0 版本。</p>
+<p><strong>Q：在 go.sum 檔案中的一個模組版本的 Hash 校驗資料什麼情況下會成對出現，什麼情況下只會存在一行？</strong></p>
+<p><strong>A：</strong>通常情況下，在 go.sum 檔案中的一個模組版本的 Hash 校驗資料會有兩行，前一行是該模組的 ZIP 檔案的 Hash 校驗資料，後一行是該模組的 go.mod 檔案的 Hash 校驗資料。但是也有些情況下只會出現一行該模組的 go.mod 檔案的 Hash 校驗資料，而不包含該模組的 ZIP 檔案本身的 Hash 校驗資料，這個情況發生在 Go modules 判定為你當前這個專案完全用不到該模組，根本也不會下載該模組的 ZIP 檔案，所以就沒必要對其作出 Hash 校驗保證，只需要對該模組的 go.mod 檔案作出 Hash 校驗保證即可，因為 go.mod 檔案是用得著的，在深入挖取專案依賴的時候要用。</p>
+<p><strong>Q：能不能更詳細地講解一下 go.mod 檔案中的 replace 動詞的行為以及用法？</strong></p>
+<p><strong>A：</strong>这個 replace 動詞的作用是把一個“模組版本”替換為另外一個“模組版本”，這是“模組版本”和“模組版本（module path）”之間的替換，“=&gt;”識別符號前面的內容是待替換的“模組版本”的“模組路徑”，後面的內容是要替換的目標“模組版本”的所在地，即路徑，這個路徑可以是一個本地磁碟的相對路徑，也可以是一個本地磁碟的絕對路徑，還可以是一個網路路徑，但是這個目標路徑並不會在今後你的專案程式碼中作為你“匯入路徑（import path）”出現，程式碼裡的“匯入路徑”還是得以你替換成的這個目標“模組版本”的“模組路徑”作為字首。</p>
+<p>另外需要注意，Go modules 是不支援在 “匯入路徑” 裡寫相對路徑的。舉個例子，如果專案 A 依賴了模組 B，比如模組 B 的“模組路徑”是 example.com/b，然後它在的磁碟路徑是 ~/b，在專案 A 裡的 go.mod 檔案中你有一行 replace example.com/b=&gt;~/b，然後在專案 A 裡的程式碼中的“匯入路基”就是 import"example.com/b"，而不是 import"~/b"，剩下的工作是 Go modules 幫你自動完成了的。</p>
+<p>然後就是我在分享中也提到了， exclude 和 replace 這兩個動詞只作用於當前主模組，也就是當前專案，它所依賴的那些其他模組版本中如果出現了你待替換的那個模組版本的話，Go modules 還是會為你依賴的那個模組版本去拉取你的這個待替換的模組版本。</p>
+<p>舉個例子，比如專案 A 直接依賴了模組 B 和模組 C，然後模組 B 也直接依賴了模組 C，那麼你在專案 A 中的 go.mod 檔案裡的 replace c=&gt;~/some/path/c 是隻會影響專案 A 裡寫的程式碼中，而模組 B 所用到的還是你 replace 之前的那個 c，並不是你替換成的 ~/some/path/c 這個。</p>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>在 Go1.13 釋出後，接觸 Go modules 和 Go module proxy 的人越來越多，經常在各種群看到各種小夥伴在諮詢，包括我自己也貢獻了好幾枚 “坑”，因此我覺得傲飛的這一次 《Go Modules、Go Module Proxy 和 goproxy.cn》的技術分享，非常的有實踐意義。如果後續大家還有什麼建議或問題，歡迎隨時來討論。</p>
+<p>最後，感謝 goproxy.cn 背後的人們（@七牛雲 和 @盛傲飛）對中國 Go 語言社群的無私貢獻和奉獻。</p>
+<h2 id="進一步閱讀"><a class="header" href="#進一步閱讀">進一步閱讀</a></h2>
+<ul>
+<li><a href="https://github.com/developer-learning/night-reading-go/issues/468">night-reading-go/issues/468</a></li>
+<li><a href="https://www.bilibili.com/video/av69111199?from=search&amp;seid=14251207475086319821">B站：【Go 夜讀】第 61 期 Go Modules、Go Module Proxy 和 goproxy.cn</a></li>
+<li><a href="https://www.youtube.com/watch?v=H3LVVwZ9zNY">youtube：【Go 夜讀】第 61 期 Go Modules、Go Module Proxy 和 goproxy.cn</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-1-ke-za-tan/why-vsz-large.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-2-ke-bao-guan-li.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-1-ke-za-tan/why-vsz-large.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-2-ke-bao-guan-li.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

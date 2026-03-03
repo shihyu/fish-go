@@ -1,0 +1,319 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>9.2 爬取汽車之家 二手車產品庫 - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="92-爬取汽車之家-二手車產品庫"><a class="header" href="#92-爬取汽車之家-二手車產品庫">9.2 爬取汽車之家 二手車產品庫</a></h1>
+<p>專案地址：<a href="https://github.com/go-crawler/car-prices">https://github.com/go-crawler/car-prices</a></p>
+<h2 id="目標"><a class="header" href="#目標">目標</a></h2>
+<p>最近經常有人在耳邊提起汽車之家，也好奇二手車在國內的價格是怎麼樣的，因此本次的目標站點是 <a href="https://car.autohome.com.cn/2sc/440399/index.html">汽車之家</a> 的二手車產品庫</p>
+<p><img src="../images/9af5dc2f2e7d-5abe47f82a01f.png" alt="image" /></p>
+<p>分析目標源：</p>
+<ul>
+<li>一頁共24條</li>
+<li>含分頁，但這個老產品庫，在100頁後會存在問題，因此我們爬取99頁</li>
+<li>可以取得全部城市</li>
+<li>共可爬取 19w+ 資料</li>
+</ul>
+<h2 id="開始"><a class="header" href="#開始">開始</a></h2>
+<p>爬取步驟</p>
+<ul>
+<li>取得全部的城市</li>
+<li>拼裝全部城市URL入佇列</li>
+<li>解析二手車頁面結構</li>
+<li>下一頁URL入佇列</li>
+<li>迴圈拉取所有分頁的二手車資料</li>
+<li>迴圈拉取佇列中城市的二手車資料</li>
+<li>等待，確定佇列中無新的 URL</li>
+<li>爬取的二手車資料入庫</li>
+</ul>
+<h3 id="取得城市"><a class="header" href="#取得城市">取得城市</a></h3>
+<p><img src="../images/7ba3d81202ee-5abeff11ef583.png" alt="image" /></p>
+<p>透過頁面檢視，可發現在城市篩選區可得到全部的二手車城市列表，但是你仔細查閱程式碼。會發現它是JS載入進來的，城市也統一放在了一個變數中</p>
+<p><img src="../images/876819ffd913-5abf056389cf0.png" alt="image" /></p>
+<p>有兩種提取方法</p>
+<ul>
+<li>分析JS變數，提取出來</li>
+<li>直接將 <code>areaJson</code> 複製出來作為變數解析</li>
+</ul>
+<p>在這裡我們直接將其複製粘貼出來即可，因為這是比較少變動的值</p>
+<h3 id="取得分頁"><a class="header" href="#取得分頁">取得分頁</a></h3>
+<p><img src="../images/3e0053a979f5-5abf08ec812e2.png" alt="image" /></p>
+<p>透過分析頁面可以得知分頁連結是有一定規律的，例如：<code>/2sc/hangzhou/a0_0msdgscncgpi1ltocsp2exb4/</code>，可以發現 <code>sp%d</code>，<code>sp</code> 後面為頁碼</p>
+<p>按照常理，可以透過預測所有分頁連結，推入佇列後 <code>go routine</code> 一波 即可快速拉取</p>
+<p>但是在這老產品庫存在一個問題，在超過 100 頁後，下一頁永遠是 101 頁</p>
+<p><img src="../images/0ea2555fdf2d-5abf0e1e623ec.png" alt="image" /></p>
+<p>因此我們採取比較傳統的做法，透過拉取下一頁的連結去訪問，以便適應可能的分頁連結改變； 100 頁以後的分頁展示也很奇怪，先忽視</p>
+<h3 id="取得二手車資料"><a class="header" href="#取得二手車資料">取得二手車資料</a></h3>
+<p>頁面結構較為固定，常規的清洗 HTML 即可</p>
+<pre><code class="language-go">func GetCars(doc *goquery.Document) (cars []QcCar) {
+    cityName := GetCityName(doc)
+    doc.Find(".piclist ul li:not(.line)").Each(func(i int, selection *goquery.Selection) {
+        title := selection.Find(".title a").Text()
+        price := selection.Find(".detail .detail-r").Find(".colf8").Text()
+        kilometer := selection.Find(".detail .detail-l").Find("p").Eq(0).Text()
+        year := selection.Find(".detail .detail-l").Find("p").Eq(1).Text()
+
+        kilometer = strings.Join(compileNumber.FindAllString(kilometer, -1), "")
+        year = strings.Join(compileNumber.FindAllString(strings.TrimSpace(year), -1), "")
+        priceS, _ := strconv.ParseFloat(price, 64)
+        kilometerS, _ := strconv.ParseFloat(kilometer, 64)
+        yearS, _ := strconv.Atoi(year)
+
+        cars = append(cars, QcCar{
+            CityName: cityName,
+            Title: title,
+            Price: priceS,
+            Kilometer: kilometerS,
+            Year: yearS,
+        })
+    })
+
+    return cars
+}
+</code></pre>
+<h2 id="資料"><a class="header" href="#資料">資料</a></h2>
+<p><img src="../images/5287bef7cfbe-5abf1d8042196.png" alt="image" /></p>
+<p><img src="../images/935551c8de21-5abfbaa14b09c.png" alt="image" /></p>
+<p>在各城市的平均價格對比中，我們可以發現北上廣深裡的北京、上海、深圳都在榜單上，而近年勢頭較猛的杭州直接佔領了榜首，且後幾名都有一些距離</p>
+<p>而其他城市大致都是梯級下降的趨勢，看來一線城市的二手車也是不便宜了，當然這只是均價</p>
+<p><img src="../images/093f01020892-5abf1dbc665f2.png" alt="image" /></p>
+<p>我們可以看到價格和公里數的對比，上海、成都、鄭州的等比差異是有點大，感覺有需求的話可以在價格和公里數上做一個衡量</p>
+<p><img src="../images/7853596ea827-5abf1e1434edc.png" alt="image" /></p>
+<p>這圖有點兒有趣，粗略的統計了一下總公里數。在前幾張圖裡，平均價格排名較高的統統沒有出現在這裡，反倒是呼和浩特、大慶、中山等出現在了榜首</p>
+<p>是否側面反應了一線城市的車輛更新換代較快，而較後的城市的車輛倒是換代較慢，公里數基本都槓槓的</p>
+<p><img src="../images/99247032e4a6-5abf1e4936640.png" alt="image" /></p>
+<p>透過對標題的分析，可以得知車輛產品庫的命名基本都是品牌名稱+自動/手動+XXXX款+屬性，看標題就能知道個概況了</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<h3 id="爬蟲專案地址"><a class="header" href="#爬蟲專案地址">爬蟲專案地址</a></h3>
+<ul>
+<li><a href="https://github.com/go-crawler/car-prices">https://github.com/go-crawler/car-prices</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-10-ke-pa-chong/douban-top250.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-10-ke-pa-chong/go2018.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-10-ke-pa-chong/douban-top250.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-10-ke-pa-chong/go2018.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

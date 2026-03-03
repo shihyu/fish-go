@@ -1,0 +1,348 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>1.8 簡單圍觀一下有趣的 //go: 指令 - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="18-簡單圍觀一下有趣的-go-指令"><a class="header" href="#18-簡單圍觀一下有趣的-go-指令">1.8 簡單圍觀一下有趣的 //go: 指令</a></h1>
+<p><img src="../images/f83d6b125133-006fVPCvly1g1m1bplu3mj30xc0m8myg.jpg" alt="image" /></p>
+<h2 id="前言"><a class="header" href="#前言">前言</a></h2>
+<p>如果你平時有翻看原始碼的習慣，你肯定會發現。咦，怎麼有的方法上面總是寫著 <code>//go:</code> 這類指令呢。他們到底是幹嘛用的？</p>
+<p>今天我們一同揭開他們的面紗，我將簡單給你介紹一下，它們都負責些什麼</p>
+<h2 id="golinkname"><a class="header" href="#golinkname">go:linkname</a></h2>
+<pre><code>//go:linkname localname importpath.name
+</code></pre>
+<p>該指令指示編譯器使用 <code>importpath.name</code> 作為原始碼中宣告為 <code>localname</code> 的變數或函式的目標檔案符號名稱。但是由於這個偽指令，可以破壞型別系統和包模組化。因此只有引用了 unsafe 包才可以使用</p>
+<p>簡單來講，就是 <code>importpath.name</code> 是 <code>localname</code> 的符號別名，編譯器實際上會呼叫 <code>localname</code> 。但前提是使用了 <code>unsafe</code> 包才能使用</p>
+<h3 id="案例"><a class="header" href="#案例">案例</a></h3>
+<h4 id="timetimego"><a class="header" href="#timetimego">time/time.go</a></h4>
+<pre><code class="language-go">...
+func now() (sec int64, nsec int32, mono int64)
+</code></pre>
+<h4 id="runtimetimestubgo"><a class="header" href="#runtimetimestubgo">runtime/timestub.go</a></h4>
+<pre><code class="language-go">import _ "unsafe" // for go:linkname
+
+//go:linkname time_now time.now
+func time_now() (sec int64, nsec int32, mono int64) {
+    sec, nsec = walltime()
+    return sec, nsec, nanotime() - startNano
+}
+</code></pre>
+<p>在這個案例中可以看到 <code>time.now</code>，它並沒有具體的實作。如果你初看可能會懵逼。這時候建議你全域性搜尋一下原始碼，你就會發現其實作在 <code>runtime.time_now</code> 中</p>
+<p>配合先前的用法解釋，可得知在 runtime 包中，我們聲明瞭 <code>time_now</code> 方法是 <code>time.now</code> 的符號別名。並且在檔案頭引入了 <code>unsafe</code> 達成前提條件</p>
+<h2 id="gonoescape"><a class="header" href="#gonoescape">go:noescape</a></h2>
+<pre><code>//go:noescape
+</code></pre>
+<p>該指令指定下一個有宣告但沒有主體（意味著實作有可能不是 Go）的函式，不允許編譯器對其做逃逸分析</p>
+<p>一般情況下，該指令用於記憶體分配最佳化。因為編譯器預設會進行逃逸分析，會透過規則判定一個變數是分配到堆上還是棧上。但凡事有意外，一些函式雖然逃逸分析其是存放到堆上。但是對於我們來說，它是特別的。我們就可以使用 <code>go:noescape</code> 指令強制要求編譯器將其分配到函式棧上</p>
+<h3 id="案例-1"><a class="header" href="#案例-1">案例</a></h3>
+<pre><code class="language-go">// memmove copies n bytes from "from" to "to".
+// in memmove_*.s
+//go:noescape
+func memmove(to, from unsafe.Pointer, n uintptr)
+</code></pre>
+<p>我們觀察一下這個案例，它滿足了該指令的常見特性。如下：</p>
+<ul>
+<li>memmove_*.s：只有宣告，沒有主體。其主體是由底層彙編實作的</li>
+<li>memmove：函式功能，在棧上處理效能會更好</li>
+</ul>
+<h2 id="gonosplit"><a class="header" href="#gonosplit">go:nosplit</a></h2>
+<pre><code>//go:nosplit
+</code></pre>
+<p>該指令指定檔案中宣告的下一個函式不得包含堆疊溢位檢查。簡單來講，就是這個函式跳過堆疊溢位的檢查</p>
+<h3 id="案例-2"><a class="header" href="#案例-2">案例</a></h3>
+<pre><code class="language-go">//go:nosplit
+func key32(p *uintptr) *uint32 {
+    return (*uint32)(unsafe.Pointer(p))
+}
+</code></pre>
+<h2 id="gonowritebarrierrec"><a class="header" href="#gonowritebarrierrec">go:nowritebarrierrec</a></h2>
+<pre><code>//go:nowritebarrierrec
+</code></pre>
+<p>該指令表示編譯器遇到寫屏障時就會產生一個錯誤，並且允許遞迴。也就是這個函式呼叫的其他函式如果有寫屏障也會報錯。簡單來講，就是針對寫屏障的處理，防止其死迴圈</p>
+<h3 id="案例-3"><a class="header" href="#案例-3">案例</a></h3>
+<pre><code class="language-go">//go:nowritebarrierrec
+func gcFlushBgCredit(scanWork int64) {
+    ...
+}
+</code></pre>
+<h2 id="goyeswritebarrierrec"><a class="header" href="#goyeswritebarrierrec">go:yeswritebarrierrec</a></h2>
+<pre><code>//go:yeswritebarrierrec
+</code></pre>
+<p>該指令與 <code>go:nowritebarrierrec</code> 相對，在標註 <code>go:nowritebarrierrec</code> 指令的函式上，遇到寫屏障會產生錯誤。而當編譯器遇到 <code>go:yeswritebarrierrec</code> 指令時將會停止</p>
+<h3 id="案例-4"><a class="header" href="#案例-4">案例</a></h3>
+<pre><code class="language-go">//go:yeswritebarrierrec
+func gchelper() {
+    ...
+}
+</code></pre>
+<h2 id="gonoinline"><a class="header" href="#gonoinline">go:noinline</a></h2>
+<p>該指令表示該函式禁止進行內聯</p>
+<h3 id="案例-5"><a class="header" href="#案例-5">案例</a></h3>
+<pre><code class="language-go">//go:noinline
+func unexportedPanicForTesting(b []byte, i int) byte {
+    return b[i]
+}
+</code></pre>
+<p>我們觀察一下這個案例，是直接透過索引取值，邏輯比較簡單。如果不加上 <code>go:noinline</code> 的話，就會出現編譯器對其進行內聯最佳化</p>
+<p>顯然，內聯有好有壞。該指令就是提供這一特殊處理</p>
+<h2 id="gonorace"><a class="header" href="#gonorace">go:norace</a></h2>
+<pre><code>//go:norace
+</code></pre>
+<p>該指令表示禁止進行競態檢測。而另外一種常見的形式就是在啟動時執行 <code>go run -race</code>，能夠檢測應用程式中是否存在雙向的資料競爭。非常有用</p>
+<h3 id="案例-6"><a class="header" href="#案例-6">案例</a></h3>
+<pre><code class="language-go">//go:norace
+func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr *ProcAttr, sys *SysProcAttr, pipe int) (pid int, err Errno) {
+    ...
+}
+</code></pre>
+<h2 id="gonotinheap"><a class="header" href="#gonotinheap">go:notinheap</a></h2>
+<pre><code>//go:notinheap
+</code></pre>
+<p>該指令常用於型別宣告，它表示這個型別不允許從 GC 堆上進行申請記憶體。在執行時中常用其來做較低層次的內部結構，避免排程器和記憶體分配中的寫屏障。能夠提高效能</p>
+<h3 id="案例-7"><a class="header" href="#案例-7">案例</a></h3>
+<pre><code class="language-go">// notInHeap is off-heap memory allocated by a lower-level allocator
+// like sysAlloc or persistentAlloc.
+//
+// In general, it's better to use real types marked as go:notinheap,
+// but this serves as a generic type for situations where that isn't
+// possible (like in the allocators).
+//
+//go:notinheap
+type notInHeap struct{}
+</code></pre>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>在本文我們簡單介紹了一些常見的指令集，我建議僅供瞭解。一般我們是用不到的，因為你的瓶頸可能更多的在自身應用上</p>
+<p>但是瞭解這一些，對你瞭解底層原始碼和執行機制會更有幫助。如果想再深入些，可閱讀我給出的參考連結 ：）</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<ul>
+<li><a href="https://github.com/golang/go/blob/master/src/runtime/HACKING.md">HACKING</a></li>
+<li><a href="https://golang.org/cmd/compile/">Command compile</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-1-ke-za-tan/for-loop-json-unmarshal.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-1-ke-za-tan/stack-heap.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-1-ke-za-tan/for-loop-json-unmarshal.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-1-ke-za-tan/stack-heap.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

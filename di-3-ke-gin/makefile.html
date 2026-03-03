@@ -1,0 +1,333 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3.19 請入門 Makefile - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="319-請入門-makefile"><a class="header" href="#319-請入門-makefile">3.19 請入門 Makefile</a></h1>
+<p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
+<h2 id="知識點"><a class="header" href="#知識點">知識點</a></h2>
+<ul>
+<li>寫一個 Makefile</li>
+</ul>
+<h2 id="本文目標"><a class="header" href="#本文目標">本文目標</a></h2>
+<p>含一定複雜度的軟體工程，基本上都是先編譯 A，再依賴 B，再編譯 C...，最後才執行構建。如果每次都人為編排，又或是每新來一個同事就問你專案 D 怎麼構建、重新構建需要注意什麼...等等情況，豈不是要崩潰？</p>
+<p>我們常常會在開源專案中發現 Makefile，你是否有過疑問？</p>
+<p>本章節會簡單介紹 Makefile 的使用方式，最後建議深入學習。</p>
+<h2 id="怎麼解決"><a class="header" href="#怎麼解決">怎麼解決</a></h2>
+<p>對於構建編排，Docker 有 Dockerfile ，在 Unix 中有神器 <a href="https://en.wikipedia.org/wiki/Make_(software)">Make</a> ....</p>
+<h2 id="make"><a class="header" href="#make">Make</a></h2>
+<h3 id="是什麼"><a class="header" href="#是什麼">是什麼</a></h3>
+<p>Make 是一個構建自動化工具，會在當前目錄下尋找 Makefile 或 makefile 檔案。如果存在，會依據 Makefile 的<strong>構建規則</strong>去完成構建</p>
+<p>當然了，實際上 Makefile 內都是你根據 make 語法規則，自己編寫的特定 Shell 命令等</p>
+<p>它是一個工具，規則也很簡單。在支援的範圍內，編譯 A， 依賴 B，再編譯 C，完全沒問題</p>
+<h3 id="規則"><a class="header" href="#規則">規則</a></h3>
+<p>Makefile 由多條規則組成，每條規則都以一個 target（目標）開頭，後跟一個 : 冒號，冒號後是這一個目標的 prerequisites（前置條件）</p>
+<p>緊接著新的一行，必須以一個 tab 作為開頭，後面跟隨 command（命令），也就是你希望這一個 target 所執行的構建命令</p>
+<pre><code>[target] ... : [prerequisites] ...
+&lt;tab&gt;[command]
+    ...
+    ...
+</code></pre>
+<ul>
+<li>target：一個目標代表一條規則，可以是一個或多個檔名。也可以是某個操作的名字（標籤），稱為<strong>偽目標（phony）</strong></li>
+<li>prerequisites：前置條件，這一項是<strong>可選引數</strong>。通常是多個檔名、偽目標。它的作用是 target 是否需要重新構建的標準，如果前置條件不存在或有過更新（檔案的最後一次修改時間）則認為 target 需要重新構建</li>
+<li>command：構建這一個 target 的具體命令集</li>
+</ul>
+<h3 id="簡單的例子"><a class="header" href="#簡單的例子">簡單的例子</a></h3>
+<p>本文將以 <a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a> 去編寫 Makefile 檔案，請跨入 make 的大門</p>
+<h4 id="分析"><a class="header" href="#分析">分析</a></h4>
+<p>在編寫 Makefile 前，需要先分析構建先後順序、依賴項，需要解決的問題等</p>
+<h4 id="編寫"><a class="header" href="#編寫">編寫</a></h4>
+<pre><code>.PHONY: build clean tool lint help
+
+all: build
+
+build:
+    go build -v .
+
+tool:
+    go tool vet . |&amp; grep -v vendor; true
+    gofmt -w .
+
+lint:
+    golint ./...
+
+clean:
+    rm -rf go-gin-example
+    go clean -i .
+
+help:
+    @echo "make: compile packages and dependencies"
+    @echo "make tool: run specified go tool"
+    @echo "make lint: golint ./..."
+    @echo "make clean: remove object files and cached files"
+</code></pre>
+<p>1、在上述檔案中，使用了 <code>.PHONY</code>，其作用是宣告 build / clean / tool / lint / help 為<strong>偽目標</strong>，宣告為偽目標會怎麼樣呢？</p>
+<ul>
+<li>宣告為偽目標後：在執行對應的命令時，make 就不會去檢查是否存在 build / clean / tool / lint / help 其對應的檔案，而是每次都會執行標籤對應的命令</li>
+<li>若不宣告：恰好存在對應的檔案，則 make 將會認為 xx 檔案已存在，沒有重新構建的必要了</li>
+</ul>
+<p>2、這塊比較簡單，在命令列執行即可看見效果，實作了以下功能：</p>
+<ol>
+<li>make: make 就是 make all</li>
+<li>make build: 編譯當前專案的包和依賴項</li>
+<li>make tool: 執行指定的 Go 工具集</li>
+<li>make lint: golint 一下</li>
+<li>make clean: 刪除物件檔案和快取檔案</li>
+<li>make help: help</li>
+</ol>
+<h4 id="為什麼會列印執行的命令"><a class="header" href="#為什麼會列印執行的命令">為什麼會列印執行的命令</a></h4>
+<p>如果你實際操作過，可能會有疑問。明明只是執行命令，為什麼會列印到標準輸出上了？</p>
+<p><strong>原因</strong></p>
+<p>make 預設會列印每條命令，再執行。這個行為被定義為<strong>回聲</strong></p>
+<p><strong>解決</strong></p>
+<p>可以在對應命令前加上 @，可指定該命令不被列印到標準輸出上</p>
+<pre><code>build:
+    @go build -v .
+</code></pre>
+<p>那麼還有其他的特殊符號嗎？有的，請課後去了解下 +、- 的用途 🤩</p>
+<h2 id="小結"><a class="header" href="#小結">小結</a></h2>
+<p>這是一篇比較簡潔的文章，希望可以讓您對 Makefile 有一個基本瞭解。</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<h3 id="本系列示例程式碼"><a class="header" href="#本系列示例程式碼">本系列示例程式碼</a></h3>
+<ul>
+<li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
+</ul>
+<h2 id="關於"><a class="header" href="#關於">關於</a></h2>
+<h3 id="修改記錄"><a class="header" href="#修改記錄">修改記錄</a></h3>
+<ul>
+<li>第一版：2018年02月16日釋出文章</li>
+<li>第二版：2019年10月01日修改文章</li>
+</ul>
+<h2 id=""><a class="header" href="#">？</a></h2>
+<p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
+<h3 id="我的微信公眾號"><a class="header" href="#我的微信公眾號">我的微信公眾號</a></h3>
+<p><img src="../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-3-ke-gin/cgo.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-4-ke-grpc.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-3-ke-gin/cgo.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-4-ke-grpc.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

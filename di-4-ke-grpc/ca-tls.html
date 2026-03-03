@@ -1,0 +1,473 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>4.5 基於 CA 的 TLS 證書認證 - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="45-基於-ca-的-tls-證書認證"><a class="header" href="#45-基於-ca-的-tls-證書認證">4.5 基於 CA 的 TLS 證書認證</a></h1>
+<p>專案地址：<a href="https://github.com/EDDYCJY/go-grpc-example">https://github.com/EDDYCJY/go-grpc-example</a></p>
+<h2 id="前言"><a class="header" href="#前言">前言</a></h2>
+<p>在上一章節中，我們提出了一個問題。就是如何保證證書的可靠性和有效性？你如何確定你 Server、Client 的證書是對的呢？</p>
+<h2 id="ca"><a class="header" href="#ca">CA</a></h2>
+<p>為了保證證書的可靠性和有效性，在這裡可引入 CA 頒發的根證書的概念。其遵守 X.509 標準</p>
+<h3 id="根證書"><a class="header" href="#根證書">根證書</a></h3>
+<p>根證書（root certificate）是屬於根證書頒發機構（CA）的公鑰證書。我們可以透過驗證 CA 的簽名從而信任 CA ，任何人都可以得到 CA 的證書（含公鑰），用以驗證它所簽發的證書（客戶端、服務端）</p>
+<p>它包含的檔案如下：</p>
+<ul>
+<li>公鑰</li>
+<li>金鑰</li>
+</ul>
+<h3 id="生成-key"><a class="header" href="#生成-key">生成 Key</a></h3>
+<pre><code>openssl genrsa -out ca.key 2048
+</code></pre>
+<h3 id="生成金鑰"><a class="header" href="#生成金鑰">生成金鑰</a></h3>
+<pre><code>openssl req -new -x509 -days 7200 -key ca.key -out ca.pem
+</code></pre>
+<h4 id="填寫資訊"><a class="header" href="#填寫資訊">填寫資訊</a></h4>
+<pre><code>Country Name (2 letter code) []:
+State or Province Name (full name) []:
+Locality Name (eg, city) []:
+Organization Name (eg, company) []:
+Organizational Unit Name (eg, section) []:
+Common Name (eg, fully qualified host name) []:go-grpc-example
+Email Address []:
+</code></pre>
+<h3 id="server"><a class="header" href="#server">Server</a></h3>
+<h4 id="生成-csr"><a class="header" href="#生成-csr">生成 CSR</a></h4>
+<pre><code>openssl req -new -key server.key -out server.csr
+</code></pre>
+<p><strong>填寫資訊</strong></p>
+<pre><code>Country Name (2 letter code) []:
+State or Province Name (full name) []:
+Locality Name (eg, city) []:
+Organization Name (eg, company) []:
+Organizational Unit Name (eg, section) []:
+Common Name (eg, fully qualified host name) []:go-grpc-example
+Email Address []:
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []:
+</code></pre>
+<p>CSR 是 Cerificate Signing Request 的英文縮寫，為證書請求檔案。主要作用是 CA 會利用 CSR 檔案進行簽名使得攻擊者無法偽裝或篡改原有證書</p>
+<h4 id="基於-ca-簽發"><a class="header" href="#基於-ca-簽發">基於 CA 簽發</a></h4>
+<pre><code>openssl x509 -req -sha256 -CA ca.pem -CAkey ca.key -CAcreateserial -days 3650 -in server.csr -out server.pem
+</code></pre>
+<h3 id="client"><a class="header" href="#client">Client</a></h3>
+<h3 id="生成-key-1"><a class="header" href="#生成-key-1">生成 Key</a></h3>
+<pre><code>openssl ecparam -genkey -name secp384r1 -out client.key
+</code></pre>
+<h3 id="生成-csr-1"><a class="header" href="#生成-csr-1">生成 CSR</a></h3>
+<pre><code>openssl req -new -key client.key -out client.csr
+</code></pre>
+<h4 id="基於-ca-簽發-1"><a class="header" href="#基於-ca-簽發-1">基於 CA 簽發</a></h4>
+<pre><code>openssl x509 -req -sha256 -CA ca.pem -CAkey ca.key -CAcreateserial -days 3650 -in client.csr -out client.pem
+</code></pre>
+<h3 id="整理目錄"><a class="header" href="#整理目錄">整理目錄</a></h3>
+<p>至此我們生成了一堆檔案，請按照以下目錄結構存放：</p>
+<pre><code>$ tree conf 
+conf
+├── ca.key
+├── ca.pem
+├── ca.srl
+├── client
+│   ├── client.csr
+│   ├── client.key
+│   └── client.pem
+└── server
+    ├── server.csr
+    ├── server.key
+    └── server.pem
+</code></pre>
+<p>另外有一些檔案是不應該出現在倉庫內，應當保密或刪除的。但為了真實演示所以保留著（敲黑板）</p>
+<h2 id="grpc"><a class="header" href="#grpc">gRPC</a></h2>
+<p>接下來將正式開始針對 gRPC 進行編碼，改造上一章節的程式碼。目標是基於 CA 進行 TLS 認證 🤫</p>
+<h3 id="server-1"><a class="header" href="#server-1">Server</a></h3>
+<pre><code class="language-go">package main
+
+import (
+    "context"
+    "log"
+    "net"
+    "crypto/tls"
+    "crypto/x509"
+    "io/ioutil"
+
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/credentials"
+
+    pb "github.com/EDDYCJY/go-grpc-example/proto"
+)
+
+...
+
+const PORT = "9001"
+
+func main() {
+    cert, err := tls.LoadX509KeyPair("../../conf/server/server.pem", "../../conf/server/server.key")
+    if err != nil {
+        log.Fatalf("tls.LoadX509KeyPair err: %v", err)
+    }
+
+    certPool := x509.NewCertPool()
+    ca, err := ioutil.ReadFile("../../conf/ca.pem")
+    if err != nil {
+        log.Fatalf("ioutil.ReadFile err: %v", err)
+    }
+
+    if ok := certPool.AppendCertsFromPEM(ca); !ok {
+        log.Fatalf("certPool.AppendCertsFromPEM err")
+    }
+
+    c := credentials.NewTLS(&amp;tls.Config{
+        Certificates: []tls.Certificate{cert},
+        ClientAuth:   tls.RequireAndVerifyClientCert,
+        ClientCAs:    certPool,
+    })
+
+    server := grpc.NewServer(grpc.Creds(c))
+    pb.RegisterSearchServiceServer(server, &amp;SearchService{})
+
+    lis, err := net.Listen("tcp", ":"+PORT)
+    if err != nil {
+        log.Fatalf("net.Listen err: %v", err)
+    }
+
+    server.Serve(lis)
+}
+</code></pre>
+<ul>
+<li>tls.LoadX509KeyPair()：從證書相關檔案中<strong>讀取</strong>和<strong>解析</strong>資訊，得到證書公鑰、金鑰對</li>
+</ul>
+<pre><code class="language-go">func LoadX509KeyPair(certFile, keyFile string) (Certificate, error) {
+    certPEMBlock, err := ioutil.ReadFile(certFile)
+    if err != nil {
+        return Certificate{}, err
+    }
+    keyPEMBlock, err := ioutil.ReadFile(keyFile)
+    if err != nil {
+        return Certificate{}, err
+    }
+    return X509KeyPair(certPEMBlock, keyPEMBlock)
+}
+</code></pre>
+<ul>
+<li>x509.NewCertPool()：建立一個新的、空的 CertPool</li>
+<li>certPool.AppendCertsFromPEM()：嘗試解析所傳入的 PEM 編碼的證書。如果解析成功會將其加到 CertPool 中，便於後面的使用</li>
+<li>credentials.NewTLS：構建基於 TLS 的 TransportCredentials 選項</li>
+<li>tls.Config：Config 結構用於設定 TLS 客戶端或伺服器</li>
+</ul>
+<p>在 Server，共使用了三個 Config 設定項：</p>
+<p>（1）Certificates：設定證書鏈，允許包含一個或多個</p>
+<p>（2）ClientAuth：要求必須校驗客戶端的證書。可以根據實際情況選用以下引數：</p>
+<pre><code>const (
+    NoClientCert ClientAuthType = iota
+    RequestClientCert
+    RequireAnyClientCert
+    VerifyClientCertIfGiven
+    RequireAndVerifyClientCert
+)
+</code></pre>
+<p>（3）ClientCAs：設定根證書的集合，校驗方式使用 ClientAuth 中設定的模式</p>
+<h3 id="client-1"><a class="header" href="#client-1">Client</a></h3>
+<pre><code class="language-go">package main
+
+import (
+    "context"
+    "crypto/tls"
+    "crypto/x509"
+    "io/ioutil"
+    "log"
+
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/credentials"
+
+    pb "github.com/EDDYCJY/go-grpc-example/proto"
+)
+
+const PORT = "9001"
+
+func main() {
+    cert, err := tls.LoadX509KeyPair("../../conf/client/client.pem", "../../conf/client/client.key")
+    if err != nil {
+        log.Fatalf("tls.LoadX509KeyPair err: %v", err)
+    }
+
+    certPool := x509.NewCertPool()
+    ca, err := ioutil.ReadFile("../../conf/ca.pem")
+    if err != nil {
+        log.Fatalf("ioutil.ReadFile err: %v", err)
+    }
+
+    if ok := certPool.AppendCertsFromPEM(ca); !ok {
+        log.Fatalf("certPool.AppendCertsFromPEM err")
+    }
+
+    c := credentials.NewTLS(&amp;tls.Config{
+        Certificates: []tls.Certificate{cert},
+        ServerName:   "go-grpc-example",
+        RootCAs:      certPool,
+    })
+
+    conn, err := grpc.Dial(":"+PORT, grpc.WithTransportCredentials(c))
+    if err != nil {
+        log.Fatalf("grpc.Dial err: %v", err)
+    }
+    defer conn.Close()
+
+    client := pb.NewSearchServiceClient(conn)
+    resp, err := client.Search(context.Background(), &amp;pb.SearchRequest{
+        Request: "gRPC",
+    })
+    if err != nil {
+        log.Fatalf("client.Search err: %v", err)
+    }
+
+    log.Printf("resp: %s", resp.GetResponse())
+}
+</code></pre>
+<p>在 Client 中絕大部分與 Server 一致，不同點的地方是，在 Client 請求 Server 端時，Client 端會使用根證書和 ServerName 去對 Server 端進行校驗</p>
+<p>簡單流程大致如下：</p>
+<ol>
+<li>Client 透過請求得到 Server 端的證書</li>
+<li>使用 CA 認證的根證書對 Server 端的證書進行可靠性、有效性等校驗</li>
+<li>校驗 ServerName 是否可用、有效</li>
+</ol>
+<p>當然了，在設定了 <code>tls.RequireAndVerifyClientCert</code> 模式的情況下，Server 也會使用 CA 認證的根證書對 Client 端的證書進行可靠性、有效性等校驗。也就是兩邊都會進行校驗，極大的保證了安全性 👍</p>
+<h3 id="驗證"><a class="header" href="#驗證">驗證</a></h3>
+<p>重新啟動 server.go 和執行 client.go，檢視響應結果是否正常</p>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>在本章節，我們使用 CA 頒發的根證書對客戶端、服務端的證書進行了簽發。進一步的提高了兩者的通訊安全</p>
+<p>這回是真的大功告成了！</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<h3 id="本系列示例程式碼"><a class="header" href="#本系列示例程式碼">本系列示例程式碼</a></h3>
+<ul>
+<li><a href="https://github.com/EDDYCJY/go-grpc-example">go-grpc-example</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-4-ke-grpc/grpc-tls.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-4-ke-grpc/interceptor.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-4-ke-grpc/grpc-tls.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-4-ke-grpc/interceptor.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

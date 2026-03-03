@@ -1,0 +1,325 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>1.10 defer 會有效能損耗，儘量不要用 - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="110-defer-會有效能損耗儘量不要用"><a class="header" href="#110-defer-會有效能損耗儘量不要用">1.10 defer 會有效能損耗，儘量不要用</a></h1>
+<p><img src="../images/f4e011af03ac-YlKjnSH.jpg" alt="image" /></p>
+<p>上個月在 @polaris @軒脈刃 的全棧技術群裡看到一個小夥伴問 <strong>“說 defer 在棧退出時執行，會有效能損耗，儘量不要用，這個怎麼解？”</strong>。</p>
+<p>恰好前段時間寫了一篇 <a href="https://segmentfault.com/a/1190000019303572">《深入理解 Go defer》</a> 去詳細剖析 <code>defer</code> 關鍵字。那麼這一次簡單結合前文對這個問題進行探討一波，希望對你有所幫助，但在此之前希望你花幾分鐘，自己思考一下答案，再繼續往下看。</p>
+<h2 id="測試"><a class="header" href="#測試">測試</a></h2>
+<pre><code class="language-go">func DoDefer(key, value string) {
+    defer func(key, value string) {
+        _ = key + value
+    }(key, value)
+}
+
+func DoNotDefer(key, value string) {
+    _ = key + value
+}
+</code></pre>
+<p>基準測試：</p>
+<pre><code class="language-go">func BenchmarkDoDefer(b *testing.B) {
+    for i := 0; i &lt; b.N; i++ {
+        DoDefer("煎鱼", "https://github.com/EDDYCJY/blog")
+    }
+}
+
+func BenchmarkDoNotDefer(b *testing.B) {
+    for i := 0; i &lt; b.N; i++ {
+        DoNotDefer("煎鱼", "https://github.com/EDDYCJY/blog")
+    }
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>$ go test -bench=. -benchmem -run=none
+goos: darwin
+goarch: amd64
+pkg: github.com/EDDYCJY/awesomeDefer
+BenchmarkDoDefer-4          20000000            91.4 ns/op          48 B/op           1 allocs/op
+BenchmarkDoNotDefer-4       30000000            41.6 ns/op          48 B/op           1 allocs/op
+PASS
+ok      github.com/EDDYCJY/awesomeDefer    3.234s
+</code></pre>
+<p>從結果上來，使用 <code>defer</code> 後的函式開銷確實比沒使用高了不少，這損耗用到哪裡去了呢？</p>
+<h2 id="想一下"><a class="header" href="#想一下">想一下</a></h2>
+<pre><code>$ go tool compile -S main.go 
+"".main STEXT size=163 args=0x0 locals=0x40
+    ...
+    0x0059 00089 (main.go:6)    MOVQ    AX, 16(SP)
+    0x005e 00094 (main.go:6)    MOVQ    $1, 24(SP)
+    0x0067 00103 (main.go:6)    MOVQ    $1, 32(SP)
+    0x0070 00112 (main.go:6)    CALL    runtime.deferproc(SB)
+    0x0075 00117 (main.go:6)    TESTL    AX, AX
+    0x0077 00119 (main.go:6)    JNE    137
+    0x0079 00121 (main.go:7)    XCHGL    AX, AX
+    0x007a 00122 (main.go:7)    CALL    runtime.deferreturn(SB)
+    0x007f 00127 (main.go:7)    MOVQ    56(SP), BP
+    0x0084 00132 (main.go:7)    ADDQ    $64, SP
+    0x0088 00136 (main.go:7)    RET
+    0x0089 00137 (main.go:6)    XCHGL    AX, AX
+    0x008a 00138 (main.go:6)    CALL    runtime.deferreturn(SB)
+    0x008f 00143 (main.go:6)    MOVQ    56(SP), BP
+    0x0094 00148 (main.go:6)    ADDQ    $64, SP
+    0x0098 00152 (main.go:6)    RET
+    ...
+</code></pre>
+<p>我們在前文提到 <code>defer</code> 關鍵字其實涉及了一系列的連鎖呼叫，內部 <code>runtime</code> 函式的呼叫就至少多了三步，分別是 <code>runtime.deferproc</code> 一次和 <code>runtime.deferreturn</code> 兩次。</p>
+<p>而這還只是在執行時的顯式動作，另外編譯器做的事也不少，例如：</p>
+<ul>
+<li>在 <code>deferproc</code> 階段（註冊延遲呼叫），還得取得/傳入目標函式地址、函式引數等等。</li>
+<li>在 <code>deferreturn</code> 階段，需要在函式呼叫結尾處插入該方法的呼叫，同時若有被 <code>defer</code> 的函式，還需要使用 <code>runtime·jmpdefer</code> 進行跳轉以便於後續呼叫。</li>
+</ul>
+<p>這一些動作途中還要涉及最小單元 <code>_defer</code> 的取得/生成， <code>defer</code> 和 <code>recover</code> 連結串列的邏輯處理和消耗等動作。</p>
+<h2 id="qa"><a class="header" href="#qa">Q&amp;A</a></h2>
+<p>最後討論的時候有提到 <strong>“問題指的是本來就是用來執行 close() 一些操作的，然後說盡量不能用，例子就把 defer db.close() 前面的 defer 刪去了”</strong> 這個疑問。</p>
+<p>這是一個比較類似 “教科書” 式的說法，在一些入門教程中會潛移默化的告訴你在資源控制後加個 <code>defer</code> 延遲關閉一下。例如：</p>
+<pre><code class="language-go">resp, err := http.Get(...)
+if err != nil {
+    return err
+}
+defer resp.Body.Close()
+</code></pre>
+<p>但是一定得這麼寫嗎？其實並不，很多人給出的理由都是 “怕你忘記” 這種說辭，這沒有毛病。但需要認清場景，假設我的應用場景如下：</p>
+<pre><code class="language-go">resp, err := http.Get(...)
+if err != nil {
+    return err
+}
+defer resp.Body.Close()
+// do something
+time.Sleep(time.Second * 60)
+</code></pre>
+<p>嗯，一個請求當然沒問題，流量、併發一下子大了呢，那可能就是個災難了。你想想為什麼？從常見的 <code>defer</code> + <code>close</code> 的使用組合來講，用之前建議先看清楚應用場景，在保證無異常的情況下確保儘早關閉才是首選。如果只是小範圍呼叫很快就返回的話，偷個懶直接一套組合拳出去也未嘗不可。</p>
+<h2 id="結論"><a class="header" href="#結論">結論</a></h2>
+<p>一個 <code>defer</code> 關鍵字實際上包含了不少的動作和處理，和你單純呼叫一個函式一條指令是沒法比的。而與對照物相比，它確確實實是有效能損耗，目前延遲呼叫的全部開銷大約在 50ns，但 <code>defer</code> 所提供的作用遠遠大於此，你從全域性來看，它的損耗非常小，並且官方還不斷地在最佳化中。</p>
+<p>因此，對於 “Go defer 會有效能損耗，儘量不能用？” 這個問題，我認為<strong>該用就用，應該及時關閉就不要延遲，在 hot paths 用時一定要想清楚場景</strong>。</p>
+<h2 id="補充"><a class="header" href="#補充">補充</a></h2>
+<p>最後補充上柴大的回覆：<strong>“不是效能問題，defer 最大的功能是 Panic 後依然有效。如果沒有 defer，Panic 後就會導致 unlock 丟失，從而導致死鎖了”</strong>，非常經典。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-1-ke-za-tan/stack-heap.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-1-ke-za-tan/talking-grpc.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-1-ke-za-tan/stack-heap.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-1-ke-za-tan/talking-grpc.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

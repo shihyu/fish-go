@@ -1,0 +1,446 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>8.2 log - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="82-log"><a class="header" href="#82-log">8.2 log</a></h1>
+<h2 id="日誌"><a class="header" href="#日誌">日誌</a></h2>
+<h3 id="輸出"><a class="header" href="#輸出">輸出</a></h3>
+<pre><code>2018/09/28 20:03:08 EDDYCJY Blog...
+</code></pre>
+<h3 id="構成"><a class="header" href="#構成">構成</a></h3>
+<p>[日期]&lt;空格&gt;[時分秒]&lt;空格&gt;[內容]&lt;\n&gt;</p>
+<h2 id="原始碼剖析"><a class="header" href="#原始碼剖析">原始碼剖析</a></h2>
+<h3 id="logger"><a class="header" href="#logger">Logger</a></h3>
+<pre><code class="language-go">type Logger struct {
+    mu     sync.Mutex 
+    prefix string
+    flag   int
+    out    io.Writer
+    buf    []byte
+}
+</code></pre>
+<ol>
+<li>mu：互斥鎖，用於確保原子的寫入</li>
+<li>prefix：每行需寫入的日誌字首內容</li>
+<li>flag：設定日誌輔助資訊（時間、檔名、行號）的寫入。可選如下標識位：</li>
+</ol>
+<pre><code>const (
+    Ldate         = 1 &lt;&lt; iota       // value: 1
+    Ltime                           // value: 2
+    Lmicroseconds                   // value: 4
+    Llongfile                       // value: 8
+    Lshortfile                      // value: 16
+    LUTC                            // value: 32
+    LstdFlags     = Ldate | Ltime   // value: 3
+)
+</code></pre>
+<ul>
+<li>Ldate：當地時區的格式化日期：2009/01/23</li>
+<li>Ltime：當地時區的格式化時間：01:23:23</li>
+<li>Lmicroseconds：在 Ltime 的基礎上，增加微秒的時間數值顯示</li>
+<li>Llongfile：完整的檔名和行號：/a/b/c/d.go:23</li>
+<li>Lshortfile：當前檔名和行號：d.go：23，會覆蓋 Llongfile 標識</li>
+<li>LUTC：如果設定 Ldate 或 Ltime，且設定 LUTC，則優先使用 UTC 時區而不是本地時區</li>
+<li>LstdFlags：Logger 的預設初始值（Ldate 和 Ltime）</li>
+<li>out：io.Writer</li>
+<li>buf：用於儲存將要寫入的日誌內容</li>
+</ul>
+<h3 id="new"><a class="header" href="#new">New</a></h3>
+<pre><code class="language-go">func New(out io.Writer, prefix string, flag int) *Logger {
+    return &amp;Logger{out: out, prefix: prefix, flag: flag}
+}
+
+var std = New(os.Stderr, "", LstdFlags)
+</code></pre>
+<p>New 方法用於初始化 Logger，接受三個初始引數，可以定製化而在 log 包內預設會初始一個 std，它指向標準輸入流。而預設的標準輸出、標準錯誤就是顯示器（輸出到螢幕上），標準輸入就是鍵盤。輔助的時間資訊預設為 <code>Ldate | Ltime</code>，也就是 <code>2009/01/23 01:23:23</code></p>
+<pre><code>// os
+var (
+    Stdin  = NewFile(uintptr(syscall.Stdin), "/dev/stdin")
+    Stdout = NewFile(uintptr(syscall.Stdout), "/dev/stdout")
+    Stderr = NewFile(uintptr(syscall.Stderr), "/dev/stderr")
+)
+</code></pre>
+<ul>
+<li>Stdin：標準輸入</li>
+<li>Stdout：標準輸出</li>
+<li>Stderr：標準錯誤</li>
+</ul>
+<h3 id="getter"><a class="header" href="#getter">Getter</a></h3>
+<ul>
+<li>Flags</li>
+<li>Prefix</li>
+</ul>
+<h3 id="setter"><a class="header" href="#setter">Setter</a></h3>
+<ul>
+<li>SetFlags</li>
+<li>SetPrefix</li>
+<li>SetOutput</li>
+</ul>
+<h3 id="print-fatal-panic"><a class="header" href="#print-fatal-panic">Print<em>, Fatal</em>, Panic*</a></h3>
+<pre><code class="language-go">func Print(v ...interface{}) {
+    std.Output(2, fmt.Sprint(v...))
+}
+
+func Printf(format string, v ...interface{}) {
+    std.Output(2, fmt.Sprintf(format, v...))
+}
+
+func Println(v ...interface{}) {
+    std.Output(2, fmt.Sprintln(v...))
+}
+
+func Fatal(v ...interface{}) {
+    std.Output(2, fmt.Sprint(v...))
+    os.Exit(1)
+}
+
+func Panic(v ...interface{}) {
+    s := fmt.Sprint(v...)
+    std.Output(2, s)
+    panic(s)
+}
+
+...
+</code></pre>
+<p>這一部分介紹最常用的日誌寫入方法，從原始碼可得知 <code>Xrintln</code>、<code>Xrintf</code> 函式 <strong>換行</strong>、<strong>可變引數</strong>都是透過 <code>fmt</code> 標準庫的方法去實作的</p>
+<p><code>Fatal</code> 和 <code>Panic</code> 是透過 <code>os.Exit(1)</code>、<code>panic(s)</code> 整合實作的。而具體的組裝邏輯是透過 <code>Output</code> 方法實作的</p>
+<h4 id="loggeroutput"><a class="header" href="#loggeroutput">Logger.Output</a></h4>
+<pre><code class="language-go">func (l *Logger) Output(calldepth int, s string) error {
+    now := time.Now() // get this early.
+    var file string
+    var line int
+    l.mu.Lock()
+    defer l.mu.Unlock()
+    if l.flag&amp;(Lshortfile|Llongfile) != 0 {
+        // Release lock while getting caller info - it's expensive.
+        l.mu.Unlock()
+        var ok bool
+        _, file, line, ok = runtime.Caller(calldepth)
+        if !ok {
+            file = "???"
+            line = 0
+        }
+        l.mu.Lock()
+    }
+    l.buf = l.buf[:0]
+    l.formatHeader(&amp;l.buf, now, file, line)
+    l.buf = append(l.buf, s...)
+    if len(s) == 0 || s[len(s)-1] != '\n' {
+        l.buf = append(l.buf, '\n')
+    }
+    _, err := l.out.Write(l.buf)
+    return err
+}
+</code></pre>
+<p>Output 方法，簡單來講就是將寫入的日誌事件資訊組裝並輸出，它會根據 flag 標識位的不同來使用 <code>runtime.Caller</code> 去取得當前 goroutine 所執行的函式檔案、行號等呼叫資訊（log 標準庫中預設深度為 2）。另外如果結尾不是換行符 <code>\n</code>，將自動補全一個換行</p>
+<h4 id="loggerformatheader"><a class="header" href="#loggerformatheader">Logger.formatHeader</a></h4>
+<pre><code class="language-go">func (l *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int) {
+    *buf = append(*buf, l.prefix...)
+    if l.flag&amp;(Ldate|Ltime|Lmicroseconds) != 0 {
+        if l.flag&amp;LUTC != 0 {
+            t = t.UTC()
+        }
+        if l.flag&amp;Ldate != 0 {
+            year, month, day := t.Date()
+            itoa(buf, year, 4)
+            *buf = append(*buf, '/')
+            itoa(buf, int(month), 2)
+            *buf = append(*buf, '/')
+            itoa(buf, day, 2)
+            *buf = append(*buf, ' ')
+        }
+        if l.flag&amp;(Ltime|Lmicroseconds) != 0 {
+            hour, min, sec := t.Clock()
+            itoa(buf, hour, 2)
+            *buf = append(*buf, ':')
+            itoa(buf, min, 2)
+            *buf = append(*buf, ':')
+            itoa(buf, sec, 2)
+            if l.flag&amp;Lmicroseconds != 0 {
+                *buf = append(*buf, '.')
+                itoa(buf, t.Nanosecond()/1e3, 6)
+            }
+            *buf = append(*buf, ' ')
+        }
+    }
+    if l.flag&amp;(Lshortfile|Llongfile) != 0 {
+        if l.flag&amp;Lshortfile != 0 {
+            short := file
+            for i := len(file) - 1; i &gt; 0; i-- {
+                if file[i] == '/' {
+                    short = file[i+1:]
+                    break
+                }
+            }
+            file = short
+        }
+        *buf = append(*buf, file...)
+        *buf = append(*buf, ':')
+        itoa(buf, line, -1)
+        *buf = append(*buf, ": "...)
+    }
+}
+</code></pre>
+<p>該方法主要是用於格式化日誌頭（字首），根據入參不同的標識位，新增分隔符和對應的值到日誌資訊中。執行流程如下：</p>
+<p>（1）如果不是空值，則將 prefix 寫入 buf</p>
+<p>（2）如果設定 <code>Ldate</code>、<code>Ltime</code>、<code>Lmicroseconds</code>，則對應將日期和時間寫入 buf</p>
+<p>（3）如果設定 <code>Lshortfile</code>、<code>Llongfile</code>，則對應將檔案和行號資訊寫入 buf</p>
+<h4 id="loggeritoa"><a class="header" href="#loggeritoa">Logger.itoa</a></h4>
+<pre><code class="language-go">func itoa(buf *[]byte, i int, wid int) {
+    // Assemble decimal in reverse order.
+    var b [20]byte
+    bp := len(b) - 1
+    for i &gt;= 10 || wid &gt; 1 {
+        wid--
+        q := i / 10
+        b[bp] = byte('0' + i - q*10)
+        bp--
+        i = q
+    }
+    // i &lt; 10
+    b[bp] = byte('0' + i)
+    *buf = append(*buf, b[bp:]...)
+}
+</code></pre>
+<p>該方法主要用於將整數轉換為定長的十進位制 ASCII，同時給出負數寬度避免左側補 0。另外會以相反的順序組合十進位制</p>
+<h3 id="如何定製化-logger"><a class="header" href="#如何定製化-logger">如何定製化 Logger</a></h3>
+<p>在標準庫內，可透過其開放的 New 方法來實作各種各樣的自定義 Logger 元件，但是為什麼也可以直接 <code>log.Print*</code> 等方法呢？</p>
+<pre><code class="language-go">func New(out io.Writer, prefix string, flag int) *Logger
+</code></pre>
+<p>其實是在標準庫內，如果你剛剛細心的看了前面的小節，不難發現其預設實作了一個 Logger 元件</p>
+<pre><code>var std = New(os.Stderr, "", LstdFlags)
+</code></pre>
+<p>這也是一個小小的精妙之處 ⭕️</p>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>透過查閱 log 標準庫的原始碼，可得知最簡單的一個日誌包應該如何編寫。另外 log 包是在所有涉及到 Logger 的地方都對 <code>sync.Mutex</code> 進行操作（以此解決原子問題），其餘邏輯均為組裝日誌資訊和轉換數值格式，該包較為經典，可以多讀幾遍 😄</p>
+<h2 id="問題"><a class="header" href="#問題">問題</a></h2>
+<p>為什麼在呼叫 <code>runtime.Caller</code> 前要先解鎖，後再加鎖呢?</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-8-ke-biao-zhun-ku/fmt.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-8-ke-biao-zhun-ku/unsafe.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-8-ke-biao-zhun-ku/fmt.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-8-ke-biao-zhun-ku/unsafe.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

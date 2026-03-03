@@ -1,0 +1,551 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3.9 將Golang應用部署到Docker - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="39-將golang應用部署到docker"><a class="header" href="#39-將golang應用部署到docker">3.9 將Golang應用部署到Docker</a></h1>
+<p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
+<h2 id="涉及知識點"><a class="header" href="#涉及知識點">涉及知識點</a></h2>
+<ul>
+<li>Go + Docker</li>
+</ul>
+<h2 id="本文目標"><a class="header" href="#本文目標">本文目標</a></h2>
+<p>將我們的 <code>go-gin-example</code> 應用部署到一個 Docker 裡，你需要先準備好如下東西：</p>
+<ul>
+<li>你需要安裝好 <code>docker</code>。</li>
+<li>如果上外網比較吃力，需要配好映象源。</li>
+</ul>
+<h2 id="docker"><a class="header" href="#docker">Docker</a></h2>
+<p>在這裡簡單介紹下Docker，建議深入學習</p>
+<p><img src="https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1521800047226&amp;di=28b2764fccca8a943aea7d79ad8aed98&amp;imgtype=0&amp;src=http%3A%2F%2Fwww.cww.net.cn%2FupLoadFile%2F2014%2F6%2F13%2F201461382247734.png" alt="image" /></p>
+<p>Docker 是一個開源的輕量級容器技術，讓開發者可以打包他們的應用以及應用執行的上下文環境到一個可移植的映象中，然後釋出到任何支援Docker的系統上執行。 透過容器技術，在幾乎沒有效能開銷的情況下，Docker 為應用提供了一個隔離執行環境</p>
+<ul>
+<li>簡化設定</li>
+<li>程式碼流水線管理</li>
+<li>提高開發效率</li>
+<li>隔離應用</li>
+<li>快速、持續部署</li>
+</ul>
+<p>接下來我們正式開始對專案進行 <code>docker</code> 的所需處理和編寫，每一個大標題為步驟大綱</p>
+<h2 id="golang"><a class="header" href="#golang">Golang</a></h2>
+<h3 id="一編寫dockerfile"><a class="header" href="#一編寫dockerfile">一、編寫Dockerfile</a></h3>
+<p>在 <code>go-gin-example</code> 專案根目錄建立 Dockerfile 檔案，寫入內容</p>
+<pre><code>FROM golang:latest
+
+ENV GOPROXY https://goproxy.cn,direct
+WORKDIR $GOPATH/src/github.com/EDDYCJY/go-gin-example
+COPY . $GOPATH/src/github.com/EDDYCJY/go-gin-example
+RUN go build .
+
+EXPOSE 8000
+ENTRYPOINT ["./go-gin-example"]
+</code></pre>
+<h4 id="作用"><a class="header" href="#作用">作用</a></h4>
+<p><code>golang:latest</code> 映象為基礎映象，將工作目錄設定為 <code>$GOPATH/src/go-gin-example</code>，並將當前上下文目錄的內容複製到 <code>$GOPATH/src/go-gin-example</code> 中</p>
+<p>在進行 <code>go build</code> 編譯完畢後，將容器啟動程式設定為 <code>./go-gin-example</code>，也就是我們所編譯的可執行檔案</p>
+<p>注意 <code>go-gin-example</code> 在 <code>docker</code> 容器裡編譯，並沒有在宿主機現場編譯</p>
+<h4 id="說明"><a class="header" href="#說明">說明</a></h4>
+<p>Dockerfile 檔案是用於定義 Docker 映象生成流程的設定檔案，檔案內容是一條條指令，每一條指令構建一層，因此每一條指令的內容，就是描述該層應當如何構建；這些指令應用於基礎映象並最終建立一個新的映象</p>
+<p>你可以認為用於快速建立自定義的 Docker 映象</p>
+<p><strong>1、 FROM</strong></p>
+<p>指定基礎映象（必須有的指令，並且必須是第一條指令）</p>
+<p><strong>2、 WORKDIR</strong></p>
+<p>格式為 <code>WORKDIR</code> &lt;工作目錄路徑&gt;</p>
+<p>使用 <code>WORKDIR</code> 指令可以來<strong>指定工作目錄</strong>（或者稱為當前目錄），以後各層的當前目錄就被改為指定的目錄，如果目錄不存在，<code>WORKDIR</code> 會幫你建立目錄</p>
+<p><strong>3、COPY</strong></p>
+<p>格式：</p>
+<pre><code>COPY &lt;源路径&gt;... &lt;目标路径&gt;
+COPY ["&lt;源路径1&gt;",... "&lt;目标路径&gt;"]
+</code></pre>
+<p><code>COPY</code> 指令將從構建上下文目錄中 &lt;源路徑&gt; 的檔案/目錄<strong>複製</strong>到新的一層的映象內的 &lt;目標路徑&gt; 位置</p>
+<p><strong>4、RUN</strong></p>
+<p>用於執行命令列命令</p>
+<p>格式：<code>RUN</code> &lt;命令&gt;</p>
+<p><strong>5、EXPOSE</strong></p>
+<p>格式為 <code>EXPOSE</code> &lt;埠1&gt; [&lt;埠2&gt;...]</p>
+<p><code>EXPOSE</code> 指令是<strong>宣告執行時容器提供服務埠，這只是一個宣告</strong>，在執行時並不會因為這個宣告應用就會開啟這個埠的服務</p>
+<p>在 Dockerfile 中寫入這樣的宣告有兩個好處</p>
+<ul>
+<li>幫助映象使用者理解這個映象服務的守護埠，以方便設定對映</li>
+<li>執行時使用隨機埠對映時，也就是 <code>docker run -P</code> 時，會自動隨機對映 <code>EXPOSE</code> 的埠</li>
+</ul>
+<p><strong>6、ENTRYPOINT</strong></p>
+<p><code>ENTRYPOINT</code> 的格式和 <code>RUN</code> 指令格式一樣，分為兩種格式</p>
+<ul>
+<li>
+<p><code>exec</code> 格式：</p>
+<pre><code>&lt;ENTRYPOINT&gt; "&lt;CMD&gt;"
+</code></pre>
+</li>
+<li>
+<p><code>shell</code> 格式：</p>
+<pre><code>ENTRYPOINT [ "curl", "-s", "http://ip.cn" ]
+</code></pre>
+</li>
+</ul>
+<p><code>ENTRYPOINT</code> 指令是<strong>指定容器啟動程式及引數</strong></p>
+<h3 id="二構建映象"><a class="header" href="#二構建映象">二、構建映象</a></h3>
+<p><code>go-gin-example</code> 的專案根目錄下<strong>執行</strong> <code>docker build -t gin-blog-docker .</code></p>
+<p>該命令作用是建立/構建映象，<code>-t</code> 指定名稱為 <code>gin-blog-docker</code>，<code>.</code> 構建內容為當前上下文目錄</p>
+<pre><code>$ docker build -t gin-blog-docker .
+Sending build context to Docker daemon 96.39 MB
+Step 1/6 : FROM golang:latest
+ ---&gt; d632bbfe5767
+Step 2/6 : WORKDIR $GOPATH/src/github.com/EDDYCJY/go-gin-example
+ ---&gt; 56294f978c5d
+Removing intermediate container e112997b995d
+Step 3/6 : COPY . $GOPATH/src/github.com/EDDYCJY/go-gin-example
+ ---&gt; 3b60960120cf
+Removing intermediate container 63e310b3f60c
+Step 4/6 : RUN go build .
+ ---&gt; Running in 52648a431450
+go: downloading github.com/gin-gonic/gin v1.3.0
+go: downloading github.com/go-ini/ini v1.32.1-0.20180214101753-32e4be5f41bb
+go: downloading github.com/swaggo/gin-swagger v1.0.1-0.20190110070702-0c6fcfd3c7f3
+...
+ ---&gt; 7bfbeb301fea
+Removing intermediate container 52648a431450
+Step 5/6 : EXPOSE 8000
+ ---&gt; Running in 98f5b387d1bb
+ ---&gt; b65bd4076c65
+Removing intermediate container 98f5b387d1bb
+Step 6/6 : ENTRYPOINT ./go-gin-example
+ ---&gt; Running in c4f6cdeb667b
+ ---&gt; d8a109c7697c
+Removing intermediate container c4f6cdeb667b
+Successfully built d8a109c7697c
+</code></pre>
+<h3 id="三驗證映象"><a class="header" href="#三驗證映象">三、驗證映象</a></h3>
+<p>檢視所有的映象，確定剛剛構建的 <code>gin-blog-docker</code> 映象是否存在</p>
+<pre><code>$ docker images
+REPOSITORY              TAG                 IMAGE ID            CREATED              SIZE
+gin-blog-docker         latest              d8a109c7697c        About a minute ago   946 MB
+docker.io/golang        latest              d632bbfe5767        8 days ago           779 MB
+...
+</code></pre>
+<h3 id="四建立並執行一個新容器"><a class="header" href="#四建立並執行一個新容器">四、建立並執行一個新容器</a></h3>
+<p>執行命令 <code>docker run -p 8000:8000 gin-blog-docker</code></p>
+<pre><code>$ docker run -p 8000:8000 gin-blog-docker
+dial tcp 127.0.0.1:3306: connect: connection refused
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:    export GIN_MODE=release
+ - using code:    gin.SetMode(gin.ReleaseMode)
+
+...
+Actual pid is 1
+</code></pre>
+<p>執行成功，你以為大功告成了嗎？</p>
+<p>你想太多了，仔細看看控制檯的輸出了一條錯誤 <code>dial tcp 127.0.0.1:3306: connect: connection refused</code></p>
+<p>我們研判一下，發現是 <code>Mysql</code> 的問題，接下來第二項我們將解決這個問題</p>
+<h2 id="mysql"><a class="header" href="#mysql">Mysql</a></h2>
+<h3 id="一拉取映象"><a class="header" href="#一拉取映象">一、拉取映象</a></h3>
+<p>從 <code>Docker</code> 的公共倉庫 <code>Dockerhub</code> 下載 <code>MySQL</code> 映象（國內建議配個映象）</p>
+<pre><code>$ docker pull mysql
+</code></pre>
+<h3 id="二建立並執行一個新容器"><a class="header" href="#二建立並執行一個新容器">二、建立並執行一個新容器</a></h3>
+<p>執行 <code>Mysql</code> 容器，並設定執行成功後返回容器ID</p>
+<pre><code>$ docker run --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=rootroot -d mysql
+8c86ac986da4922492934b6fe074254c9165b8ee3e184d29865921b0fef29e64
+</code></pre>
+<h4 id="連線-mysql"><a class="header" href="#連線-mysql">連線 Mysql</a></h4>
+<p>初始化的 <code>Mysql</code> 應該如圖</p>
+<p><img src="../images/c40f090ee874-5ab4caab04cf1.png" alt="image" /></p>
+<h2 id="golang--mysql"><a class="header" href="#golang--mysql">Golang + Mysql</a></h2>
+<h3 id="一刪除映象"><a class="header" href="#一刪除映象">一、刪除映象</a></h3>
+<p>由於原本的映象存在問題，我們需要刪除它，此處有幾種做法</p>
+<ul>
+<li>刪除原本有問題的映象，重新構建一個新映象</li>
+<li>重新構建一個不同 <code>name</code>、<code>tag</code> 的新映象</li>
+</ul>
+<p>刪除原本的有問題的映象，<code>-f</code> 是強制刪除及其關聯狀態</p>
+<p>若不執行 <code>-f</code>，你需要執行 <code>docker ps -a</code> 查到所關聯的容器，將其 <code>rm</code> 解除兩者依賴關係</p>
+<pre><code>$ docker rmi -f gin-blog-docker
+Untagged: gin-blog-docker:latest
+Deleted: sha256:d8a109c7697c3c2d9b4de7dbb49669d10106902122817b6467a031706bc52ab4
+Deleted: sha256:b65bd4076c65a3c24029ca4def3b3f37001ff7c9eca09e2590c4d29e1e23dce5
+Deleted: sha256:7bfbeb301fea9d8912a4b7c43e4bb8b69bdc57f0b416b372bfb6510e476a7dee
+Deleted: sha256:3b60960120cf619181c1762cdc1b8ce318b8c815e056659809252dd321bcb642
+Deleted: sha256:56294f978c5dfcfa4afa8ad033fd76b755b7ecb5237c6829550741a4d2ce10bc
+</code></pre>
+<h3 id="二修改設定檔案"><a class="header" href="#二修改設定檔案">二、修改設定檔案</a></h3>
+<p>將專案的設定檔案 <code>conf/app.ini</code>，內容修改為</p>
+<pre><code>#debug or release
+RUN_MODE = debug
+
+[app]
+PAGE_SIZE = 10
+JWT_SECRET = 233
+
+[server]
+HTTP_PORT = 8000
+READ_TIMEOUT = 60
+WRITE_TIMEOUT = 60
+
+[database]
+TYPE = mysql
+USER = root
+PASSWORD = rootroot
+HOST = mysql:3306
+NAME = blog
+TABLE_PREFIX = blog_
+</code></pre>
+<h3 id="三重新構建映象"><a class="header" href="#三重新構建映象">三、重新構建映象</a></h3>
+<p>重複先前的步驟，回到 <code>gin-blog</code> 的專案根目錄下<strong>執行</strong> <code>docker build -t gin-blog-docker .</code></p>
+<h3 id="四建立並執行一個新容器-1"><a class="header" href="#四建立並執行一個新容器-1">四、建立並執行一個新容器</a></h3>
+<h2 id="關聯"><a class="header" href="#關聯">關聯</a></h2>
+<p>Q：我們需要將 <code>Golang</code> 容器和 <code>Mysql</code> 容器關聯起來，那麼我們需要怎麼做呢？</p>
+<p>A：增加命令 <code>--link mysql:mysql</code> 讓 <code>Golang</code> 容器與 <code>Mysql</code> 容器互聯；透過 <code>--link</code>，<strong>可以在容器內直接使用其關聯的容器別名進行訪問</strong>，而不透過IP，但是<code>--link</code>只能解決單機容器間的關聯，在分散式多機的情況下，需要透過別的方式進行連線</p>
+<h2 id="執行"><a class="header" href="#執行">執行</a></h2>
+<p>執行命令 <code>docker run --link mysql:mysql -p 8000:8000 gin-blog-docker</code></p>
+<pre><code>$ docker run --link mysql:mysql -p 8000:8000 gin-blog-docker
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:    export GIN_MODE=release
+ - using code:    gin.SetMode(gin.ReleaseMode)
+...
+Actual pid is 1
+</code></pre>
+<h2 id="結果"><a class="header" href="#結果">結果</a></h2>
+<p>檢查啟動輸出、介面測試、資料庫內資料，均正常；我們的 <code>Golang</code> 容器和 <code>Mysql</code> 容器成功關聯執行，大功告成 :)</p>
+<h2 id="review"><a class="header" href="#review">Review</a></h2>
+<h3 id="思考"><a class="header" href="#思考">思考</a></h3>
+<p>雖然應用已經能夠跑起來了</p>
+<p>但如果對 <code>Golang</code> 和 <code>Docker</code> 有一定的瞭解，我希望你能夠想到至少2個問題</p>
+<ul>
+<li>為什麼 <code>gin-blog-docker</code> 佔用空間這麼大？（可用 <code>docker ps -as | grep gin-blog-docker</code> 檢視）</li>
+<li><code>Mysql</code> 容器直接這麼使用，資料儲存到哪裡去了？</li>
+</ul>
+<h3 id="建立超小的golang映象"><a class="header" href="#建立超小的golang映象">建立超小的Golang映象</a></h3>
+<p>Q：第一個問題，為什麼這麼映象體積這麼大？</p>
+<p>A：<code>FROM golang:latest</code> 拉取的是官方 <code>golang</code> 映象，包含Golang的編譯和執行環境，外加一堆GCC、build工具，相當齊全</p>
+<p>這是有問題的，<strong>我們可以不在Golang容器中現場編譯的</strong>，壓根用不到那些東西，我們只需要一個能夠執行可執行檔案的環境即可</p>
+<h4 id="構建scratch映象"><a class="header" href="#構建scratch映象">構建Scratch映象</a></h4>
+<p>Scratch映象，簡潔、小巧，基本是個空映象</p>
+<p><strong>一、修改Dockerfile</strong></p>
+<pre><code>FROM scratch
+
+WORKDIR $GOPATH/src/github.com/EDDYCJY/go-gin-example
+COPY . $GOPATH/src/github.com/EDDYCJY/go-gin-example
+
+EXPOSE 8000
+CMD ["./go-gin-example"]
+</code></pre>
+<p><strong>二、編譯可執行檔案</strong></p>
+<pre><code>CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o go-gin-example .
+</code></pre>
+<p>編譯所生成的可執行檔案會依賴一些庫，並且是動態連結。在這裡因為使用的是 <code>scratch</code> 映象，它是空映象，因此我們需要將生成的可執行檔案靜態連結所依賴的庫</p>
+<p><strong>三、構建映象</strong></p>
+<pre><code>$ docker build -t gin-blog-docker-scratch .
+Sending build context to Docker daemon 133.1 MB
+Step 1/5 : FROM scratch
+ ---&gt; 
+Step 2/5 : WORKDIR $GOPATH/src/github.com/EDDYCJY/go-gin-example
+ ---&gt; Using cache
+ ---&gt; ee07e166a638
+Step 3/5 : COPY . $GOPATH/src/github.com/EDDYCJY/go-gin-example
+ ---&gt; 1489a0693d51
+Removing intermediate container e3e9efc0fe4d
+Step 4/5 : EXPOSE 8000
+ ---&gt; Running in b5630de5544a
+ ---&gt; 6993e9f8c944
+Removing intermediate container b5630de5544a
+Step 5/5 : CMD ./go-gin-example
+ ---&gt; Running in eebc0d8628ae
+ ---&gt; 5310bebeb86a
+Removing intermediate container eebc0d8628ae
+Successfully built 5310bebeb86a
+</code></pre>
+<p>注意，假設你的Golang應用沒有依賴任何的設定等檔案，是可以直接把可執行檔案給複製進去即可，其他都不必關心</p>
+<p>這裡可以有好幾種解決方案</p>
+<ul>
+<li>依賴檔案統一管理掛載</li>
+<li>go-bindata 一下</li>
+</ul>
+<p>...</p>
+<p>因此這裡如果<strong>解決了檔案依賴的問題</strong>後，就不需要把目錄給 <code>COPY</code> 進去了</p>
+<p><strong>四、執行</strong></p>
+<pre><code>$ docker run --link mysql:mysql -p 8000:8000 gin-blog-docker-scratch
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:    export GIN_MODE=release
+ - using code:    gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /auth                     --&gt; github.com/EDDYCJY/go-gin-example/routers/api.GetAuth (3 handlers)
+...
+</code></pre>
+<p>成功執行，程式也正常接收請求</p>
+<p>接下來我們再看看佔用大小，執行 <code>docker ps -as</code> 命令</p>
+<pre><code>$ docker ps -as
+CONTAINER ID        IMAGE                     COMMAND                  ...         SIZE
+9ebdba5a8445        gin-blog-docker-scratch   "./go-gin-example"       ...     0 B (virtual 132 MB)
+427ee79e6857        gin-blog-docker           "./go-gin-example"       ...     0 B (virtual 946 MB)
+</code></pre>
+<p>從結果而言，佔用大小以<code>Scratch</code>映象為基礎的容器完勝，完成目標</p>
+<h3 id="mysql掛載資料卷"><a class="header" href="#mysql掛載資料卷">Mysql掛載資料卷</a></h3>
+<p>倘若不做任何干涉，在每次啟動一個 <code>Mysql</code> 容器時，資料庫都是空的。另外容器刪除之後，資料就丟失了（還有各類意外情況），非常糟糕！</p>
+<h4 id="資料卷"><a class="header" href="#資料卷">資料卷</a></h4>
+<p>資料卷 是被設計用來持久化資料的，它的生命週期獨立於容器，Docker 不會在容器被刪除後自動刪除 資料卷，並且也不存在垃圾回收這樣的機制來處理沒有任何容器引用的 資料卷。如果需要在刪除容器的同時移除資料卷。可以在刪除容器的時候使用 <code>docker rm -v</code> 這個命令</p>
+<p>資料卷 是一個可供一個或多個容器使用的特殊目錄，它繞過 UFS，可以提供很多有用的特性：</p>
+<ul>
+<li>資料卷 可以在容器之間共享和重用</li>
+<li>對 資料卷 的修改會立馬生效</li>
+<li>對 資料卷 的更新，不會影響映象</li>
+<li>資料卷 預設會一直存在，即使容器被刪除</li>
+</ul>
+<blockquote>
+<p>注意：資料卷 的使用，類似於 Linux 下對目錄或檔案進行 mount，映象中的被指定為掛載點的目錄中的檔案會隱藏掉，能顯示看的是掛載的 資料卷。</p>
+</blockquote>
+<h4 id="如何掛載"><a class="header" href="#如何掛載">如何掛載</a></h4>
+<p>首先建立一個目錄用於存放資料卷；示例目錄 <code>/data/docker-mysql</code>，注意 <code>--name</code> 原本名稱為 <code>mysql</code> 的容器，需要將其刪除 <code>docker rm</code></p>
+<pre><code>$ docker run --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=rootroot -v /data/docker-mysql:/var/lib/mysql -d mysql
+54611dbcd62eca33fb320f3f624c7941f15697d998f40b24ee535a1acf93ae72
+</code></pre>
+<p>建立成功，檢查目錄 <code>/data/docker-mysql</code>，下面多了不少資料庫檔案</p>
+<h4 id="驗證"><a class="header" href="#驗證">驗證</a></h4>
+<p>接下來交由你進行驗證，目標是建立一些測試表和資料，然後刪除當前容器，重新建立的容器，資料庫資料也依然存在（當然了資料卷指向要一致）</p>
+<p>我已驗證完畢，你呢？</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<h3 id="本系列示例程式碼"><a class="header" href="#本系列示例程式碼">本系列示例程式碼</a></h3>
+<ul>
+<li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
+</ul>
+<h3 id="書籍"><a class="header" href="#書籍">書籍</a></h3>
+<ul>
+<li><a href="https://www.gitbook.com/book/yeasy/docker_practice/details">Docker —— 從入門到實踐</a></li>
+</ul>
+<h2 id="關於"><a class="header" href="#關於">關於</a></h2>
+<h3 id="修改記錄"><a class="header" href="#修改記錄">修改記錄</a></h3>
+<ul>
+<li>第一版：2018年02月16日釋出文章</li>
+<li>第二版：2019年10月01日修改文章</li>
+</ul>
+<h2 id=""><a class="header" href="#">？</a></h2>
+<p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
+<h3 id="我的微信公眾號"><a class="header" href="#我的微信公眾號">我的微信公眾號</a></h3>
+<p><img src="../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-3-ke-gin/swagger.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-3-ke-gin/gorm-callback.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-3-ke-gin/swagger.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-3-ke-gin/gorm-callback.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

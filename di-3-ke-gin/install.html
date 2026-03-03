@@ -1,0 +1,524 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3.1 Golang 介紹與環境安裝 - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="31-golang-介紹與環境安裝"><a class="header" href="#31-golang-介紹與環境安裝">3.1 Golang 介紹與環境安裝</a></h1>
+<p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
+<h2 id="本文目標"><a class="header" href="#本文目標">本文目標</a></h2>
+<ul>
+<li>學會安裝 Go。</li>
+<li>知道什麼是 Go。</li>
+<li>知道什麼是 Go modules。</li>
+<li>瞭解 Go modules 的小歷史。</li>
+<li>學會簡單的使用 Go modules。</li>
+<li>瞭解 Gin，並簡單跑起一個 Demo。</li>
+</ul>
+<h2 id="準備環節"><a class="header" href="#準備環節">準備環節</a></h2>
+<h3 id="安裝-go"><a class="header" href="#安裝-go">安裝 Go</a></h3>
+<h4 id="centos"><a class="header" href="#centos">Centos</a></h4>
+<p>首先，根據對應的作業系統選擇安裝包 <a href="https://studygolang.com/dl">下載</a>，在這裡我使用的是Centos 64位系統，如下：</p>
+<pre><code class="language-bash">$ wget https://studygolang.com/dl/golang/go1.13.1.linux-amd64.tar.gz
+
+$ tar -zxvf go1.13.1.linux-amd64.tar.gz
+
+$ mv go/ /usr/local/
+</code></pre>
+<p>設定 /etc/profile</p>
+<pre><code class="language-bash">vi /etc/profile
+</code></pre>
+<p>新增環境變數GOROOT和將GOBIN新增到PATH中</p>
+<pre><code class="language-bash">export GOROOT=/usr/local/go
+export PATH=$PATH:$GOROOT/bin
+</code></pre>
+<p>設定完畢後，執行命令令其生效</p>
+<pre><code class="language-bash">source /etc/profile
+</code></pre>
+<p>在控制檯輸入<code>go version</code>，若輸出版本號則<strong>安裝成功</strong>，如下：</p>
+<pre><code>$ go version
+go version go1.13.1 linux/amd64
+</code></pre>
+<h4 id="macos"><a class="header" href="#macos">MacOS</a></h4>
+<p>在 MacOS 上安裝 Go 最方便的辦法就是使用 brew，安裝如下：</p>
+<pre><code>$ brew install go
+</code></pre>
+<p>升級命令如下：</p>
+<pre><code>$ brew upgrade go
+</code></pre>
+<p>注：升級命令你不需要執行，但我想未來你有一天會用到的。</p>
+<p>同樣在控制檯輸入<code>go version</code>，若輸出版本號則<strong>安裝成功</strong>。</p>
+<h3 id="瞭解-go"><a class="header" href="#瞭解-go">瞭解 Go</a></h3>
+<h4 id="是什麼"><a class="header" href="#是什麼">是什麼</a></h4>
+<blockquote>
+<p>Go is an open source programming language that makes it easy to build simple, reliable, and efficient software.</p>
+</blockquote>
+<p>上述為官方說明，如果簡單來講，大致為如下幾點：</p>
+<ul>
+<li>Go 是程式語言。</li>
+<li>谷歌爸爸撐腰。</li>
+<li>語言級高併發。</li>
+<li>上手快，入門簡單。</li>
+<li>簡潔，很有特色。</li>
+<li>國內使用人群逐年增多。</li>
+</ul>
+<h4 id="誰在用"><a class="header" href="#誰在用">誰在用</a></h4>
+<p><img src="../images/c6923b14a11c-6d278b22a4c0bf29c6b89ece99cd6c88.jpg" alt="image" /></p>
+<h4 id="有什麼"><a class="header" href="#有什麼">有什麼</a></h4>
+<p>那麼大家會有些疑問，糾結 <code>Go</code> 本身有什麼東西，我們剛剛設定的環境變數又有什麼用呢，甚至作為一名老粉，你會糾結 GOPATH 去哪裡了，我們一起接著往下看。</p>
+<p><strong>目錄結構</strong></p>
+<p>首先，我們在解壓的時候會得到一個名為 <code>go</code> 的資料夾，其中包括了所有 <code>Go</code> 語言相關的一些檔案，如下：</p>
+<pre><code>$ tree -L 1 go
+go
+├── api
+├── bin
+├── doc
+├── lib
+├── misc
+├── pkg
+├── src
+├── test
+└── ...
+</code></pre>
+<p>在這之中包含了很多資料夾和檔案，我們來簡單說明其中主要資料夾的作用：</p>
+<ul>
+<li>api：用於存放依照 <code>Go</code> 版本順序的API增量列表檔案。這裡所說的API包含公開的變數、常量、函式等。這些API增量列表檔案用於 <code>Go</code> 語言API檢查</li>
+<li>bin：用於存放主要的標準命令檔案（可執行檔案），包含<code>go</code>、<code>godoc</code>、<code>gofmt</code></li>
+<li>blog：用於存放官方部落格中的所有文章</li>
+<li>doc：用於存放標準庫的HTML格式的程式文件。我們可以透過<code>godoc</code>命令啟動一個Web程式展示這些文件</li>
+<li>lib：用於存放一些特殊的庫檔案</li>
+<li>misc：用於存放一些輔助類的說明和工具</li>
+<li>pkg：用於存放安裝<code>Go</code>標準庫後的所有歸檔檔案（以<code>.a</code>結尾的檔案）。注意，你會發現其中有名稱為<code>linux_amd64</code>的資料夾，我們稱為平臺相關目錄。這類資料夾的名稱由對應的作業系統和計算架構的名稱組合而成。透過<code>go install</code>命令，<code>Go</code>程式會被編譯成平臺相關的歸檔檔案存放到其中</li>
+<li>src：用於存放 <code>Go</code>自身、<code>Go</code> 標準工具以及標準庫的所有原始碼檔案</li>
+<li>test：存放用來測試和驗證<code>Go</code>本身的所有相關檔案</li>
+</ul>
+<p><strong>環境變數</strong></p>
+<p>你可能會疑惑剛剛設定的環境變數是什麼，如下：</p>
+<ul>
+<li>GOROOT：<code>Go</code>的根目錄。</li>
+<li>PATH 下增加 <code>$GOROOT/bin</code>：<code>Go</code>的 <code>bin</code>下會存放可執行檔案，我們把他加入 <code>$PATH</code> 後，未來拉下來並編譯後的二進位制檔案就可以直接在命令列使用。</li>
+</ul>
+<p>那在什麼東西都不下載的情況下，<code>$GOBIN</code> 下面有什麼呢，如下：</p>
+<pre><code>bin/ $ls
+go  gofmt
+</code></pre>
+<ul>
+<li>go：<code>Go</code> 二進位制本身。</li>
+<li>gofmt：程式碼格式化工具。</li>
+</ul>
+<p>因此我們剛剛把 <code>$GOBIN</code> 加入到 <code>$PATH</code> 後，你執行 <code>go version</code> 命令後就可以檢視到對應的輸出結果。</p>
+<p>注：MacOS 用 brew 安裝的話就不需要。</p>
+<h4 id="放在哪"><a class="header" href="#放在哪">放在哪</a></h4>
+<p>你現在知道 Go 是什麼了，也知道 Go 的原始碼擺在哪了，你肯定會想，那我應用程式碼放哪呢，答案是在 <strong>Go1.11+ 和開啟 Go Modules 的情況下襬哪都行</strong>。</p>
+<h3 id="瞭解-go-modules"><a class="header" href="#瞭解-go-modules">瞭解 Go Modules</a></h3>
+<h4 id="瞭解歷史"><a class="header" href="#瞭解歷史">瞭解歷史</a></h4>
+<p>在過去，Go 的依賴包管理在工具上混亂且不統一，有 dep，有 glide，有 govendor...甚至還有因為外網的問題，頻頻導致拉不下來包，很多人苦不堪言，盼著官方給出一個大一統做出表率。</p>
+<p>而在 Go modules 正式出來之前還有一個叫 dep 的專案，我們在上面有提到，它是 Go 的一個官方實驗性專案，目的也是為了解決 Go 在依賴管理方面的問題，當時社群裡面幾乎所有的人都認為 dep 肯定就是未來 Go 官方的依賴管理解決方案了。</p>
+<p>但是萬萬沒想到，半路殺出個程咬金，Russ Cox 義無反顧地推出了 Go modules，這瞬間導致一石激起千層浪，讓社群炸了鍋。大家一致認為 Go team 實在是太霸道、太獨裁了，連個招呼都不打一聲。我記得當時有很多人在網上跟 Russ Cox 口水戰，各種依賴管理解決方案的專家都冒出來發表意見，討論範圍甚至一度超出了 Go 語言的圈子觸及到了其他語言的領域。</p>
+<p>當然，最後，推成功了，Go modules 已經進入官方工具鏈中，與 Go 深深結合，以前常說的 GOPATH 終將會失去它原有的作用，而且它還提供了 GOPROXY 間接解決了國內訪問外網的問題。</p>
+<h4 id="瞭解-russ-cox"><a class="header" href="#瞭解-russ-cox">瞭解 Russ Cox</a></h4>
+<p>在上文中提到的 Russ Cox 是誰呢，他是 Go 這個專案目前程式碼提交量最多的人，甚至是第二名的兩倍還要多（從 2019年 09 月 30 日前來看）。</p>
+<p>Russ Cox 還是 Go 現在的掌舵人（大家應該知道之前 Go 的掌舵人是 Rob Pike，但是聽說由於他本人不喜歡特朗普執政所以離開了美國，然後他歲數也挺大的了，所以也正在逐漸交權，不過現在還是在參與 Go 的發展）。</p>
+<p>Russ Cox 的個人能力相當強，看問題的角度也很獨特，這也就是為什麼他剛一提出 Go modules 的概念就能引起那麼大範圍的響應。雖然是被強推的，但事實也證明當下的 Go modules 表現得確實很優秀，所以這表明一定程度上的 “獨裁” 還是可以接受的，至少可以保證一個專案能更加專一地朝著一個方向發展。</p>
+<h4 id="初始化行為"><a class="header" href="#初始化行為">初始化行為</a></h4>
+<p>在前面我們已經瞭解到 Go 依賴包管理的歷史情況，接下來我們將正式的進入使用，首先你需要有一個你喜歡的目錄，例如：<code>$ mkdir ~/go-application &amp;&amp; cd ~/go-application</code>，然後執行如下命令：</p>
+<pre><code>$ mkdir go-gin-example &amp;&amp; cd go-gin-example
+
+$ go env -w GO111MODULE=on
+
+$ go env -w GOPROXY=https://goproxy.cn,direct
+
+$ go mod init github.com/EDDYCJY/go-gin-example
+go: creating new go.mod: module github.com/EDDYCJY/go-gin-example
+
+$ ls
+go.mod
+</code></pre>
+<ul>
+<li><code>mkdir xxx &amp;&amp; cd xxx</code>：建立並切換到專案目錄裡去。</li>
+<li><code>go env -w GO111MODULE=on</code>：開啟 Go modules 開關（目前在 Go1.13 中預設值為 <code>auto</code>）。</li>
+<li><code>go env -w GOPROXY=...</code>：設定 GOPROXY 代理，這裡主要涉及到兩個值，第一個是 <code>https://goproxy.cn</code>，它是由七牛雲背書的一個強大穩定的 Go 模組代理，可以有效地解決你的外網問題；第二個是 <code>direct</code>，它是一個特殊的 fallback 選項，它的作用是用於指示 Go 在拉取模組時遇到錯誤會回源到模組版本的源地址去抓取（比如 GitHub 等）。</li>
+<li><code>go mod init [MODULE_PATH]</code>：初始化 Go modules，它將會生成 go.mod 檔案，需要注意的是 <code>MODULE_PATH</code> 填寫的是模組引入路徑，你可以根據自己的情況修改路徑。</li>
+</ul>
+<p>在執行了上述步驟後，初始化工作已完成，我們開啟 <code>go.mod</code> 檔案看看，如下：</p>
+<pre><code>module github.com/EDDYCJY/go-gin-example
+
+go 1.13
+</code></pre>
+<p>預設的 <code>go.mod</code> 檔案裡主要是兩塊內容，一個是當前的模組路徑和預期的 Go 語言版本。</p>
+<h4 id="基礎使用"><a class="header" href="#基礎使用">基礎使用</a></h4>
+<ul>
+<li>用 <code>go get</code> 拉取新的依賴
+<ul>
+<li>拉取最新的版本(優先擇取 tag)：<code>go get golang.org/x/text@latest</code></li>
+<li>拉取 <code>master</code> 分支的最新 commit：<code>go get golang.org/x/text@master</code></li>
+<li>拉取 tag 為 v0.3.2 的 commit：<code>go get golang.org/x/text@v0.3.2</code></li>
+<li>拉取 hash 為 342b231 的 commit，最終會被轉換為 v0.3.2：<code>go get golang.org/x/text@342b2e</code></li>
+<li>用 <code>go get -u</code> 更新現有的依賴</li>
+<li>用 <code>go mod download</code> 下載 go.mod 檔案中指明的所有依賴</li>
+<li>用 <code>go mod tidy</code> 整理現有的依賴</li>
+<li>用 <code>go mod graph</code> 檢視現有的依賴結構</li>
+<li>用 <code>go mod init</code> 生成 go.mod 檔案 (Go 1.13 中唯一一個可以生成 go.mod 檔案的子命令)</li>
+</ul>
+</li>
+<li>用 <code>go mod edit</code> 編輯 go.mod 檔案</li>
+<li>用 <code>go mod vendor</code> 匯出現有的所有依賴 (事實上 Go modules 正在淡化 Vendor 的概念)</li>
+<li>用 <code>go mod verify</code> 校驗一個模組是否被篡改過</li>
+</ul>
+<p>這一小節主要是針對 Go modules 的基礎使用講解，還沒具體的使用，是希望你能夠留個印象，因為在後面章節會不斷夾雜 Go modules 的知識點。</p>
+<p>注：建議閱讀官方文件 <a href="https://github.com/golang/go/wiki/Modules">wiki/Modules</a>。</p>
+<h2 id="開始-gin-之旅"><a class="header" href="#開始-gin-之旅">開始 Gin 之旅</a></h2>
+<h3 id="是什麼-1"><a class="header" href="#是什麼-1">是什麼</a></h3>
+<blockquote>
+<p>Gin is a HTTP web framework written in Go (Golang). It features a Martini-like API with much better performance -- up to 40 times faster. If you need smashing performance, get yourself some Gin.</p>
+</blockquote>
+<p>Gin是用 Go 開發的一個微框架，類似 Martinier 的API，重點是小巧、易用、效能好很多，也因為 <a href="https://github.com/julienschmidt/httprouter">httprouter</a> 的效能提高了40倍。</p>
+<h3 id="安裝"><a class="header" href="#安裝">安裝</a></h3>
+<p>我們回到剛剛建立的 <code>go-gin-example</code> 目錄下，在命令列下執行如下命令：</p>
+<pre><code class="language-bash">$ go get -u github.com/gin-gonic/gin
+go: downloading golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223
+go: extracting golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223
+go: finding github.com/gin-contrib/sse v0.1.0
+go: finding github.com/ugorji/go v1.1.7
+go: finding gopkg.in/yaml.v2 v2.2.3
+go: finding golang.org/x/sys latest
+go: finding github.com/mattn/go-isatty v0.0.9
+go: finding github.com/modern-go/concurrent latest
+...
+</code></pre>
+<h4 id="gosum"><a class="header" href="#gosum">go.sum</a></h4>
+<p>這時候你再檢查一下該目錄下，會發現多個了個 <code>go.sum</code> 檔案，如下：</p>
+<pre><code>github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW...
+github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW...
+github.com/gin-contrib/sse v0.0.0-20190301062529-5545eab6dad3 h1:t8FVkw33L+wilf2QiWkw0UV77qRpcH/JHPKGpKa2E8g=
+github.com/gin-contrib/sse v0.0.0-20190301062529-5545eab6dad3/go.mod h1:VJ0WA2...
+github.com/gin-contrib/sse v0.1.0 h1:Y/yl/+YNO...
+...
+</code></pre>
+<p><code>go.sum</code> 檔案詳細羅列了當前專案直接或間接依賴的所有模組版本，並寫明瞭那些模組版本的 SHA-256 雜湊值以備 Go 在今後的操作中保證專案所依賴的那些模組版本不會被篡改。</p>
+<h4 id="gomod"><a class="header" href="#gomod">go.mod</a></h4>
+<p>既然我們下載了依賴包，<code>go.mod</code> 檔案會不會有所改變呢，我們再去看看，如下：</p>
+<pre><code>module github.com/EDDYCJY/go-gin-example
+
+go 1.13
+
+require (
+        github.com/gin-contrib/sse v0.1.0 // indirect
+        github.com/gin-gonic/gin v1.4.0 // indirect
+        github.com/golang/protobuf v1.3.2 // indirect
+        github.com/json-iterator/go v1.1.7 // indirect
+        github.com/mattn/go-isatty v0.0.9 // indirect
+        github.com/ugorji/go v1.1.7 // indirect
+        golang.org/x/sys v0.0.0-20190927073244-c990c680b611 // indirect
+        gopkg.in/yaml.v2 v2.2.3 // indirect
+)
+```go
+確確實實發生了改變，那多出來的東西又是什麼呢，`go.mod` 檔案又儲存了什麼資訊呢，實際上 `go.mod` 檔案是啟用了 Go modules 的專案所必須的最重要的檔案，因為它描述了當前專案（也就是當前模組）的元資訊，每一行都以一個動詞開頭，目前有以下 5 個動詞:
+
+* module：用於定義當前專案的模組路徑。
+* go：用於設定預期的 Go 版本。
+* require：用於設定一個特定的模組版本。
+* exclude：用於從使用中排除一個特定的模組版本。
+* replace：用於將一個模組版本替換為另外一個模組版本。
+
+你可能還會疑惑 `indirect` 是什麼東西，`indirect` 的意思是傳遞依賴，也就是非直接依賴。
+
+### 測試
+
+編寫一個`test.go`檔案
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    r := gin.Default()
+    r.GET("/ping", func(c *gin.Context) {
+        c.JSON(200, gin.H{
+            "message": "pong",
+        })
+    })
+    r.Run() // listen and serve on 0.0.0.0:8080
+}
+</code></pre>
+<p>執行<code>test.go</code></p>
+<pre><code class="language-bash">$ go run test.go 
+...
+[GIN-debug] GET    /ping                     --&gt; main.main.func1 (3 handlers)
+[GIN-debug] Environment variable PORT is undefined. Using port :8080 by default
+[GIN-debug] Listening and serving HTTP on :8080
+</code></pre>
+<p>訪問 <code>$HOST:8080/ping</code>，若返回<code>{"message":"pong"}</code>則正確</p>
+<pre><code class="language-bash">curl 127.0.0.1:8080/ping
+</code></pre>
+<p>至此，我們的環境安裝和初步執行都基本完成了。</p>
+<h2 id="再想一想"><a class="header" href="#再想一想">再想一想</a></h2>
+<p>剛剛在執行了命令 <code>$ go get -u github.com/gin-gonic/gin</code> 後，我們查看了 <code>go.mod</code> 檔案，如下：</p>
+<pre><code>...
+require (
+        github.com/gin-contrib/sse v0.1.0 // indirect
+        github.com/gin-gonic/gin v1.4.0 // indirect
+        ...
+)
+</code></pre>
+<p>你會發現 <code>go.mod</code> 裡的 <code>github.com/gin-gonic/gin</code> 是 <code>indirect</code> 模式，這顯然不對啊，因為我們的應用程式已經實際的編寫了 gin server 程式碼了，我就想把它調對，怎麼辦呢，在應用根目錄下執行如下命令：</p>
+<pre><code>$ go mod tidy
+</code></pre>
+<p>該命令主要的作用是整理現有的依賴，非常的常用，執行後 <code>go.mod</code> 檔案內容為：</p>
+<pre><code>...
+require (
+        github.com/gin-contrib/sse v0.1.0 // indirect
+        github.com/gin-gonic/gin v1.4.0
+        ...
+)
+</code></pre>
+<p>可以看到 <code>github.com/gin-gonic/gin</code> 已經變成了直接依賴，調整完畢。</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<h3 id="本系列示例程式碼"><a class="header" href="#本系列示例程式碼">本系列示例程式碼</a></h3>
+<ul>
+<li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
+</ul>
+<h3 id="相關文件"><a class="header" href="#相關文件">相關文件</a></h3>
+<ul>
+<li><a href="https://github.com/gin-gonic/gin">Gin</a></li>
+<li><a href="https://gin-gonic.github.io/gin/">Gin Web Framework</a></li>
+<li><a href="https://book.eddycjy.com/golang/talk/goproxy-cn.html">乾貨滿滿的 Go Modules 和 goproxy.cn</a></li>
+</ul>
+<h2 id="關於"><a class="header" href="#關於">關於</a></h2>
+<h3 id="修改記錄"><a class="header" href="#修改記錄">修改記錄</a></h3>
+<ul>
+<li>第一版：2018年02月16日釋出文章</li>
+<li>第二版：2019年10月01日修改文章</li>
+</ul>
+<h2 id=""><a class="header" href="#">？</a></h2>
+<p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
+<h3 id="我的微信公眾號"><a class="header" href="#我的微信公眾號">我的微信公眾號</a></h3>
+<p><img src="../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-3-ke-gin.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-3-ke-gin/api-01.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-3-ke-gin.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-3-ke-gin/api-01.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

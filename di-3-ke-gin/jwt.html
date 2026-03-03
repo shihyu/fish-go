@@ -1,0 +1,614 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3.5 使用JWT進行身份校驗 - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="35-使用jwt進行身份校驗"><a class="header" href="#35-使用jwt進行身份校驗">3.5 使用JWT進行身份校驗</a></h1>
+<p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
+<h2 id="涉及知識點"><a class="header" href="#涉及知識點">涉及知識點</a></h2>
+<ul>
+<li>JWT</li>
+</ul>
+<h2 id="本文目標"><a class="header" href="#本文目標">本文目標</a></h2>
+<p>在前面幾節中，我們已經基本的完成了API's的編寫，但是，還存在一些非常嚴重的問題，例如，我們現在的API是可以隨意呼叫的，這顯然還不安全全，在本文中我們透過 <a href="https://github.com/dgrijalva/jwt-go">jwt-go</a> （<a href="https://godoc.org/github.com/dgrijalva/jwt-go">GoDoc</a>）的方式來簡單解決這個問題。</p>
+<h2 id="下載依賴包"><a class="header" href="#下載依賴包">下載依賴包</a></h2>
+<p>首先，我們下載 jwt-go的依賴包，如下：</p>
+<pre><code>go get -u github.com/dgrijalva/jwt-go
+</code></pre>
+<h2 id="編寫-jwt-工具包"><a class="header" href="#編寫-jwt-工具包">編寫 jwt 工具包</a></h2>
+<p>我們需要編寫一個<code>jwt</code>的工具包，我們在<code>pkg</code>下的<code>util</code>目錄新建<code>jwt.go</code>，寫入檔案內容：</p>
+<pre><code class="language-go">package util
+
+import (
+    "time"
+
+    jwt "github.com/dgrijalva/jwt-go"
+
+    "github.com/EDDYCJY/go-gin-example/pkg/setting"
+)
+
+var jwtSecret = []byte(setting.JwtSecret)
+
+type Claims struct {
+    Username string `json:"username"`
+    Password string `json:"password"`
+    jwt.StandardClaims
+}
+
+func GenerateToken(username, password string) (string, error) {
+    nowTime := time.Now()
+    expireTime := nowTime.Add(3 * time.Hour)
+
+    claims := Claims{
+        username,
+        password,
+        jwt.StandardClaims {
+            ExpiresAt : expireTime.Unix(),
+            Issuer : "gin-blog",
+        },
+    }
+
+    tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+    token, err := tokenClaims.SignedString(jwtSecret)
+
+    return token, err
+}
+
+func ParseToken(token string) (*Claims, error) {
+    tokenClaims, err := jwt.ParseWithClaims(token, &amp;Claims{}, func(token *jwt.Token) (interface{}, error) {
+        return jwtSecret, nil
+    })
+
+    if tokenClaims != nil {
+        if claims, ok := tokenClaims.Claims.(*Claims); ok &amp;&amp; tokenClaims.Valid {
+            return claims, nil
+        }
+    }
+
+    return nil, err
+}
+</code></pre>
+<p>在這個工具包，我們涉及到</p>
+<ul>
+<li><code>NewWithClaims(method SigningMethod, claims Claims)</code>，<code>method</code>對應著<code>SigningMethodHMAC  struct{}</code>，其包含<code>SigningMethodHS256</code>、<code>SigningMethodHS384</code>、<code>SigningMethodHS512</code>三種<code>crypto.Hash</code>方案</li>
+<li><code>func (t *Token) SignedString(key interface{})</code> 該方法內部生成簽名字串，再用於取得完整、已簽名的<code>token</code></li>
+<li><code>func (p *Parser) ParseWithClaims</code> 用於解析鑑權的宣告，<a href="https://gowalker.org/github.com/dgrijalva/jwt-go#Parser_ParseWithClaims">方法內部</a>主要是具體的解碼和校驗的過程，最終返回<code>*Token</code></li>
+<li><code>func (m MapClaims) Valid()</code> 驗證基於時間的宣告<code>exp, iat, nbf</code>，注意如果沒有任何宣告在令牌中，仍然會被認為是有效的。並且對於時區偏差沒有計算方法</li>
+</ul>
+<p>有了<code>jwt</code>工具包，接下來我們要編寫要用於<code>Gin</code>的中介軟體，我們在<code>middleware</code>下新建<code>jwt</code>目錄，新建<code>jwt.go</code>檔案，寫入內容：</p>
+<pre><code class="language-go">package jwt
+
+import (
+    "time"
+    "net/http"
+
+    "github.com/gin-gonic/gin"
+
+    "github.com/EDDYCJY/go-gin-example/pkg/util"
+    "github.com/EDDYCJY/go-gin-example/pkg/e"
+)
+
+func JWT() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        var code int
+        var data interface{}
+
+        code = e.SUCCESS
+        token := c.Query("token")
+        if token == "" {
+            code = e.INVALID_PARAMS
+        } else {
+            claims, err := util.ParseToken(token)
+            if err != nil {
+                code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
+            } else if time.Now().Unix() &gt; claims.ExpiresAt {
+                code = e.ERROR_AUTH_CHECK_TOKEN_TIMEOUT
+            }
+        }
+
+        if code != e.SUCCESS {
+            c.JSON(http.StatusUnauthorized, gin.H{
+                "code" : code,
+                "msg" : e.GetMsg(code),
+                "data" : data,
+            })
+
+            c.Abort()
+            return
+        }
+
+        c.Next()
+    }
+}
+</code></pre>
+<h2 id="如何取得token"><a class="header" href="#如何取得token">如何取得<code>Token</code></a></h2>
+<p>那麼我們如何呼叫它呢，我們還要取得<code>Token</code>呢？</p>
+<p>1、 我們要新增一個取得<code>Token</code>的API</p>
+<p>在<code>models</code>下新建<code>auth.go</code>檔案，寫入內容：</p>
+<pre><code class="language-go">package models
+
+type Auth struct {
+    ID int `gorm:"primary_key" json:"id"`
+    Username string `json:"username"`
+    Password string `json:"password"`
+}
+
+func CheckAuth(username, password string) bool {
+    var auth Auth
+    db.Select("id").Where(Auth{Username : username, Password : password}).First(&amp;auth)
+    if auth.ID &gt; 0 {
+        return true
+    }
+
+    return false
+}
+</code></pre>
+<p>在<code>routers</code>下的<code>api</code>目錄新建<code>auth.go</code>檔案，寫入內容：</p>
+<pre><code class="language-go">package api
+
+import (
+    "log"
+    "net/http"
+
+    "github.com/gin-gonic/gin"
+    "github.com/astaxie/beego/validation"
+
+    "github.com/EDDYCJY/go-gin-example/pkg/e"
+    "github.com/EDDYCJY/go-gin-example/pkg/util"
+    "github.com/EDDYCJY/go-gin-example/models"
+)
+
+type auth struct {
+    Username string `valid:"Required; MaxSize(50)"`
+    Password string `valid:"Required; MaxSize(50)"`
+}
+
+func GetAuth(c *gin.Context) {
+    username := c.Query("username")
+    password := c.Query("password")
+
+    valid := validation.Validation{}
+    a := auth{Username: username, Password: password}
+    ok, _ := valid.Valid(&amp;a)
+
+    data := make(map[string]interface{})
+    code := e.INVALID_PARAMS
+    if ok {
+        isExist := models.CheckAuth(username, password)
+        if isExist {
+            token, err := util.GenerateToken(username, password)
+            if err != nil {
+                code = e.ERROR_AUTH_TOKEN
+            } else {
+                data["token"] = token
+
+                code = e.SUCCESS
+            }
+
+        } else {
+            code = e.ERROR_AUTH
+        }
+    } else {
+        for _, err := range valid.Errors {
+            log.Println(err.Key, err.Message)
+        }
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "code" : code,
+        "msg" : e.GetMsg(code),
+        "data" : data,
+    })
+}
+</code></pre>
+<p>我們開啟<code>routers</code>目錄下的<code>router.go</code>檔案，修改檔案內容（新增取得token的方法）：</p>
+<pre><code class="language-go">package routers
+
+import (
+    "github.com/gin-gonic/gin"
+
+    "github.com/EDDYCJY/go-gin-example/routers/api"
+    "github.com/EDDYCJY/go-gin-example/routers/api/v1"
+    "github.com/EDDYCJY/go-gin-example/pkg/setting"
+)
+
+func InitRouter() *gin.Engine {
+    r := gin.New()
+
+    r.Use(gin.Logger())
+
+    r.Use(gin.Recovery())
+
+    gin.SetMode(setting.RunMode)
+
+    r.GET("/auth", api.GetAuth)
+
+    apiv1 := r.Group("/api/v1")
+    {
+        ...
+    }
+
+    return r
+}
+</code></pre>
+<h2 id="驗證token"><a class="header" href="#驗證token">驗證<code>Token</code></a></h2>
+<p>取得<code>token</code>的API方法就到這裡啦，讓我們來測試下是否可以正常使用吧！</p>
+<p>重啟服務後，用<code>GET</code>方式訪問<code>http://127.0.0.1:8000/auth?username=test&amp;password=test123456</code>，檢視返回值是否正確</p>
+<pre><code>{
+  "code": 200,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QiLCJwYXNzd29yZCI6InRlc3QxMjM0NTYiLCJleHAiOjE1MTg3MjAwMzcsImlzcyI6Imdpbi1ibG9nIn0.-kK0V9E06qTHOzupQM_gHXAGDB3EJtJS4H5TTCyWwW8"
+  },
+  "msg": "ok"
+}
+</code></pre>
+<p>我們有了<code>token</code>的API，也呼叫成功了</p>
+<h2 id="將中介軟體接入gin"><a class="header" href="#將中介軟體接入gin">將中介軟體接入<code>Gin</code></a></h2>
+<p>2、 接下來我們將中介軟體接入到<code>Gin</code>的訪問流程中</p>
+<p>我們開啟<code>routers</code>目錄下的<code>router.go</code>檔案，修改檔案內容（新增引用包和中介軟體引用）</p>
+<pre><code class="language-go">package routers
+
+import (
+    "github.com/gin-gonic/gin"
+
+    "github.com/EDDYCJY/go-gin-example/routers/api"
+    "github.com/EDDYCJY/go-gin-example/routers/api/v1"
+    "github.com/EDDYCJY/go-gin-example/pkg/setting"
+    "github.com/EDDYCJY/go-gin-example/middleware/jwt"
+)
+
+func InitRouter() *gin.Engine {
+    r := gin.New()
+
+    r.Use(gin.Logger())
+
+    r.Use(gin.Recovery())
+
+    gin.SetMode(setting.RunMode)
+
+    r.GET("/auth", api.GetAuth)
+
+    apiv1 := r.Group("/api/v1")
+    apiv1.Use(jwt.JWT())
+    {
+        ...
+    }
+
+    return r
+}
+</code></pre>
+<p>當前目錄結構：</p>
+<pre><code>go-gin-example/
+├── conf
+│   └── app.ini
+├── main.go
+├── middleware
+│   └── jwt
+│       └── jwt.go
+├── models
+│   ├── article.go
+│   ├── auth.go
+│   ├── models.go
+│   └── tag.go
+├── pkg
+│   ├── e
+│   │   ├── code.go
+│   │   └── msg.go
+│   ├── setting
+│   │   └── setting.go
+│   └── util
+│       ├── jwt.go
+│       └── pagination.go
+├── routers
+│   ├── api
+│   │   ├── auth.go
+│   │   └── v1
+│   │       ├── article.go
+│   │       └── tag.go
+│   └── router.go
+├── runtime
+</code></pre>
+<p>到這裡，我們的<code>JWT</code>編寫就完成啦！</p>
+<h2 id="驗證功能"><a class="header" href="#驗證功能">驗證功能</a></h2>
+<p>我們來測試一下，再次訪問</p>
+<ul>
+<li><a href="http://127.0.0.1:8000/api/v1/articles">http://127.0.0.1:8000/api/v1/articles</a></li>
+<li><a href="http://127.0.0.1:8000/api/v1/articles?token=23131">http://127.0.0.1:8000/api/v1/articles?token=23131</a></li>
+</ul>
+<p>正確的反饋應該是</p>
+<pre><code>{
+  "code": 400,
+  "data": null,
+  "msg": "请求参数错误"
+}
+
+{
+  "code": 20001,
+  "data": null,
+  "msg": "Token鉴权失败"
+}
+</code></pre>
+<p>我們需要訪問<code>http://127.0.0.1:8000/auth?username=test&amp;password=test123456</code>，得到<code>token</code></p>
+<pre><code>{
+  "code": 200,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QiLCJwYXNzd29yZCI6InRlc3QxMjM0NTYiLCJleHAiOjE1MTg3MjQ2OTMsImlzcyI6Imdpbi1ibG9nIn0.KSBY6TeavV_30kfmP7HWLRYKP5TPEDgHtABe9HCsic4"
+  },
+  "msg": "ok"
+}
+</code></pre>
+<p>再用包含<code>token</code>的URL引數去訪問我們的應用API，</p>
+<p>訪問<code>http://127.0.0.1:8000/api/v1/articles?token=eyJhbGci...</code>，檢查介面返回值</p>
+<pre><code>{
+  "code": 200,
+  "data": {
+    "lists": [
+      {
+        "id": 2,
+        "created_on": 1518700920,
+        "modified_on": 0,
+        "tag_id": 1,
+        "tag": {
+          "id": 1,
+          "created_on": 1518684200,
+          "modified_on": 0,
+          "name": "tag1",
+          "created_by": "",
+          "modified_by": "",
+          "state": 0
+        },
+        "content": "test-content",
+        "created_by": "test-created",
+        "modified_by": "",
+        "state": 0
+      }
+    ],
+    "total": 1
+  },
+  "msg": "ok"
+}
+</code></pre>
+<p>返回正確，至此我們的<code>jwt-go</code>在<code>Gin</code>中的驗證就完成了！</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<h3 id="本系列示例程式碼"><a class="header" href="#本系列示例程式碼">本系列示例程式碼</a></h3>
+<ul>
+<li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
+</ul>
+<h2 id="關於"><a class="header" href="#關於">關於</a></h2>
+<h3 id="修改記錄"><a class="header" href="#修改記錄">修改記錄</a></h3>
+<ul>
+<li>第一版：2018年02月16日釋出文章</li>
+<li>第二版：2019年10月01日修改文章</li>
+</ul>
+<h2 id=""><a class="header" href="#">？</a></h2>
+<p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
+<h3 id="我的微信公眾號"><a class="header" href="#我的微信公眾號">我的微信公眾號</a></h3>
+<p><img src="../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-3-ke-gin/api-03.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-3-ke-gin/log.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-3-ke-gin/api-03.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-3-ke-gin/log.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

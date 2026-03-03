@@ -1,0 +1,534 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3.6 編寫一個簡單的檔案日誌 - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="36-編寫一個簡單的檔案日誌"><a class="header" href="#36-編寫一個簡單的檔案日誌">3.6 編寫一個簡單的檔案日誌</a></h1>
+<p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
+<h2 id="涉及知識點"><a class="header" href="#涉及知識點">涉及知識點</a></h2>
+<ul>
+<li>自定義 log。</li>
+</ul>
+<h2 id="本文目標"><a class="header" href="#本文目標">本文目標</a></h2>
+<p>在上一節中，我們解決了API's可以任意訪問的問題，那麼我們現在還有一個問題，就是我們的日誌，都是輸出到控制檯上的，這顯然對於一個專案來說是不合理的，因此我們這一節簡單封裝<code>log</code>庫，使其支援簡單的檔案日誌！</p>
+<h2 id="新建logging包"><a class="header" href="#新建logging包">新建<code>logging</code>包</a></h2>
+<p>我們在<code>pkg</code>下新建<code>logging</code>目錄，新建<code>file.go</code>和<code>log.go</code>檔案，寫入內容：</p>
+<h3 id="編寫file檔案"><a class="header" href="#編寫file檔案">編寫<code>file</code>檔案</a></h3>
+<p><strong>1、 file.go：</strong></p>
+<pre><code class="language-go">package logging
+
+import (
+    "os"
+    "time"
+    "fmt"
+    "log"
+)
+
+var (
+    LogSavePath = "runtime/logs/"
+    LogSaveName = "log"
+    LogFileExt = "log"
+    TimeFormat = "20060102"
+)
+
+func getLogFilePath() string {
+    return fmt.Sprintf("%s", LogSavePath)
+}
+
+func getLogFileFullPath() string {
+    prefixPath := getLogFilePath()
+    suffixPath := fmt.Sprintf("%s%s.%s", LogSaveName, time.Now().Format(TimeFormat), LogFileExt)
+
+    return fmt.Sprintf("%s%s", prefixPath, suffixPath)
+}
+
+func openLogFile(filePath string) *os.File {
+    _, err := os.Stat(filePath)
+    switch {
+        case os.IsNotExist(err):
+            mkDir()
+        case os.IsPermission(err):
+            log.Fatalf("Permission :%v", err)
+    }
+
+    handle, err := os.OpenFile(filePath, os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+    if err != nil {
+        log.Fatalf("Fail to OpenFile :%v", err)
+    }
+
+    return handle
+}
+
+func mkDir() {
+    dir, _ := os.Getwd()
+    err := os.MkdirAll(dir + "/" + getLogFilePath(), os.ModePerm)
+    if err != nil {
+        panic(err)
+    }
+}
+</code></pre>
+<ul>
+<li>
+<p><code>os.Stat</code>：返回檔案資訊結構描述檔案。如果出現錯誤，會返回<code>*PathError</code></p>
+<pre><code>type PathError struct {
+  Op   string
+  Path string
+  Err  error
+}
+</code></pre>
+</li>
+<li>
+<p><code>os.IsNotExist</code>：能夠接受<code>ErrNotExist</code>、<code>syscall</code>的一些錯誤，它會返回一個布林值，能夠得知檔案不存在或目錄不存在</p>
+</li>
+<li>
+<p><code>os.IsPermission</code>：能夠接受<code>ErrPermission</code>、<code>syscall</code>的一些錯誤，它會返回一個布林值，能夠得知許可權是否滿足</p>
+</li>
+<li>
+<p><code>os.OpenFile</code>：呼叫檔案，支援傳入檔名稱、指定的模式呼叫檔案、檔案許可權，返回的檔案的方法可以用於I/O。如果出現錯誤，則為<code>*PathError</code>。</p>
+</li>
+</ul>
+<pre><code>const (
+    // Exactly one of O_RDONLY, O_WRONLY, or O_RDWR must be specified.
+    O_RDONLY int = syscall.O_RDONLY // 以只读模式打开文件
+    O_WRONLY int = syscall.O_WRONLY // 以只写模式打开文件
+    O_RDWR   int = syscall.O_RDWR   // 以读写模式打开文件
+    // The remaining values may be or'ed in to control behavior.
+    O_APPEND int = syscall.O_APPEND // 在写入时将数据追加到文件中
+    O_CREATE int = syscall.O_CREAT  // 如果不存在，则创建一个新文件
+    O_EXCL   int = syscall.O_EXCL   // 使用O_CREATE时，文件必须不存在
+    O_SYNC   int = syscall.O_SYNC   // 同步IO
+    O_TRUNC  int = syscall.O_TRUNC  // 如果可以，打开时
+)
+</code></pre>
+<ul>
+<li><code>os.Getwd</code>：返回與當前目錄對應的根路徑名</li>
+<li><code>os.MkdirAll</code>：建立對應的目錄以及所需的子目錄，若成功則返回<code>nil</code>，否則返回<code>error</code></li>
+<li><code>os.ModePerm</code>：<code>const</code>定義<code>ModePerm FileMode = 0777</code></li>
+</ul>
+<h3 id="編寫log檔案"><a class="header" href="#編寫log檔案">編寫<code>log</code>檔案</a></h3>
+<p><strong>2、log.go</strong></p>
+<pre><code class="language-go">package logging
+
+import (
+    "log"
+    "os"
+    "runtime"
+    "path/filepath"
+    "fmt"
+)
+
+type Level int
+
+var (
+    F *os.File
+
+    DefaultPrefix = ""
+    DefaultCallerDepth = 2
+
+    logger *log.Logger
+    logPrefix = ""
+    levelFlags = []string{"DEBUG", "INFO", "WARN", "ERROR", "FATAL"}
+)
+
+const (
+    DEBUG Level = iota
+    INFO
+    WARNING
+    ERROR
+    FATAL
+)
+
+func init() {
+    filePath := getLogFileFullPath()
+    F = openLogFile(filePath)
+
+    logger = log.New(F, DefaultPrefix, log.LstdFlags)
+}
+
+func Debug(v ...interface{}) {
+    setPrefix(DEBUG)
+    logger.Println(v)
+}
+
+func Info(v ...interface{}) {
+    setPrefix(INFO)
+    logger.Println(v)
+}
+
+func Warn(v ...interface{}) {
+    setPrefix(WARNING)
+    logger.Println(v)
+}
+
+func Error(v ...interface{}) {
+    setPrefix(ERROR)
+    logger.Println(v)
+}
+
+func Fatal(v ...interface{}) {
+    setPrefix(FATAL)
+    logger.Fatalln(v)
+}
+
+func setPrefix(level Level) {
+    _, file, line, ok := runtime.Caller(DefaultCallerDepth)
+    if ok {
+        logPrefix = fmt.Sprintf("[%s][%s:%d]", levelFlags[level], filepath.Base(file), line)
+    } else {
+        logPrefix = fmt.Sprintf("[%s]", levelFlags[level])
+    }
+
+    logger.SetPrefix(logPrefix)
+}
+</code></pre>
+<ul>
+<li>
+<p><code>log.New</code>：建立一個新的日誌記錄器。<code>out</code>定義要寫入日誌資料的<code>IO</code>控制代碼。<code>prefix</code>定義每個生成的日誌行的開頭。<code>flag</code>定義了日誌記錄屬性</p>
+<pre><code>func New(out io.Writer, prefix string, flag int) *Logger {
+  return &amp;Logger{out: out, prefix: prefix, flag: flag}
+}
+</code></pre>
+</li>
+<li>
+<p><code>log.LstdFlags</code>：日誌記錄的格式屬性之一，其餘的選項如下</p>
+<pre><code>const (
+  Ldate         = 1 &lt;&lt; iota     // the date in the local time zone: 2009/01/23
+  Ltime                         // the time in the local time zone: 01:23:23
+  Lmicroseconds                 // microsecond resolution: 01:23:23.123123.  assumes Ltime.
+  Llongfile                     // full file name and line number: /a/b/c/d.go:23
+  Lshortfile                    // final file name element and line number: d.go:23. overrides Llongfile
+  LUTC                          // if Ldate or Ltime is set, use UTC rather than the local time zone
+  LstdFlags     = Ldate | Ltime // initial values for the standard logger
+)
+</code></pre>
+</li>
+</ul>
+<p>當前目錄結構：</p>
+<pre><code>gin-blog/
+├── conf
+│   └── app.ini
+├── main.go
+├── middleware
+│   └── jwt
+│       └── jwt.go
+├── models
+│   ├── article.go
+│   ├── auth.go
+│   ├── models.go
+│   └── tag.go
+├── pkg
+│   ├── e
+│   │   ├── code.go
+│   │   └── msg.go
+│   ├── logging
+│   │   ├── file.go
+│   │   └── log.go
+│   ├── setting
+│   │   └── setting.go
+│   └── util
+│       ├── jwt.go
+│       └── pagination.go
+├── routers
+│   ├── api
+│   │   ├── auth.go
+│   │   └── v1
+│   │       ├── article.go
+│   │       └── tag.go
+│   └── router.go
+├── runtime
+</code></pre>
+<p>我們自定義的<code>logging</code>包，已經基本完成了，接下來讓它接入到我們的專案之中吧。我們開啟先前包含<code>log</code>包的程式碼，如下：</p>
+<ol>
+<li>開啟<code>routers</code>目錄下的<code>article.go</code>、<code>tag.go</code>、<code>auth.go</code>。</li>
+<li>將<code>log</code>包的引用刪除，修改引用我們自己的日誌包為<code>github.com/EDDYCJY/go-gin-example/pkg/logging</code>。</li>
+<li>將原本的<code>log.Println(...)</code>改為<code>logging.Info(...)</code>。</li>
+</ol>
+<p>例如<code>auth.go</code>檔案的修改內容：</p>
+<pre><code class="language-go">package api
+
+import (
+    "net/http"
+
+    "github.com/gin-gonic/gin"
+    "github.com/astaxie/beego/validation"
+
+    "github.com/EDDYCJY/go-gin-example/pkg/e"
+    "github.com/EDDYCJY/go-gin-example/pkg/util"
+    "github.com/EDDYCJY/go-gin-example/models"
+    "github.com/EDDYCJY/go-gin-example/pkg/logging"
+)
+...
+func GetAuth(c *gin.Context) {
+    ...
+    code := e.INVALID_PARAMS
+    if ok {
+        ...
+    } else {
+        for _, err := range valid.Errors {
+                logging.Info(err.Key, err.Message)
+            }
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "code" : code,
+        "msg" : e.GetMsg(code),
+        "data" : data,
+    })
+}
+</code></pre>
+<h2 id="驗證功能"><a class="header" href="#驗證功能">驗證功能</a></h2>
+<p>修改檔案後，重啟服務，我們來試試吧！</p>
+<p>取得到API的Token後，我們故意傳錯誤URL引數給介面，如：<code>http://127.0.0.1:8000/api/v1/articles?tag_id=0&amp;state=9999999&amp;token=eyJhbG..</code></p>
+<p>然後我們到<code>$GOPATH/gin-blog/runtime/logs</code>檢視日誌：</p>
+<pre><code>$ tail -f log20180216.log 
+[INFO][article.go:79]2018/02/16 18:33:12 [state 状态只允许0或1]
+[INFO][article.go:79]2018/02/16 18:33:42 [state 状态只允许0或1]
+[INFO][article.go:79]2018/02/16 18:33:42 [tag_id 标签ID必须大于0]
+[INFO][article.go:79]2018/02/16 18:38:39 [state 状态只允许0或1]
+[INFO][article.go:79]2018/02/16 18:38:39 [tag_id 标签ID必须大于0]
+</code></pre>
+<p>日誌結構一切正常，我們的記錄模式都為<code>Info</code>，因此字首是對的，並且我們是入參有問題，也把錯誤記錄下來了，這樣排錯就很方便了！</p>
+<p>至此，本節就完成了，這只是一個簡單的擴充套件，實際上我們線上專案要使用的檔案日誌，是更復雜一些，開動你的大腦 舉一反三吧！</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<h3 id="本系列示例程式碼"><a class="header" href="#本系列示例程式碼">本系列示例程式碼</a></h3>
+<ul>
+<li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
+</ul>
+<h2 id="關於"><a class="header" href="#關於">關於</a></h2>
+<h3 id="修改記錄"><a class="header" href="#修改記錄">修改記錄</a></h3>
+<ul>
+<li>第一版：2018年02月16日釋出文章</li>
+<li>第二版：2019年10月01日修改文章</li>
+</ul>
+<h2 id=""><a class="header" href="#">？</a></h2>
+<p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
+<h3 id="我的微信公眾號"><a class="header" href="#我的微信公眾號">我的微信公眾號</a></h3>
+<p><img src="../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-3-ke-gin/jwt.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-3-ke-gin/reload-http.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-3-ke-gin/jwt.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-3-ke-gin/reload-http.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

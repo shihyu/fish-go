@@ -1,0 +1,341 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>8.3 unsafe - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="83-unsafe"><a class="header" href="#83-unsafe">8.3 unsafe</a></h1>
+<p>在上一篇文章<a href="https://book.eddycjy.com/golang/slice/slice.html">《深入理解 Go Slice》</a>中，大家會發現其底層資料結構使用了 <code>unsafe.Pointer</code>。因此想著再介紹一下其關聯知識</p>
+<h2 id="前言"><a class="header" href="#前言">前言</a></h2>
+<p>在大家學習 Go 的時候，肯定都學過 “Go 的指標是不支援指標運算和轉換” 這個知識點。為什麼呢？</p>
+<p>首先，Go 是一門靜態語言，所有的變數都必須為標量型別。不同的型別不能夠進行賦值、計算等跨型別的操作。那麼指標也對應著相對的型別，也在 Compile 的靜態型別檢查的範圍內。同時靜態語言，也稱為強型別。也就是一旦定義了，就不能再改變它</p>
+<h2 id="錯誤示例"><a class="header" href="#錯誤示例">錯誤示例</a></h2>
+<pre><code class="language-go">func main(){
+    num := 5
+    numPointer := &amp;num
+
+    flnum := (*float32)(numPointer)
+    fmt.Println(flnum)
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code># command-line-arguments
+...: cannot convert numPointer (type *int) to type *float32
+</code></pre>
+<p>在示例中，我們建立了一個 <code>num</code> 變數，值為 5，型別為 <code>int</code>。取了其對於的指標地址後，試圖強制轉換為 <code>*float32</code>，結果失敗...</p>
+<h2 id="unsafe"><a class="header" href="#unsafe">unsafe</a></h2>
+<p>針對剛剛的 “錯誤示例”，我們可以採用今天的男主角 <code>unsafe</code> 標準庫來解決。它是一個神奇的包，在官方的詮釋中，有如下概述：</p>
+<ul>
+<li>圍繞 Go 程式記憶體安全及型別的操作</li>
+<li>很可能會是不可移植的</li>
+<li>不受 Go 1 相容性指南的保護</li>
+</ul>
+<p>簡單來講就是，不怎麼推薦你使用。因為它是 unsafe（不安全的），但是在特殊的場景下，使用了它。可以打破 Go 的型別和記憶體安全機制，讓你獲得眼前一亮的驚喜效果 😄</p>
+<h3 id="pointer"><a class="header" href="#pointer">Pointer</a></h3>
+<p>為了解決這個問題，需要用到 <code>unsafe.Pointer</code>。它表示任意型別且可定址的指標值，可以在不同的指標型別之間進行轉換（類似 C 語言的 void * 的用途）</p>
+<p>其包含四種核心操作：</p>
+<ul>
+<li>任何型別的指標值都可以轉換為 Pointer</li>
+<li>Pointer 可以轉換為任何型別的指標值</li>
+<li>uintptr 可以轉換為 Pointer</li>
+<li>Pointer 可以轉換為 uintptr</li>
+</ul>
+<p>在這一部分，重點看第一點、第二點。你再想想怎麼修改 “錯誤示例” 讓它執行起來？</p>
+<pre><code class="language-go">func main(){
+    num := 5
+    numPointer := &amp;num
+
+    flnum := (*float32)(unsafe.Pointer(numPointer))
+    fmt.Println(flnum)
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>0xc4200140b0
+</code></pre>
+<p>在上述程式碼中，我們小加改動。透過 <code>unsafe.Pointer</code> 的特性對該指標變數進行了修改，就可以完成任意型別（*T）的指標轉換</p>
+<p>需要注意的是，這時還無法對變數進行操作或訪問。因為不知道該指標地址指向的東西具體是什麼型別。不知道是什麼型別，又如何進行解析呢。無法解析也就自然無法對其變更了</p>
+<h3 id="offsetof"><a class="header" href="#offsetof">Offsetof</a></h3>
+<p>在上小節中，我們對普通的指標變數進行了修改。那麼它是否能做更復雜一點的事呢？</p>
+<pre><code class="language-go">type Num struct{
+    i string
+    j int64
+}
+
+func main(){
+    n := Num{i: "EDDYCJY", j: 1}
+    nPointer := unsafe.Pointer(&amp;n)
+
+    niPointer := (*string)(unsafe.Pointer(nPointer))
+    *niPointer = "煎鱼"
+
+    njPointer := (*int64)(unsafe.Pointer(uintptr(nPointer) + unsafe.Offsetof(n.j)))
+    *njPointer = 2
+
+    fmt.Printf("n.i: %s, n.j: %d", n.i, n.j)
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>n.i: 煎鱼, n.j: 2
+</code></pre>
+<p>在剖析這段程式碼做了什麼事之前，我們需要了解結構體的一些基本概念：</p>
+<ul>
+<li>結構體的成員變數在記憶體儲存上是一段連續的記憶體</li>
+<li>結構體的初始地址就是第一個成員變數的記憶體地址</li>
+<li>基於結構體的成員地址去計算偏移量。就能夠得出其他成員變數的記憶體地址</li>
+</ul>
+<p>再回來看看上述程式碼，得出執行流程：</p>
+<ul>
+<li>修改 <code>n.i</code> 值：<code>i</code> 為第一個成員變數。因此不需要進行偏移量計算，直接取出指標後轉換為 <code>Pointer</code>，再強制轉換為字串型別的指標值即可</li>
+<li>修改 <code>n.j</code> 值：<code>j</code> 為第二個成員變數。需要進行偏移量計算，才可以對其記憶體地址進行修改。在進行了偏移運算後，當前地址已經指向第二個成員變數。接著重複轉換賦值即可</li>
+</ul>
+<p>需要注意的是，這裡使用瞭如下方法（來完成偏移計算的目標）：</p>
+<p>1、uintptr：<code>uintptr</code> 是 Go 的內建型別。返回無符號整數，可儲存一個完整的地址。後續常用於指標運算</p>
+<pre><code>type uintptr uintptr
+</code></pre>
+<p>2、unsafe.Offsetof：返回成員變數 x 在結構體當中的偏移量。更具體的講，就是返回結構體初始位置到 x 之間的位元組數。需要注意的是入參 <code>ArbitraryType</code> 表示任意型別，並非定義的 <code>int</code>。它實際作用是一個佔位符</p>
+<pre><code class="language-go">func Offsetof(x ArbitraryType) uintptr
+</code></pre>
+<p>在這一部分，其實就是巧用了 <code>Pointer</code> 的第三、第四點特性。這時候就已經可以對變數進行操作了 😄</p>
+<h3 id="錯誤示例-1"><a class="header" href="#錯誤示例-1">錯誤示例</a></h3>
+<pre><code class="language-go">func main(){
+    n := Num{i: "EDDYCJY", j: 1}
+    nPointer := unsafe.Pointer(&amp;n)
+    ...
+
+    ptr := uintptr(nPointer)
+    njPointer := (*int64)(unsafe.Pointer(ptr + unsafe.Offsetof(n.j)))
+    ...
+}
+</code></pre>
+<p>這裡存在一個問題，<code>uintptr</code> 型別是不能儲存在臨時變數中的。因為從 GC 的角度來看，<code>uintptr</code> 型別的臨時變數只是一個無符號整數，並不知道它是一個指標地址</p>
+<p>因此當滿足一定條件後，<code>ptr</code> 這個臨時變數是可能被垃圾回收掉的，那麼接下來的記憶體操作，豈不成迷？</p>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>簡潔回顧兩個知識點。第一是 <code>unsafe.Pointer</code> 可以讓你的變數在不同的指標型別轉來轉去，也就是表示為任意可定址的指標型別。第二是 <code>uintptr</code> 常用於與 <code>unsafe.Pointer</code> 打配合，用於做指標運算，巧妙地很</p>
+<p>最後還是那句，沒有特殊必要的話。是不建議使用 <code>unsafe</code> 標準庫，它並不安全。雖然它常常能讓你眼前一亮 👌</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-8-ke-biao-zhun-ku/log.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-9-ke-gong-ju.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-8-ke-biao-zhun-ku/log.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-9-ke-gong-ju.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

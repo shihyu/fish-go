@@ -1,0 +1,647 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>7.4 map：賦值和擴容遷移 - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="74-map賦值和擴容遷移"><a class="header" href="#74-map賦值和擴容遷移">7.4 map：賦值和擴容遷移</a></h1>
+<h2 id="概要"><a class="header" href="#概要">概要</a></h2>
+<p>在 <a href="https://book.eddycjy.com/golang/map/map-access.html">上一章節</a> 中，資料結構小節裡講解了大量基礎欄位，可能你會疑惑需要 #&amp;（！……#（！￥！ 來幹嘛？接下來我們一起簡單瞭解一下基礎概念。再開始研討今天文章的重點內容。我相信這樣你能更好的讀懂這篇文章</p>
+<h3 id="雜湊函式"><a class="header" href="#雜湊函式">雜湊函式</a></h3>
+<p>雜湊函式，又稱雜湊演算法、雜湊函式。主要作用是透過特定演算法將資料根據一定規則組合重新生成得到一個<strong>雜湊值</strong></p>
+<p>而在雜湊表中，其生成的雜湊值常用於尋找其鍵對映到哪一個桶上。而一個好的雜湊函式，應當儘量少的出現雜湊衝突，以此保證操作雜湊表的時間複雜度（但是雜湊衝突在目前來講，是無法避免的。我們需要 “解決” 它）</p>
+<p><img src="../images/554bf1d03d2c-006fVPCvly1g161h7r7hgj30is0dmjro.jpg" alt="image" /></p>
+<h3 id="鏈地址法"><a class="header" href="#鏈地址法">鏈地址法</a></h3>
+<p>在雜湊操作中，相當核心的一個處理動作就是 “雜湊衝突” 的解決。而在 Go map 中採用的就是 "鏈地址法 " 去解決雜湊衝突，又稱 "拉鍊法"。其主要做法是陣列 + 連結串列的資料結構，其溢位節點的儲存記憶體都是動態申請的，因此相對更靈活。而每一個元素都是一個連結串列。如下圖：</p>
+<p><img src="../images/5247c6dc5edf-006fVPCvly1g1dw2b8t0ej30e60cy747.jpg" alt="image" /></p>
+<h3 id="桶溢位桶"><a class="header" href="#桶溢位桶">桶/溢位桶</a></h3>
+<pre><code class="language-go">type hmap struct {
+    ...
+    buckets    unsafe.Pointer
+    ...
+    extra *mapextra
+}
+
+type mapextra struct {
+    overflow    *[]*bmap
+    oldoverflow *[]*bmap
+    nextOverflow *bmap
+}
+</code></pre>
+<p>在上章節中，我們介紹了 Go map 中的桶和溢位桶的概念，在其桶中只能儲存 8 個鍵值對元素。當超過 8 個時，將會使用溢位桶進行儲存或進行擴容</p>
+<p>你可能會有疑問，hint 大於 8 又會怎麼樣？答案很明顯，效能問題，其時間複雜度改變（也就是執行效率出現問題）</p>
+<h2 id="前言"><a class="header" href="#前言">前言</a></h2>
+<p>概要複習的差不多後，接下來我們將一同研討 Go map 的另外三個核心行為：賦值、擴容、遷移。正式開始我們的研討之旅吧 ：）</p>
+<h2 id="賦值"><a class="header" href="#賦值">賦值</a></h2>
+<pre><code class="language-go">m := make(map[int32]string)
+m[0] = "EDDYCJY"
+</code></pre>
+<h3 id="函式原型"><a class="header" href="#函式原型">函式原型</a></h3>
+<p>在 map 的賦值動作中，依舊是針對 32/64 位、string、pointer 型別有不同的轉換處理，總的函式原型如下：</p>
+<pre><code class="language-go">func mapassign(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer
+func mapaccess1_fast32(t *maptype, h *hmap, key uint32) unsafe.Pointer
+func mapaccess2_fast32(t *maptype, h *hmap, key uint32) (unsafe.Pointer, bool)
+func mapassign_fast32(t *maptype, h *hmap, key uint32) unsafe.Pointer
+func mapassign_fast32ptr(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer
+
+func mapaccess1_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer
+func mapaccess2_fast64(t *maptype, h *hmap, key uint64) (unsafe.Pointer, bool)
+func mapassign_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer
+func mapassign_fast64ptr(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer
+func mapaccess1_faststr(t *maptype, h *hmap, ky string) unsafe.Pointer
+func mapaccess2_faststr(t *maptype, h *hmap, ky string) (unsafe.Pointer, bool)
+func mapassign_faststr(t *maptype, h *hmap, s string) unsafe.Pointer
+...
+</code></pre>
+<p>接下來我們將分成幾個部分去看看底層在賦值的時候，都做了些什麼處理？</p>
+<h3 id="原始碼"><a class="header" href="#原始碼">原始碼</a></h3>
+<h4 id="第一階段校驗和初始化"><a class="header" href="#第一階段校驗和初始化">第一階段：校驗和初始化</a></h4>
+<pre><code class="language-go">func mapassign(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer {
+    if h == nil {
+        panic(plainError("assignment to entry in nil map"))
+    }
+    ...
+    if h.flags&amp;hashWriting != 0 {
+        throw("concurrent map writes")
+    }
+    alg := t.key.alg
+    hash := alg.hash(key, uintptr(h.hash0))
+
+    h.flags |= hashWriting
+
+    if h.buckets == nil {
+        h.buckets = newobject(t.bucket) // newarray(t.bucket, 1)
+    }
+    ...    
+}
+</code></pre>
+<ul>
+<li>判斷 hmap 是否已經初始化（是否為 nil）</li>
+<li>判斷是否併發讀寫 map，若是則丟擲異常</li>
+<li>根據 key 的不同型別呼叫不同的 hash 方法計算得出 hash 值</li>
+<li>設定 flags 標誌位，表示有一個 goroutine 正在寫入資料。因為 <code>alg.hash</code> 有可能出現 <code>panic</code> 導致異常</li>
+<li>判斷 buckets 是否為 nil，若是則呼叫 <code>newobject</code> 根據當前 bucket 大小進行分配（例如：上章節提到的 <code>makemap_small</code> 方法，就在初始化時沒有初始 buckets，那麼它在第一次賦值時就會對 buckets 分配）</li>
+</ul>
+<h4 id="第二階段尋找可插入位和更新既有值"><a class="header" href="#第二階段尋找可插入位和更新既有值">第二階段：尋找可插入位和更新既有值</a></h4>
+<pre><code>...
+again:
+    bucket := hash &amp; bucketMask(h.B)
+    if h.growing() {
+        growWork(t, h, bucket)
+    }
+    b := (*bmap)(unsafe.Pointer(uintptr(h.buckets) + bucket*uintptr(t.bucketsize)))
+    top := tophash(hash)
+
+    var inserti *uint8
+    var insertk unsafe.Pointer
+    var val unsafe.Pointer
+    for {
+        for i := uintptr(0); i &lt; bucketCnt; i++ {
+            if b.tophash[i] != top {
+                if b.tophash[i] == empty &amp;&amp; inserti == nil {
+                    inserti = &amp;b.tophash[i]
+                    insertk = add(unsafe.Pointer(b), dataOffset+i*uintptr(t.keysize))
+                    val = add(unsafe.Pointer(b), dataOffset+bucketCnt*uintptr(t.keysize)+i*uintptr(t.valuesize))
+                }
+                continue
+            }
+            k := add(unsafe.Pointer(b), dataOffset+i*uintptr(t.keysize))
+            if t.indirectkey {
+                k = *((*unsafe.Pointer)(k))
+            }
+            if !alg.equal(key, k) {
+                continue
+            }
+            // already have a mapping for key. Update it.
+            if t.needkeyupdate {
+                typedmemmove(t.key, k, key)
+            }
+            val = add(unsafe.Pointer(b), dataOffset+bucketCnt*uintptr(t.keysize)+i*uintptr(t.valuesize))
+            goto done
+        }
+        ovf := b.overflow(t)
+        if ovf == nil {
+            break
+        }
+        b = ovf
+    }
+
+    if !h.growing() &amp;&amp; (overLoadFactor(h.count+1, h.B) || tooManyOverflowBuckets(h.noverflow, h.B)) {
+        hashGrow(t, h)
+        goto again // Growing the table invalidates everything, so try again
+    }
+    ...
+</code></pre>
+<ul>
+<li>根據低八位計算得到 bucket 的記憶體地址，並判斷是否正在擴容，若正在擴容中則先遷移再接著處理</li>
+<li>計算並得到 bucket 的 bmap 指標地址，計算 key hash 高八位用於查詢 Key</li>
+<li>迭代 buckets 中的每一個 bucket（共 8 個），對比 <code>bucket.tophash</code> 與 top（高八位）是否一致</li>
+<li>若不一致，判斷是否為空槽。若是空槽（有兩種情況，第一種是<strong>沒有插入過</strong>。第二種是<strong>插入後被刪除</strong>），則把該位置標識為可插入 tophash 位置。注意，這裡就是第一個可以插入資料的地方</li>
+<li>若 key 與當前 k 不匹配則跳過。但若是匹配（也就是原本已經存在），則進行更新。最後跳出並返回 value 的記憶體地址</li>
+<li>判斷是否迭代完畢，若是則結束迭代 buckets 並更新當前桶位置</li>
+<li>若滿足三個條件：觸發最大 <code>LoadFactor</code> 、存在過多溢位桶 <code>overflow buckets</code>、沒有正在進行擴容。就會進行擴容動作（以確保後續的動作）</li>
+</ul>
+<p>總的來講，這一塊邏輯做了兩件大事，第一是<strong>尋找空位，將位置其記錄在案，用於後續的插入動作</strong>。第二是<strong>判斷 Key 是否已經存在雜湊表中，存在則進行更新</strong>。而若是第二種場景，更新完畢後就會進行收尾動作，第一種將繼續執行下述的程式碼</p>
+<h4 id="第三階段申請新的插入位和插入新值"><a class="header" href="#第三階段申請新的插入位和插入新值">第三階段：申請新的插入位和插入新值</a></h4>
+<pre><code>    ...
+    if inserti == nil {
+        newb := h.newoverflow(t, b)
+        inserti = &amp;newb.tophash[0]
+        insertk = add(unsafe.Pointer(newb), dataOffset)
+        val = add(insertk, bucketCnt*uintptr(t.keysize))
+    }
+
+    if t.indirectkey {
+        kmem := newobject(t.key)
+        *(*unsafe.Pointer)(insertk) = kmem
+        insertk = kmem
+    }
+    if t.indirectvalue {
+        vmem := newobject(t.elem)
+        *(*unsafe.Pointer)(val) = vmem
+    }
+    typedmemmove(t.key, insertk, key)
+    *inserti = top
+    h.count++
+
+done:
+    ...
+    return val
+</code></pre>
+<p>經過前面迭代尋找動作，若沒有找到可插入的位置，意味著當前的所有桶都滿了，將重新分配一個新溢位桶用於插入動作。最後再在上一步申請的新插入位置，儲存鍵值對，返回該值的記憶體地址</p>
+<h4 id="第四階段寫入"><a class="header" href="#第四階段寫入">第四階段：寫入</a></h4>
+<p>但是這裡又疑惑了？最後為什麼是返回記憶體地址。這是因為隱藏的最後一步寫入動作（將值複製到指定記憶體區域）是透過底層彙編配合來完成的，在 runtime 中只完成了絕大部分的動作</p>
+<pre><code class="language-go">func main() {
+    m := make(map[int32]int32)
+    m[0] = 6666666
+}
+</code></pre>
+<p>對應的彙編部分：</p>
+<pre><code>...
+0x0099 00153 (test.go:6)    CALL    runtime.mapassign_fast32(SB)
+0x009e 00158 (test.go:6)    PCDATA    $2, $2
+0x009e 00158 (test.go:6)    MOVQ    24(SP), AX
+0x00a3 00163 (test.go:6)    PCDATA    $2, $0
+0x00a3 00163 (test.go:6)    MOVL    $6666666, (AX)
+</code></pre>
+<p>這裡分為了幾個部位，主要是呼叫 <code>mapassign</code> 函式和拿到值存放的記憶體地址，再將 6666666 這個值存放進該記憶體地址中。另外我們看到 <code>PCDATA</code> 指令，主要是包含一些垃圾回收的資訊，由編譯器產生</p>
+<h3 id="小結"><a class="header" href="#小結">小結</a></h3>
+<p>透過前面幾個階段的分析，我們可梳理出一些要點。例如：</p>
+<ul>
+<li>不同型別對應雜湊函式不一樣</li>
+<li>高八位用於定位 bucket</li>
+<li>低八位用於定位 key，快速試錯後再進行完整對比</li>
+<li>buckets/overflow buckets 遍歷</li>
+<li>可插入位的處理</li>
+<li>最終寫入動作與底層彙編的互動</li>
+</ul>
+<h2 id="擴容"><a class="header" href="#擴容">擴容</a></h2>
+<p>在所有動作中，擴容規則是大家較關注的點，也是賦值裡非常重要的一環。因此咱們將這節拉出來，對這塊細節進行研討</p>
+<h3 id="什麼時候擴容"><a class="header" href="#什麼時候擴容">什麼時候擴容</a></h3>
+<pre><code>if !h.growing() &amp;&amp; (overLoadFactor(h.count+1, h.B) || tooManyOverflowBuckets(h.noverflow, h.B)) {
+    hashGrow(t, h)
+    goto again
+}
+</code></pre>
+<p>在特定條件的情況下且當前沒有正在進行擴容動作（以判斷 <code>hmap.oldbuckets != nil</code> 為基準）。雜湊表在賦值、刪除的動作下會觸發擴容行為，條件如下：</p>
+<ul>
+<li>觸發 <code>load factor</code> 的最大值，負載因子已達到當前界限</li>
+<li>溢位桶 <code>overflow buckets</code> 過多</li>
+</ul>
+<h3 id="什麼時候受影響"><a class="header" href="#什麼時候受影響">什麼時候受影響</a></h3>
+<p>那麼什麼情況下會對這兩個 “值” 有影響呢？如下：</p>
+<ol>
+<li>負載因子 <code>load factor</code>，用途是評估雜湊表當前的時間複雜度，其與雜湊表當前包含的鍵值對數、桶數量等相關。如果負載因子越大，則說明空間使用率越高，但產生雜湊衝突的可能性更高。而負載因子越小，說明空間使用率低，產生雜湊衝突的可能性更低</li>
+<li>溢位桶 <code>overflow buckets</code> 的判定與 buckets 總數和 overflow buckets 總數相關聯</li>
+</ol>
+<h3 id="因子關係"><a class="header" href="#因子關係">因子關係</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>loadFactor</th><th>%overflow</th><th>bytes/entry</th><th>hitprobe</th><th>missprobe</th></tr></thead><tbody>
+<tr><td>4.00</td><td>2.13</td><td>20.77</td><td>3.00</td><td>4.00</td></tr>
+<tr><td>4.50</td><td>4.05</td><td>17.30</td><td>3.25</td><td>4.50</td></tr>
+<tr><td>5.00</td><td>6.85</td><td>14.77</td><td>3.50</td><td>5.00</td></tr>
+<tr><td>5.50</td><td>10.55</td><td>12.94</td><td>3.75</td><td>5.50</td></tr>
+<tr><td>6.00</td><td>15.27</td><td>11.67</td><td>4.00</td><td>6.00</td></tr>
+<tr><td>6.50</td><td>20.90</td><td>10.79</td><td>4.25</td><td>6.50</td></tr>
+<tr><td>7.00</td><td>27.14</td><td>10.15</td><td>4.50</td><td>7.00</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>loadFactor：負載因子</li>
+<li>%overflow：溢位率，具有溢位桶 <code>overflow buckets</code> 的桶的百分比</li>
+<li>bytes/entry：每個鍵值對所的位元組數開銷</li>
+<li>hitprobe：查詢存在的 key 時，平均需要檢索的條目數量</li>
+<li>missprobe：查詢不存在的 key 時，平均需要檢索的條目數量</li>
+</ul>
+<p>這一組資料能夠體現出不同的負載因子會給雜湊表的動作帶來怎麼樣的影響。而在上一章節我們有提到預設的負載因子是 6.5 (loadFactorNum/loadFactorDen)，可以看出來是經過測試後取出的一個比較合理的因子。能夠較好的影響雜湊表的擴容動作的時機</p>
+<h3 id="原始碼剖析"><a class="header" href="#原始碼剖析">原始碼剖析</a></h3>
+<pre><code class="language-go">func hashGrow(t *maptype, h *hmap) {
+    bigger := uint8(1)
+    if !overLoadFactor(h.count+1, h.B) {
+        bigger = 0
+        h.flags |= sameSizeGrow
+    }
+    oldbuckets := h.buckets
+    newbuckets, nextOverflow := makeBucketArray(t, h.B+bigger, nil)
+    ...
+    h.oldbuckets = oldbuckets
+    h.buckets = newbuckets
+    h.nevacuate = 0
+    h.noverflow = 0
+
+    if h.extra != nil &amp;&amp; h.extra.overflow != nil {
+        if h.extra.oldoverflow != nil {
+            throw("oldoverflow is not nil")
+        }
+        h.extra.oldoverflow = h.extra.overflow
+        h.extra.overflow = nil
+    }
+    if nextOverflow != nil {
+        if h.extra == nil {
+            h.extra = new(mapextra)
+        }
+        h.extra.nextOverflow = nextOverflow
+    }
+
+    // the actual copying of the hash table data is done incrementally
+    // by growWork() and evacuate().
+}
+</code></pre>
+<h4 id="第一階段確定擴容容量規則"><a class="header" href="#第一階段確定擴容容量規則">第一階段：確定擴容容量規則</a></h4>
+<p>在上小節有講到擴容的依據有兩種，在 <code>hashGrow</code> 開頭就進行了劃分。如下：</p>
+<pre><code>if !overLoadFactor(h.count+1, h.B) {
+    bigger = 0
+    h.flags |= sameSizeGrow
+}
+</code></pre>
+<p>若不是負載因子 <code>load factor</code> 超過當前界限，也就是屬於溢位桶 <code>overflow buckets</code> 過多的情況。因此本次擴容規則將是 <code>sameSizeGrow</code>，即是<strong>不改變大小的擴容動作</strong>。那要是前者的情況呢？</p>
+<pre><code>bigger := uint8(1)
+...
+newbuckets, nextOverflow := makeBucketArray(t, h.B+bigger, nil)
+</code></pre>
+<p>結合程式碼分析可得出，若是負載因子 <code>load factor</code> 達到當前界限，將會動態擴容<strong>當前大小的兩倍</strong>作為其新容量大小</p>
+<h4 id="第二階段初始化交換新舊-桶溢位桶"><a class="header" href="#第二階段初始化交換新舊-桶溢位桶">第二階段：初始化、交換新舊 桶/溢位桶</a></h4>
+<p>主要是針對擴容的相關資料<strong>前置處理</strong>，涉及 buckets/oldbuckets、overflow/oldoverflow 之類與儲存相關的欄位</p>
+<pre><code>...
+oldbuckets := h.buckets
+newbuckets, nextOverflow := makeBucketArray(t, h.B+bigger, nil)
+
+flags := h.flags &amp;^ (iterator | oldIterator)
+if h.flags&amp;iterator != 0 {
+    flags |= oldIterator
+}
+
+h.B += bigger
+...
+h.noverflow = 0
+
+if h.extra != nil &amp;&amp; h.extra.overflow != nil {
+    ...
+    h.extra.oldoverflow = h.extra.overflow
+    h.extra.overflow = nil
+}
+if nextOverflow != nil {
+    ...
+    h.extra.nextOverflow = nextOverflow
+}
+</code></pre>
+<p>這裡注意到這段程式碼： <code>newbuckets, nextOverflow := makeBucketArray(t, h.B+bigger, nil)</code>。第一反應是擴容的時候就馬上申請並初始化記憶體了嗎？假設涉及大量的記憶體分配，那挺耗費效能的...</p>
+<p>然而並不，內部只會先進行預分配，當使用的時候才會真正的去初始化</p>
+<h4 id="第三階段擴容"><a class="header" href="#第三階段擴容">第三階段：擴容</a></h4>
+<p>在原始碼中，發現第三階段的流轉並沒有顯式展示。這是因為流轉由底層去做控制了。但透過分析程式碼和註釋，可得知由第三階段涉及 <code>growWork</code> 和 <code>evacuate</code> 方法。如下：</p>
+<pre><code class="language-go">func growWork(t *maptype, h *hmap, bucket uintptr) {
+    evacuate(t, h, bucket&amp;h.oldbucketmask())
+
+    if h.growing() {
+        evacuate(t, h, h.nevacuate)
+    }
+}
+</code></pre>
+<p>在該方法中，主要是兩個 <code>evacuate</code> 函式的呼叫。他們在呼叫上又分別有什麼區別呢？如下：</p>
+<ul>
+<li>evacuate(t, h, bucket&amp;h.oldbucketmask()): 將 oldbucket 中的元素遷移 rehash 到擴容後的新 bucket</li>
+<li>evacuate(t, h, h.nevacuate): 如果當前正在進行擴容，則再進行多一次遷移</li>
+</ul>
+<p>另外，在執行擴容動作的時候，可以發現都是以 bucket/oldbucket 為單位的，而不是傳統的 buckets/oldbuckets。再結合程式碼分析，可得知在 Go map 中<strong>擴容是採取增量擴容的方式，並非一步到位</strong></p>
+<p><strong>為什麼是增量擴容？</strong></p>
+<p>如果是全量擴容的話，那問題就來了。假設當前 hmap 的容量比較大，直接全量擴容的話，就會導致擴容要花費大量的時間和記憶體，導致系統卡頓，最直觀的表現就是慢。顯然，不能這麼做</p>
+<p>而增量擴容，就可以解決這個問題。它透過每一次的 map 操作行為去分攤總的一次性動作。因此有了 buckets/oldbuckets 的設計，它是逐步完成的，並且會在擴容完畢後才進行清空</p>
+<h3 id="小結-1"><a class="header" href="#小結-1">小結</a></h3>
+<p>透過前面三個階段的分析，可以得知擴容的大致過程。我們階段性總結一下。主要如下：</p>
+<ul>
+<li>根據需擴容的原因不同（overLoadFactor/tooManyOverflowBuckets），分為兩類容量規則方向，為等量擴容（不改變原有大小）或雙倍擴容</li>
+<li>新申請的擴容空間（newbuckets/newoverflow）都是預分配，等真正使用的時候才會初始化</li>
+<li>擴容完畢後（預分配），不會馬上就進行遷移。而是採取<strong>增量擴容</strong>的方式，當有訪問到具體 bukcet 時，才會逐漸的進行遷移（將 oldbucket 遷移到 bucket）</li>
+</ul>
+<p>這時候又想到，既然遷移是逐步進行的。那如果在途中又要擴容了，怎麼辦？</p>
+<pre><code>again:
+    bucket := hash &amp; bucketMask(h.B)
+    ...
+    if !h.growing() &amp;&amp; (overLoadFactor(h.count+1, h.B) || tooManyOverflowBuckets(h.noverflow, h.B)) {
+        hashGrow(t, h)
+        goto again 
+    }
+</code></pre>
+<p>在這裡注意到 <code>goto again</code> 語句，結合上下文可得若正在進行擴容，就會不斷地進行遷移。待遷移完畢後才會開始進行下一次的擴容動作</p>
+<h2 id="遷移"><a class="header" href="#遷移">遷移</a></h2>
+<p>在擴容的完整閉環中，包含著遷移的動作，又稱 “搬遷”。因此我們繼續深入研究 <code>evacuate</code> 函式。接下來一起開啟遷移世界的大門。如下：</p>
+<pre><code class="language-go">type evacDst struct {
+    b *bmap          
+    i int            
+    k unsafe.Pointer 
+    v unsafe.Pointer 
+}
+</code></pre>
+<p><code>evacDst</code> 是遷移中的基礎資料結構，其包含如下欄位：</p>
+<ul>
+<li>b: 當前目標桶</li>
+<li>i: 當前目標桶儲存的鍵值對數量</li>
+<li>k: 指向當前 key 的記憶體地址</li>
+<li>v: 指向當前 value 的記憶體地址</li>
+</ul>
+<pre><code class="language-go">func evacuate(t *maptype, h *hmap, oldbucket uintptr) {
+    b := (*bmap)(add(h.oldbuckets, oldbucket*uintptr(t.bucketsize)))
+    newbit := h.noldbuckets()
+    if !evacuated(b) {
+        var xy [2]evacDst
+        x := &amp;xy[0]
+        x.b = (*bmap)(add(h.buckets, oldbucket*uintptr(t.bucketsize)))
+        x.k = add(unsafe.Pointer(x.b), dataOffset)
+        x.v = add(x.k, bucketCnt*uintptr(t.keysize))
+
+        if !h.sameSizeGrow() {
+            y := &amp;xy[1]
+            y.b = (*bmap)(add(h.buckets, (oldbucket+newbit)*uintptr(t.bucketsize)))
+            y.k = add(unsafe.Pointer(y.b), dataOffset)
+            y.v = add(y.k, bucketCnt*uintptr(t.keysize))
+        }
+
+        for ; b != nil; b = b.overflow(t) {
+            ...
+        }
+
+        if h.flags&amp;oldIterator == 0 &amp;&amp; t.bucket.kind&amp;kindNoPointers == 0 {
+            b := add(h.oldbuckets, oldbucket*uintptr(t.bucketsize))
+            ptr := add(b, dataOffset)
+            n := uintptr(t.bucketsize) - dataOffset
+            memclrHasPointers(ptr, n)
+        }
+    }
+
+    if oldbucket == h.nevacuate {
+        advanceEvacuationMark(h, t, newbit)
+    }
+}
+</code></pre>
+<ul>
+<li>計算並得到 oldbucket 的 bmap 指標地址</li>
+<li>計算 hmap 在增長之前的桶數量</li>
+<li>判斷當前的遷移（搬遷）狀態，以便流轉後續的操作。若沒有正在進行遷移 <code>!evacuated(b)</code> ，則根據擴容的規則的不同，當規則為等量擴容 <code>sameSizeGrow</code> 時，只使用一個 <code>evacDst</code> 桶用於分流。而為雙倍擴容時，就會使用兩個 <code>evacDst</code> 進行分流操作</li>
+<li>當分流完畢後，需要遷移的資料都會透過 <code>typedmemmove</code> 函式遷移到指定的目標桶上</li>
+<li>若當前不存在 flags 使用標誌、使用 oldbucket 迭代器、bucket 不為指標型別。則取消連結溢位桶、清除鍵值</li>
+<li>在最後 <code>advanceEvacuationMark</code> 函式中會對遷移進度 <code>hmap.nevacuate</code> 進行累積計數，並呼叫 <code>bucketEvacuated</code> 對舊桶 oldbuckets 進行不斷的遷移。直至全部遷移完畢。那麼也就表示擴容完畢了，會對 <code>hmap.oldbuckets</code> 和 <code>h.extra.oldoverflow</code> 進行清空</li>
+</ul>
+<p>總的來講，就是計算得到所需資料的位置。再根據當前的遷移狀態、擴容規則進行資料分流遷移。結束後進行清理，促進 GC 的回收</p>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>在本章節我們主要研討了 Go map 的幾個核心動作，分別是：“賦值、擴容、遷移” 。而透過本次的閱讀，我們能夠更進一步的認識到一些要點，例如：</p>
+<ul>
+<li>賦值的時候會觸發擴容嗎？</li>
+<li>負載因子是什麼？過高會帶來什麼問題？它的變動會對雜湊表操作帶來什麼影響嗎？</li>
+<li>溢位桶越多會帶來什麼問題？</li>
+<li>是否要擴容的基準條件是什麼？</li>
+<li>擴容的容量規則是怎麼樣的？</li>
+<li>擴容的步驟是怎麼樣的？涉及到了哪些資料結構？</li>
+<li>擴容是一次性擴容還是增量擴容？</li>
+<li>正在擴容的時候又要擴容怎麼辦？</li>
+<li>擴容時的遷移分流動作是怎麼樣的？</li>
+<li>在擴容動作中，底層彙編承擔了什麼角色？做了什麼事？</li>
+<li>在 buckets/overflow buckets 中尋找時，是如何 “快速” 定位值的？低八位、高八位的用途？</li>
+<li>空槽有可能出現在任意位置嗎？假設已經沒有空槽了，但是又有新值要插入，底層會怎麼處理</li>
+</ul>
+<p>最後希望你透過本文的閱讀，能更清楚地瞭解到 Go map 是怎麼樣運作的 ：）</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-7-ke-shu-ju-jie-gou/map-access.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-7-ke-shu-ju-jie-gou/why-map-no-order.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-7-ke-shu-ju-jie-gou/map-access.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-7-ke-shu-ju-jie-gou/why-map-no-order.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

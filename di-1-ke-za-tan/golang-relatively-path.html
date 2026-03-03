@@ -1,0 +1,361 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>1.1 聊一聊，Go 的相對路徑問題 - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="11-聊一聊go-的相對路徑問題"><a class="header" href="#11-聊一聊go-的相對路徑問題">1.1 聊一聊，Go 的相對路徑問題</a></h1>
+<h2 id="前言"><a class="header" href="#前言">前言</a></h2>
+<p><code>Golang</code> 中存在各種執行方式，如何<strong>正確的引用檔案路徑</strong>成為一個值得商議的問題</p>
+<p>以 <a href="https://github.com/EDDYCJY/go-gin-example">gin-blog</a> 為例，當我們在專案根目錄下，執行 <code>go run main.go</code> 時能夠正常執行（<code>go build</code>也是正常的）</p>
+<pre><code>[$ gin-blog]# go run main.go
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:    export GIN_MODE=release
+ - using code:    gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /api/v1/tags              --&gt; gin-blog/routers/api/v1.GetTags (3 handlers)
+...
+</code></pre>
+<p>那麼在不同的目錄層級下，不同的方式執行，又是怎麼樣的呢，帶著我們的疑問去學習</p>
+<h2 id="問題"><a class="header" href="#問題">問題</a></h2>
+<p>1、 go run 我們上移目錄層級，到 <code>$GOPATH/src</code> 下，執行 <code>go run gin-blog/main.go</code></p>
+<pre><code>[$ src]# go run gin-blog/main.go
+2018/03/12 16:06:13 Fail to parse 'conf/app.ini': open conf/app.ini: no such file or directory
+exit status 1
+</code></pre>
+<p>2、 go build，執行 <code>./gin-blog/main</code></p>
+<pre><code>[$ src]# ./gin-blog/main
+2018/03/12 16:49:35 Fail to parse 'conf/app.ini': open conf/app.ini: no such file or directory
+</code></pre>
+<p>這時候你要打一個大大的問號，就是我的程式讀取到什麼地方去了</p>
+<p>我們透過分析得知，<strong><code>Golang</code>的相對路徑是相對於執行命令時的目錄</strong>；自然也就讀取不到了</p>
+<h2 id="思考"><a class="header" href="#思考">思考</a></h2>
+<p>既然已經知道問題的所在點，我們就可以尋思做點什麼 : )</p>
+<p>我們想到相對路徑是相對執行命令的目錄，那麼我們取得可執行檔案的地址，拼接起來不就好了嗎？</p>
+<h2 id="實踐"><a class="header" href="#實踐">實踐</a></h2>
+<p>我們編寫<strong>取得當前可執行檔案路徑的方法</strong></p>
+<pre><code class="language-go">import (
+    "path/filepath"
+    "os"
+    "os/exec"
+    "string"
+)
+
+func GetAppPath() string {
+    file, _ := exec.LookPath(os.Args[0])
+    path, _ := filepath.Abs(file)
+    index := strings.LastIndex(path, string(os.PathSeparator))
+
+    return path[:index]
+}
+</code></pre>
+<p>將其放到啟動程式碼處檢視路徑</p>
+<pre><code>log.Println(GetAppPath())
+</code></pre>
+<p>我們分別執行以下兩個命令，檢視輸出結果 1、 go run</p>
+<pre><code>$ go run main.go
+2018/03/12 18:45:40 /tmp/go-build962610262/b001/exe
+</code></pre>
+<p>2、 go build</p>
+<pre><code>$ ./main
+2018/03/12 18:49:44 $GOPATH/src/gin-blog
+</code></pre>
+<h2 id="剖析"><a class="header" href="#剖析">剖析</a></h2>
+<p>我們聚焦在 <code>go run</code> 的輸出結果上，發現它是一個臨時檔案的地址，這是為什麼呢？</p>
+<p>在<code>go help run</code>中，我們可以看到</p>
+<pre><code class="language-go">Run compiles and runs the main package comprising the named Go source files.
+A Go source file is defined to be a file ending in a literal ".go" suffix.
+</code></pre>
+<p>也就是 <code>go run</code> 執行時會將檔案放到 <code>/tmp/go-build...</code> 目錄下，編譯並執行</p>
+<p>因此<code>go run main.go</code>出現<code>/tmp/go-build962610262/b001/exe</code>結果也不奇怪了，因為它已經跑到臨時目錄下去執行可執行檔案了</p>
+<p>這就已經很清楚了，那麼我們想想，會出現哪些問題呢</p>
+<ul>
+<li>依賴相對路徑的檔案，出現路徑出錯的問題</li>
+<li><code>go run</code> 和 <code>go build</code> 不一樣，一個到臨時目錄下執行，一個可手動在編譯後的目錄下執行，路徑的處理方式會不同</li>
+<li>不斷<code>go run</code>，不斷產生新的臨時檔案</li>
+</ul>
+<p>這其實就是<strong>根本原因</strong>了，因為 <code>go run</code> 和 <code>go build</code> 的編譯檔案執行路徑並不同，執行的層級也有可能不一樣，自然而然就出現各種讀取不到的奇怪問題了</p>
+<h2 id="解決方案"><a class="header" href="#解決方案">解決方案</a></h2>
+<p><strong>一、取得編譯後的可執行檔案路徑</strong></p>
+<p>1、 將設定檔案的相對路徑與<code>GetAppPath()</code>的結果相拼接，可解決<code>go build main.go</code>的可執行檔案跨目錄執行的問題（如：<code>./src/gin-blog/main</code>）</p>
+<pre><code class="language-go">import (
+    "path/filepath"
+    "os"
+    "os/exec"
+    "string"
+)
+
+func GetAppPath() string {
+    file, _ := exec.LookPath(os.Args[0])
+    path, _ := filepath.Abs(file)
+    index := strings.LastIndex(path, string(os.PathSeparator))
+
+    return path[:index]
+}
+</code></pre>
+<p>但是這種方式，對於<code>go run</code>依舊無效，這時候就需要2來補救</p>
+<p>2、 透過傳遞引數指定路徑，可解決<code>go run</code>的問題</p>
+<pre><code class="language-go">package main
+
+import (
+    "flag"
+    "fmt"
+)
+
+func main() {
+    var appPath string
+    flag.StringVar(&amp;appPath, "app-path", "app-path")
+    flag.Parse()
+    fmt.Printf("App path: %s", appPath)
+}
+</code></pre>
+<p>執行</p>
+<pre><code>go run main.go --app-path "Your project address"
+</code></pre>
+<p><strong>二、增加<code>os.Getwd()</code>進行多層判斷</strong></p>
+<p>參見 <a href="https://github.com/astaxie/beego/blob/master/config.go#L133-L146">beego</a> 讀取 <code>app.conf</code> 的程式碼</p>
+<p>該寫法可相容 <code>go build</code> 和在專案根目錄執行 <code>go run</code> ，但是若跨目錄執行 <code>go run</code> 就不行</p>
+<p><strong>三、設定全域性系統變數</strong></p>
+<p>我們可以透過<code>os.Getenv</code>來取得系統全域性變數，然後與相對路徑進行拼接</p>
+<p>1、 設定專案工作區</p>
+<p>簡單來說，就是設定專案（應用）的工作路徑，然後與設定檔案、日誌檔案等相對路徑進行拼接，達到相對的絕對路徑來保證路徑一致</p>
+<p>參見 <a href="https://github.com/gogits/gogs/blob/master/pkg/setting/setting.go#L351">gogs</a> 讀取<code>GOGS_WORK_DIR</code>進行拼接的程式碼</p>
+<p>2、 利用系統自帶變數</p>
+<p>簡單來說就是透過系統自帶的全域性變數，例如<code>$HOME</code>等，將設定檔案存放在<code>$HOME/conf</code>或<code>/etc/conf</code>下</p>
+<p>這樣子就能更加固定的存放設定檔案，<strong>不需要額外去設定一個環境變數</strong></p>
+<p>（這點今早與一位SFer討論了一波，感謝）</p>
+<h2 id="拓展"><a class="header" href="#拓展">拓展</a></h2>
+<p><code>go test</code> 在一些場景下也會遇到路徑問題，因為<code>go test</code>只能夠在當前目錄執行，所以在執行測試用例的時候，你的執行目錄已經是測試目錄了</p>
+<p>需要注意的是，如果採用取得外部引數的辦法，用 <code>os.args</code> 時，<code>go test -args</code> 和 <code>go run</code>、<code>go build</code> 會有命令列引數位置的不一致問題</p>
+<h2 id="小結"><a class="header" href="#小結">小結</a></h2>
+<p>這三種解決方案，在目前可見的開源專案或介紹中都能找到這些的身影</p>
+<p>優缺點也是顯而易見的，我認為應在<strong>不同專案選定合適的解決方案</strong>即可</p>
+<p>建議大家不要強依賴讀取設定檔案的模組，應當將其“堆積木”化，<strong>需要什麼設定才去註冊什麼設定變數</strong>，可以解決一部分的問題</p>
+<p>大家又有什麼想法呢，一起討論一波？</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-1-ke-za-tan.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-1-ke-za-tan/go-fake-useragent.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-1-ke-za-tan.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-1-ke-za-tan/go-fake-useragent.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

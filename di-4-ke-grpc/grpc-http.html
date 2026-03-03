@@ -1,0 +1,409 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>4.7 讓你的服務同時提供 HTTP 介面 - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="47-讓你的服務同時提供-http-介面"><a class="header" href="#47-讓你的服務同時提供-http-介面">4.7 讓你的服務同時提供 HTTP 介面</a></h1>
+<p>專案地址：<a href="https://github.com/EDDYCJY/go-grpc-example">https://github.com/EDDYCJY/go-grpc-example</a></p>
+<h2 id="前言"><a class="header" href="#前言">前言</a></h2>
+<ul>
+<li>介面需要提供給其他業務組訪問，但是 RPC 協議不同無法內調，對方問能否走 HTTP 介面，怎麼辦？</li>
+<li>微信（公眾號、小程式）等第三方回撥介面只支援 HTTP 介面，怎麼辦</li>
+</ul>
+<p>我相信你在實際工作中都會遇到如上問題，在 gRPC 中都是有解決方案的，本章節將會進行介紹 🤔</p>
+<h2 id="為什麼可以同時提供-http-介面"><a class="header" href="#為什麼可以同時提供-http-介面">為什麼可以同時提供 HTTP 介面</a></h2>
+<p>關鍵一點，gRPC 的協議是基於 HTTP/2 的，因此應用程式能夠在單個 TCP 埠上提供 HTTP/1.1 和 gRPC 介面服務（兩種不同的流量）</p>
+<h2 id="怎麼同時提供-http-介面"><a class="header" href="#怎麼同時提供-http-介面">怎麼同時提供 HTTP 介面</a></h2>
+<h3 id="檢測協議"><a class="header" href="#檢測協議">檢測協議</a></h3>
+<pre><code>if r.ProtoMajor == 2 &amp;&amp; strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+    server.ServeHTTP(w, r)
+} else {
+    mux.ServeHTTP(w, r)
+}
+</code></pre>
+<h3 id="流程"><a class="header" href="#流程">流程</a></h3>
+<ol>
+<li>檢測請求協議是否為 HTTP/2</li>
+<li>判斷 Content-Type 是否為 application/grpc（gRPC 的預設標識位）</li>
+<li>根據協議的不同轉發到不同的服務處理</li>
+</ol>
+<h2 id="grpc"><a class="header" href="#grpc">gRPC</a></h2>
+<h3 id="tls"><a class="header" href="#tls">TLS</a></h3>
+<p>在前面的章節，為了便於展示因此沒有簡單封裝</p>
+<p>在本節需複用程式碼，重新封裝了，可詳見：<a href="https://github.com/EDDYCJY/go-grpc-example/tree/master/pkg/gtls">go-grpc-example</a></p>
+<h3 id="目錄結構"><a class="header" href="#目錄結構">目錄結構</a></h3>
+<p>新建 simple_http_client、simple_http_server 目錄，目錄結構如下：</p>
+<pre><code>go-grpc-example
+├── client
+│   ├── simple_client
+│   ├── simple_http_client
+│   └── stream_client
+├── conf
+├── pkg
+│   └── gtls
+├── proto
+├── server
+│   ├── simple_http_server
+│   ├── simple_server
+│   └── stream_server
+</code></pre>
+<h3 id="server"><a class="header" href="#server">Server</a></h3>
+<p>在 simple_http_server 目錄下新建 server.go，寫入檔案內容：</p>
+<pre><code class="language-go">package main
+
+import (
+    "context"
+    "log"
+    "net/http"
+    "strings"
+
+    "github.com/EDDYCJY/go-grpc-example/pkg/gtls"
+    pb "github.com/EDDYCJY/go-grpc-example/proto"
+
+    "google.golang.org/grpc"
+)
+
+type SearchService struct{}
+
+func (s *SearchService) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
+    return &amp;pb.SearchResponse{Response: r.GetRequest() + " HTTP Server"}, nil
+}
+
+const PORT = "9003"
+
+func main() {
+    certFile := "../../conf/server/server.pem"
+    keyFile := "../../conf/server/server.key"
+    tlsServer := gtls.Server{
+        CertFile: certFile,
+        KeyFile:  keyFile,
+    }
+
+    c, err := tlsServer.GetTLSCredentials()
+    if err != nil {
+        log.Fatalf("tlsServer.GetTLSCredentials err: %v", err)
+    }
+
+    mux := GetHTTPServeMux()
+
+    server := grpc.NewServer(grpc.Creds(c))
+    pb.RegisterSearchServiceServer(server, &amp;SearchService{})
+
+    http.ListenAndServeTLS(":"+PORT,
+        certFile,
+        keyFile,
+        http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            if r.ProtoMajor == 2 &amp;&amp; strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+                server.ServeHTTP(w, r)
+            } else {
+                mux.ServeHTTP(w, r)
+            }
+
+            return
+        }),
+    )
+}
+
+func GetHTTPServeMux() *http.ServeMux {
+    mux := http.NewServeMux()
+    mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        w.Write([]byte("eddycjy: go-grpc-example"))
+    })
+
+    return mux
+}
+</code></pre>
+<ul>
+<li>http.NewServeMux：建立一個新的 ServeMux，ServeMux 本質上是一個路由表。它預設實作了 ServeHTTP，因此返回 Handler 後可直接透過 HandleFunc 註冊 pattern 和處理邏輯的方法</li>
+<li>http.ListenAndServeTLS：可簡單的理解為提供監聽 HTTPS 服務的方法，重點的協議判斷轉發，也在這裡面</li>
+</ul>
+<p>其實，你理解後就會覺得很簡單，核心步驟：判斷 -&gt; 轉發 -&gt; 響應。我們改變了前兩步的預設邏輯，僅此而已</p>
+<h3 id="client"><a class="header" href="#client">Client</a></h3>
+<p>在 simple_http_server 目錄下新建 client.go，寫入檔案內容：</p>
+<pre><code class="language-go">package main
+
+import (
+    "context"
+    "log"
+
+    "google.golang.org/grpc"
+
+    "github.com/EDDYCJY/go-grpc-example/pkg/gtls"
+    pb "github.com/EDDYCJY/go-grpc-example/proto"
+)
+
+const PORT = "9003"
+
+func main() {
+    tlsClient := gtls.Client{
+        ServerName: "go-grpc-example",
+        CertFile:   "../../conf/server/server.pem",
+    }
+    c, err := tlsClient.GetTLSCredentials()
+    if err != nil {
+        log.Fatalf("tlsClient.GetTLSCredentials err: %v", err)
+    }
+
+    conn, err := grpc.Dial(":"+PORT, grpc.WithTransportCredentials(c))
+    if err != nil {
+        log.Fatalf("grpc.Dial err: %v", err)
+    }
+    defer conn.Close()
+
+    client := pb.NewSearchServiceClient(conn)
+    resp, err := client.Search(context.Background(), &amp;pb.SearchRequest{
+        Request: "gRPC",
+    })
+    if err != nil {
+        log.Fatalf("client.Search err: %v", err)
+    }
+
+    log.Printf("resp: %s", resp.GetResponse())
+}
+</code></pre>
+<h2 id="驗證"><a class="header" href="#驗證">驗證</a></h2>
+<h3 id="grpc-client"><a class="header" href="#grpc-client">gRPC Client</a></h3>
+<pre><code>$ go run client.go 
+2018/10/04 14:56:56 resp: gRPC HTTP Server
+</code></pre>
+<h3 id="http11-訪問"><a class="header" href="#http11-訪問">HTTP/1.1 訪問</a></h3>
+<p><img src="../images/dfe1159bb66b-1d92cb9e949e32eef7f8a64a6a77deb9.jpg" alt="image" /></p>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>透過本章節，表面上完成了同埠提供雙服務的功能，但實際上，應該是加深了 HTTP/2 的理解和使用，這才是本質</p>
+<h2 id="拓展"><a class="header" href="#拓展">拓展</a></h2>
+<p>如果你有一個需求，是要<strong>同時提供</strong> RPC 和 RESTful JSON API 兩種介面的，不要猶豫，點進去：<a href="https://segmentfault.com/a/1190000013339403">gRPC + gRPC Gateway 實踐</a></p>
+<h2 id="問題"><a class="header" href="#問題">問題</a></h2>
+<p>你以為這個方案就萬能了嗎，不。Envoy Proxy 的支援就不完美，無法同時監聽一個埠的兩種流量 😤</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<h3 id="本系列示例程式碼"><a class="header" href="#本系列示例程式碼">本系列示例程式碼</a></h3>
+<ul>
+<li><a href="https://github.com/EDDYCJY/go-grpc-example">go-grpc-example</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-4-ke-grpc/interceptor.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-4-ke-grpc/per-rpc-credentials.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-4-ke-grpc/interceptor.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-4-ke-grpc/per-rpc-credentials.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

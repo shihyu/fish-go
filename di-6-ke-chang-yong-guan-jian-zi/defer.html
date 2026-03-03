@@ -1,0 +1,520 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>6.2 defer - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="62-defer"><a class="header" href="#62-defer">6.2 defer</a></h1>
+<p>在上一章節 <a href="https://book.eddycjy.com/golang/panic/panic-and-recover.html">《深入理解 Go panic and recover》</a> 中，我們發現了 <code>defer</code> 與其關聯性極大，還是覺得非常有必要深入一下。希望透過本章節大家可以對 <code>defer</code> 關鍵字有一個深刻的理解，那麼我們開始吧。你先等等，請排好隊，我們這兒採取後進先出 LIFO 的出站方式...</p>
+<h2 id="特性"><a class="header" href="#特性">特性</a></h2>
+<p>我們簡單的過一下 <code>defer</code> 關鍵字的基礎使用，讓大家先有一個基礎的認知</p>
+<h3 id="一延遲呼叫"><a class="header" href="#一延遲呼叫">一、延遲呼叫</a></h3>
+<pre><code class="language-go">func main() {
+    defer log.Println("EDDYCJY.")
+
+    log.Println("end.")
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>$ go run main.go            
+2019/05/19 21:15:02 end.
+2019/05/19 21:15:02 EDDYCJY.
+</code></pre>
+<h3 id="二後進先出"><a class="header" href="#二後進先出">二、後進先出</a></h3>
+<pre><code class="language-go">func main() {
+    for i := 0; i &lt; 6; i++ {
+        defer log.Println("EDDYCJY" + strconv.Itoa(i) + ".")
+    }
+
+
+    log.Println("end.")
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>$ go run main.go
+2019/05/19 21:19:17 end.
+2019/05/19 21:19:17 EDDYCJY5.
+2019/05/19 21:19:17 EDDYCJY4.
+2019/05/19 21:19:17 EDDYCJY3.
+2019/05/19 21:19:17 EDDYCJY2.
+2019/05/19 21:19:17 EDDYCJY1.
+2019/05/19 21:19:17 EDDYCJY0.
+</code></pre>
+<h3 id="三執行時間點"><a class="header" href="#三執行時間點">三、執行時間點</a></h3>
+<pre><code class="language-go">func main() {
+    func() {
+         defer log.Println("defer.EDDYCJY.")
+    }()
+
+    log.Println("main.EDDYCJY.")
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>$ go run main.go 
+2019/05/22 23:30:27 defer.EDDYCJY.
+2019/05/22 23:30:27 main.EDDYCJY.
+</code></pre>
+<h3 id="四異常處理"><a class="header" href="#四異常處理">四、異常處理</a></h3>
+<pre><code class="language-go">func main() {
+    defer func() {
+        if e := recover(); e != nil {
+            log.Println("EDDYCJY.")
+        }
+    }()
+
+    panic("end.")
+}
+</code></pre>
+<p>輸出結果：</p>
+<pre><code>$ go run main.go 
+2019/05/20 22:22:57 EDDYCJY.
+</code></pre>
+<h2 id="原始碼剖析"><a class="header" href="#原始碼剖析">原始碼剖析</a></h2>
+<pre><code>$ go tool compile -S main.go 
+"".main STEXT size=163 args=0x0 locals=0x40
+    ...
+    0x0059 00089 (main.go:6)    MOVQ    AX, 16(SP)
+    0x005e 00094 (main.go:6)    MOVQ    $1, 24(SP)
+    0x0067 00103 (main.go:6)    MOVQ    $1, 32(SP)
+    0x0070 00112 (main.go:6)    CALL    runtime.deferproc(SB)
+    0x0075 00117 (main.go:6)    TESTL    AX, AX
+    0x0077 00119 (main.go:6)    JNE    137
+    0x0079 00121 (main.go:7)    XCHGL    AX, AX
+    0x007a 00122 (main.go:7)    CALL    runtime.deferreturn(SB)
+    0x007f 00127 (main.go:7)    MOVQ    56(SP), BP
+    0x0084 00132 (main.go:7)    ADDQ    $64, SP
+    0x0088 00136 (main.go:7)    RET
+    0x0089 00137 (main.go:6)    XCHGL    AX, AX
+    0x008a 00138 (main.go:6)    CALL    runtime.deferreturn(SB)
+    0x008f 00143 (main.go:6)    MOVQ    56(SP), BP
+    0x0094 00148 (main.go:6)    ADDQ    $64, SP
+    0x0098 00152 (main.go:6)    RET
+    ...
+</code></pre>
+<p>首先我們需要找到它，找到它實際對應什麼執行程式碼。透過彙編程式碼，可得知涉及如下方法：</p>
+<ul>
+<li>runtime.deferproc</li>
+<li>runtime.deferreturn</li>
+</ul>
+<p>很顯然是執行時的方法，是對的人。我們繼續往下走看看都分別承擔了什麼行為</p>
+<h3 id="資料結構"><a class="header" href="#資料結構">資料結構</a></h3>
+<p>在開始前我們需要先介紹一下 <code>defer</code> 的基礎單元 <code>_defer</code> 結構體，如下：</p>
+<pre><code class="language-go">type _defer struct {
+    siz     int32
+    started bool
+    sp      uintptr // sp at time of defer
+    pc      uintptr
+    fn      *funcval
+    _panic  *_panic // panic that is running defer
+    link    *_defer
+}
+
+...
+type funcval struct {
+    fn uintptr
+    // variable-size, fn-specific data here
+}
+</code></pre>
+<ul>
+<li>siz：所有傳入引數的總大小</li>
+<li>started：該 <code>defer</code> 是否已經執行過</li>
+<li>sp：函式棧指標暫存器，一般指向當前函式棧的棧頂</li>
+<li>pc：程式計數器，有時稱為指令指標(IP)，執行緒利用它來跟蹤下一個要執行的指令。在大多數處理器中，PC指向的是下一條指令，而不是當前指令</li>
+<li>fn：指向傳入的函式地址和引數</li>
+<li>_panic：指向 <code>_panic</code> 連結串列</li>
+<li>link：指向 <code>_defer</code> 連結串列</li>
+</ul>
+<p><img src="../images/3cf4c972f0b5-f2KghN9.png" alt="image" /></p>
+<h3 id="deferproc"><a class="header" href="#deferproc">deferproc</a></h3>
+<pre><code class="language-go">func deferproc(siz int32, fn *funcval) {
+    ...
+    sp := getcallersp()
+    argp := uintptr(unsafe.Pointer(&amp;fn)) + unsafe.Sizeof(fn)
+    callerpc := getcallerpc()
+
+    d := newdefer(siz)
+    ...
+    d.fn = fn
+    d.pc = callerpc
+    d.sp = sp
+    switch siz {
+    case 0:
+        // Do nothing.
+    case sys.PtrSize:
+        *(*uintptr)(deferArgs(d)) = *(*uintptr)(unsafe.Pointer(argp))
+    default:
+        memmove(deferArgs(d), unsafe.Pointer(argp), uintptr(siz))
+    }
+
+    return0()
+}
+</code></pre>
+<ul>
+<li>取得呼叫 <code>defer</code> 函式的函式棧指標、傳入函式的引數具體地址以及PC （程式計數器），也就是下一個要執行的指令。這些相當於是預備引數，便於後續的流轉控制</li>
+<li>建立一個新的 <code>defer</code> 最小單元 <code>_defer</code>，填入先前準備的引數</li>
+<li>呼叫 <code>memmove</code> 將傳入的引數儲存到新 <code>_defer</code> （當前使用）中去，便於後續的使用</li>
+<li>最後呼叫 <code>return0</code> 進行返回，這個函式非常重要。能夠避免在 <code>deferproc</code> 中又因為返回 <code>return</code>，而誘發 <code>deferreturn</code> 方法的呼叫。其根本原因是一個停止 <code>panic</code> 的延遲方法會使 <code>deferproc</code> 返回 1，但在機制中如果 <code>deferproc</code> 返回不等於 0，將會總是檢查返回值並跳轉到函式的末尾。而 <code>return0</code> 返回的就是 0，因此可以防止重複呼叫</li>
+</ul>
+<h4 id="小結"><a class="header" href="#小結">小結</a></h4>
+<p>在<strong>這個函式中會為新的 <code>_defer</code> 設定一些基礎屬性，並將呼叫函式的引數集傳入。最後透過特殊的返回方法結束函式呼叫</strong>。另外這一塊與先前 <a href="https://segmentfault.com/a/1190000019251478#articleHeader9">《深入理解 Go panic and recover》</a> 的處理邏輯有一定關聯性，其實就是 <code>gp.sched.ret</code> 返回 0 還是 1 會分流至不同處理方式</p>
+<h3 id="newdefer"><a class="header" href="#newdefer">newdefer</a></h3>
+<pre><code class="language-go">func newdefer(siz int32) *_defer {
+    var d *_defer
+    sc := deferclass(uintptr(siz))
+    gp := getg()
+    if sc &lt; uintptr(len(p{}.deferpool)) {
+        pp := gp.m.p.ptr()
+        if len(pp.deferpool[sc]) == 0 &amp;&amp; sched.deferpool[sc] != nil {
+            ...
+            lock(&amp;sched.deferlock)
+            d := sched.deferpool[sc]
+            unlock(&amp;sched.deferlock)
+        }
+        ...
+    }
+    if d == nil {
+        systemstack(func() {
+            total := roundupsize(totaldefersize(uintptr(siz)))
+            d = (*_defer)(mallocgc(total, deferType, true))
+        })
+        ...
+    }
+    d.siz = siz
+    d.link = gp._defer
+    gp._defer = d
+    return d
+}
+</code></pre>
+<ul>
+<li>從池中取得可以使用的 <code>_defer</code>，則複用作為新的基礎單元</li>
+<li>若在池中沒有取得到可用的，則呼叫 <code>mallocgc</code> 重新申請一個新的</li>
+<li>設定 <code>defer</code> 的基礎屬性，最後修改當前 <code>Goroutine</code> 的 <code>_defer</code> 指向</li>
+</ul>
+<p>透過這個方法我們可以注意到兩點，如下：</p>
+<ul>
+<li><code>defer</code> 與 <code>Goroutine(g)</code> 有直接關係，所以討論 <code>defer</code> 時基本離不開 <code>g</code> 的關聯</li>
+<li>新的 <code>defer</code> 總是會在現有的連結串列中的最前面，也就是 <code>defer</code> 的特性後進先出</li>
+</ul>
+<h4 id="小結-1"><a class="header" href="#小結-1">小結</a></h4>
+<p>這個函式主要承擔了取得新的 <code>_defer</code> 的作用，它有可能是從 <code>deferpool</code> 中取得的，也有可能是重新申請的</p>
+<h3 id="deferreturn"><a class="header" href="#deferreturn">deferreturn</a></h3>
+<pre><code class="language-go">func deferreturn(arg0 uintptr) {
+    gp := getg()
+    d := gp._defer
+    if d == nil {
+        return
+    }
+    sp := getcallersp()
+    if d.sp != sp {
+        return
+    }
+
+    switch d.siz {
+    case 0:
+        // Do nothing.
+    case sys.PtrSize:
+        *(*uintptr)(unsafe.Pointer(&amp;arg0)) = *(*uintptr)(deferArgs(d))
+    default:
+        memmove(unsafe.Pointer(&amp;arg0), deferArgs(d), uintptr(d.siz))
+    }
+    fn := d.fn
+    d.fn = nil
+    gp._defer = d.link
+    freedefer(d)
+    jmpdefer(fn, uintptr(unsafe.Pointer(&amp;arg0)))
+}
+</code></pre>
+<p>如果在一個方法中呼叫過 <code>defer</code> 關鍵字，那麼編譯器將會在結尾處插入 <code>deferreturn</code> 方法的呼叫。而該方法中主要做了如下事項：</p>
+<ul>
+<li>清空當前節點 <code>_defer</code> 被呼叫的函式呼叫資訊</li>
+<li>釋放當前節點的 <code>_defer</code> 的儲存資訊並放回池中（便於複用）</li>
+<li>跳轉到呼叫 <code>defer</code> 關鍵字的呼叫函式處</li>
+</ul>
+<p>在這段程式碼中，跳轉方法 <code>jmpdefer</code> 格外重要。因為它顯式的控制了流轉，程式碼如下：</p>
+<pre><code>// asm_amd64.s
+TEXT runtime·jmpdefer(SB), NOSPLIT, $0-16
+    MOVQ    fv+0(FP), DX    // fn
+    MOVQ    argp+8(FP), BX    // caller sp
+    LEAQ    -8(BX), SP    // caller sp after CALL
+    MOVQ    -8(SP), BP    // restore BP as if deferreturn returned (harmless if framepointers not in use)
+    SUBQ    $5, (SP)    // return to CALL again
+    MOVQ    0(DX), BX
+    JMP    BX    // but first run the deferred function
+</code></pre>
+<p>透過原始碼的分析，我們發現它做了兩個很 “奇怪” 又很重要的事，如下：</p>
+<ul>
+<li>MOVQ    -8(SP), BP：<code>-8(BX)</code> 這個位置儲存的是 <code>deferreturn</code> 執行完畢後的地址</li>
+<li>SUBQ    $5, (SP)：<code>SP</code> 的地址減 5 ，其減掉的長度就恰好是 <code>runtime.deferreturn</code> 的長度</li>
+</ul>
+<p>你可能會問，為什麼是 5？好吧。翻了半天最後看了一下彙編程式碼...嗯，相減的確是 5 沒毛病，如下：</p>
+<pre><code>    0x007a 00122 (main.go:7)    CALL    runtime.deferreturn(SB)
+    0x007f 00127 (main.go:7)    MOVQ    56(SP), BP
+</code></pre>
+<p>我們整理一下思緒，照上述邏輯的話，那 <code>deferreturn</code> 就是一個 “遞迴” 了哦。每次都會重新回到 <code>deferreturn</code> 函式，那它在什麼時候才會結束呢，如下：</p>
+<pre><code class="language-go">func deferreturn(arg0 uintptr) {
+    gp := getg()
+    d := gp._defer
+    if d == nil {
+        return
+    }
+    ...
+}
+</code></pre>
+<p>也就是會不斷地進入 <code>deferreturn</code> 函式，判斷連結串列中是否還存著 <code>_defer</code>。若已經不存在了，則返回，結束掉它。簡單來講，就是處理完全部 <code>defer</code> 才允許你真的離開它。果真如此嗎？我們再看看上面的彙編程式碼，如下：</p>
+<pre><code>    。..
+    0x0070 00112 (main.go:6)    CALL    runtime.deferproc(SB)
+    0x0075 00117 (main.go:6)    TESTL    AX, AX
+    0x0077 00119 (main.go:6)    JNE    137
+    0x0079 00121 (main.go:7)    XCHGL    AX, AX
+    0x007a 00122 (main.go:7)    CALL    runtime.deferreturn(SB)
+    0x007f 00127 (main.go:7)    MOVQ    56(SP), BP
+    0x0084 00132 (main.go:7)    ADDQ    $64, SP
+    0x0088 00136 (main.go:7)    RET
+    0x0089 00137 (main.go:6)    XCHGL    AX, AX
+    0x008a 00138 (main.go:6)    CALL    runtime.deferreturn(SB)
+    ...
+</code></pre>
+<p>的確如上述流程所分析一致，驗證完畢</p>
+<h4 id="小結-2"><a class="header" href="#小結-2">小結</a></h4>
+<p>這個函式主要承擔了清空已使用的 <code>defer</code> 和跳轉到呼叫 <code>defer</code> 關鍵字的函式處，非常重要</p>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>我們有提到 <code>defer</code> 關鍵字涉及兩個核心的函式，分別是 <code>deferproc</code> 和 <code>deferreturn</code> 函式。而 <code>deferreturn</code> 函式比較特殊，是當應用函式呼叫 <code>defer</code> 關鍵字時，編譯器會在其結尾處插入 <code>deferreturn</code> 的呼叫，它們倆一般都是成對出現的</p>
+<p>但是當一個 <code>Goroutine</code> 上存在著多次 <code>defer</code> 行為（也就是多個 <code>_defer</code>）時，編譯器會進行利用一些小技巧， 重新回到 <code>deferreturn</code> 函式去消耗 <code>_defer</code> 連結串列，直到一個不剩才允許真正的結束</p>
+<p>而新增的基礎單元 <code>_defer</code>，有可能是被複用的，也有可能是全新申請的。它最後都會被追加到 <code>_defer</code> 連結串列的表頭，從而設定了後進先出的呼叫特性</p>
+<h2 id="關聯"><a class="header" href="#關聯">關聯</a></h2>
+<ul>
+<li><a href="https://github.com/EDDYCJY/blog/blob/master/golang/pkg/2019-05-18-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Go-panic-and-recover.md">深入理解 Go panic and recover</a></li>
+</ul>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<ul>
+<li><a href="https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part1.html">Scheduling In Go</a></li>
+<li><a href="http://hustcat.github.io/dive-into-stack-defer-panic-recover-in-go/">Dive into stack and defer/panic/recover in go</a></li>
+<li><a href="https://github.com/cch123/golang-notes/blob/master/defer.md">golang-notes</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-6-ke-chang-yong-guan-jian-zi/panic-and-recover.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-7-ke-shu-ju-jie-gou.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-6-ke-chang-yong-guan-jian-zi/panic-and-recover.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-7-ke-shu-ju-jie-gou.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

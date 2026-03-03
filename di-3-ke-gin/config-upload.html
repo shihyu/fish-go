@@ -1,0 +1,933 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3.12 最佳化設定結構及實作圖片上傳 - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="312-最佳化設定結構及實作圖片上傳"><a class="header" href="#312-最佳化設定結構及實作圖片上傳">3.12 最佳化設定結構及實作圖片上傳</a></h1>
+<p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
+<h2 id="知識點"><a class="header" href="#知識點">知識點</a></h2>
+<ul>
+<li>重構、調整結構</li>
+</ul>
+<h2 id="本文目標"><a class="header" href="#本文目標">本文目標</a></h2>
+<p>這個應用程式跑了那麼久了，越來越大，越來越壯，彷彿我們的產品一樣，現在它需要進行小範圍重構了，以便於後續的使用，這非常重要。</p>
+<h2 id="前言"><a class="header" href="#前言">前言</a></h2>
+<p>一天，產品經理突然跟你說文章列表，沒有封面圖，不夠美觀，！）&amp;￥<em>！&amp;）#&amp;￥</em>！加一個吧，幾分鐘的事</p>
+<p>你開啟你的程式，分析了一波寫了個清單：</p>
+<ul>
+<li>最佳化設定結構（因為設定項越來越多）</li>
+<li>抽離 原 logging 的 File 便於公用（logging、upload 各保有一份並不合適）</li>
+<li>實作上傳圖片介面（需限制檔案格式、大小）</li>
+<li>修改文章介面（需支援封面地址引數）</li>
+<li>增加 blog_article （文章）的資料庫欄位</li>
+<li>實作 http.FileServer</li>
+</ul>
+<p>嗯，你發現要較優的話，需要調整部分的應用程式結構，因為功能越來越多，原本的設計也要跟上節奏</p>
+<p>也就是在適當的時候，及時最佳化</p>
+<h2 id="最佳化設定結構"><a class="header" href="#最佳化設定結構">最佳化設定結構</a></h2>
+<h3 id="一講解"><a class="header" href="#一講解">一、講解</a></h3>
+<p>在先前章節中，採用了直接讀取 KEY 的方式去儲存設定項，而本次需求中，需要增加圖片的設定項，總體就有些冗餘了</p>
+<p>我們採用以下解決方法：</p>
+<ul>
+<li>對映結構體：使用 MapTo 來設定設定引數</li>
+<li>設定統管：所有的設定項統管到 setting 中</li>
+</ul>
+<h4 id="對映結構體示例"><a class="header" href="#對映結構體示例">對映結構體（示例）</a></h4>
+<p>在 go-ini 中可以採用 MapTo 的方式來對映結構體，例如：</p>
+<pre><code class="language-go">type Server struct {
+    RunMode string
+    HttpPort int
+    ReadTimeout time.Duration
+    WriteTimeout time.Duration
+}
+
+var ServerSetting = &amp;Server{}
+
+func main() {
+    Cfg, err := ini.Load("conf/app.ini")
+    if err != nil {
+        log.Fatalf("Fail to parse 'conf/app.ini': %v", err)
+    }
+
+    err = Cfg.Section("server").MapTo(ServerSetting)
+    if err != nil {
+        log.Fatalf("Cfg.MapTo ServerSetting err: %v", err)
+    }
+}
+</code></pre>
+<p>在這段程式碼中，可以注意 ServerSetting 取了地址，為什麼 MapTo 必須地址入參呢？</p>
+<pre><code>// MapTo maps section to given struct.
+func (s *Section) MapTo(v interface{}) error {
+    typ := reflect.TypeOf(v)
+    val := reflect.ValueOf(v)
+    if typ.Kind() == reflect.Ptr {
+        typ = typ.Elem()
+        val = val.Elem()
+    } else {
+        return errors.New("cannot map to non-pointer struct")
+    }
+
+    return s.mapTo(val, false)
+}
+</code></pre>
+<p>在 MapTo 中 <code>typ.Kind() == reflect.Ptr</code> 約束了必須使用指標，否則會返回 <code>cannot map to non-pointer struct</code> 的錯誤。這個是表面原因</p>
+<p>更往內探究，可以認為是 <code>field.Set</code> 的原因，當執行 <code>val := reflect.ValueOf(v)</code> ，函式透過傳遞 <code>v</code> 複製建立了 <code>val</code>，但是 <code>val</code> 的改變並不能更改原始的 <code>v</code>，要想 <code>val</code> 的更改能作用到 <code>v</code>，則必須傳遞 <code>v</code> 的地址</p>
+<p>顯然 go-ini 裡也是包含修改原始值這一項功能的，你覺得是什麼原因呢？</p>
+<h4 id="設定統管"><a class="header" href="#設定統管">設定統管</a></h4>
+<p>在先前的版本中，models 和 file 的設定是在自己的檔案中解析的，而其他在 setting.go 中，因此我們需要將其在 setting 中統一接管</p>
+<p>你可能會想，直接把兩者的設定項複製貼上到 setting.go 的 init 中，一下子就完事了，搞那麼麻煩？</p>
+<p>但你在想想，先前的程式碼中存在多個 init 函式，執行順序存在問題，無法達到我們的要求，你可以試試</p>
+<p>（此處是一個基礎知識點）</p>
+<p>在 Go 中，當存在多個 init 函式時，執行順序為：</p>
+<ul>
+<li>相同包下的 init 函式：按照原始檔編譯順序決定執行順序（預設按檔名排序）</li>
+<li>不同包下的 init 函式：按照包匯入的依賴關係決定先後順序</li>
+</ul>
+<p>所以要避免多 init 的情況，<strong>儘量由程式把控初始化的先後順序</strong></p>
+<h3 id="二落實"><a class="header" href="#二落實">二、落實</a></h3>
+<h4 id="修改設定檔案"><a class="header" href="#修改設定檔案">修改設定檔案</a></h4>
+<p>開啟 conf/app.ini 將設定檔案修改為大駝峰命名，另外我們增加了 5 個設定項用於上傳圖片的功能，4 個檔案日誌方面的設定項</p>
+<pre><code>[app]
+PageSize = 10
+JwtSecret = 233
+
+RuntimeRootPath = runtime/
+
+ImagePrefixUrl = http://127.0.0.1:8000
+ImageSavePath = upload/images/
+# MB
+ImageMaxSize = 5
+ImageAllowExts = .jpg,.jpeg,.png
+
+LogSavePath = logs/
+LogSaveName = log
+LogFileExt = log
+TimeFormat = 20060102
+
+[server]
+#debug or release
+RunMode = debug
+HttpPort = 8000
+ReadTimeout = 60
+WriteTimeout = 60
+
+[database]
+Type = mysql
+User = root
+Password = rootroot
+Host = 127.0.0.1:3306
+Name = blog
+TablePrefix = blog_
+</code></pre>
+<h4 id="最佳化設定讀取及設定初始化順序"><a class="header" href="#最佳化設定讀取及設定初始化順序">最佳化設定讀取及設定初始化順序</a></h4>
+<p><strong>第一步</strong></p>
+<p>將散落在其他檔案裡的設定都刪掉，<strong>統一在 setting 中處理</strong>以及<strong>修改 init 函式為 Setup 方法</strong></p>
+<p>開啟 pkg/setting/setting.go 檔案，修改如下：</p>
+<pre><code>package setting
+
+import (
+    "log"
+    "time"
+
+    "github.com/go-ini/ini"
+)
+
+type App struct {
+    JwtSecret string
+    PageSize int
+    RuntimeRootPath string
+
+    ImagePrefixUrl string
+    ImageSavePath string
+    ImageMaxSize int
+    ImageAllowExts []string
+
+    LogSavePath string
+    LogSaveName string
+    LogFileExt string
+    TimeFormat string
+}
+
+var AppSetting = &amp;App{}
+
+type Server struct {
+    RunMode string
+    HttpPort int
+    ReadTimeout time.Duration
+    WriteTimeout time.Duration
+}
+
+var ServerSetting = &amp;Server{}
+
+type Database struct {
+    Type string
+    User string
+    Password string
+    Host string
+    Name string
+    TablePrefix string
+}
+
+var DatabaseSetting = &amp;Database{}
+
+func Setup() {
+    Cfg, err := ini.Load("conf/app.ini")
+    if err != nil {
+        log.Fatalf("Fail to parse 'conf/app.ini': %v", err)
+    }
+
+    err = Cfg.Section("app").MapTo(AppSetting)
+    if err != nil {
+        log.Fatalf("Cfg.MapTo AppSetting err: %v", err)
+    }
+
+    AppSetting.ImageMaxSize = AppSetting.ImageMaxSize * 1024 * 1024
+
+    err = Cfg.Section("server").MapTo(ServerSetting)
+    if err != nil {
+        log.Fatalf("Cfg.MapTo ServerSetting err: %v", err)
+    }
+
+    ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
+    ServerSetting.WriteTimeout = ServerSetting.ReadTimeout * time.Second
+
+    err = Cfg.Section("database").MapTo(DatabaseSetting)
+    if err != nil {
+        log.Fatalf("Cfg.MapTo DatabaseSetting err: %v", err)
+    }
+}
+</code></pre>
+<p>在這裡，我們做了如下幾件事：</p>
+<ul>
+<li>編寫與設定項保持一致的結構體（App、Server、Database）</li>
+<li>使用 MapTo 將設定項對映到結構體上</li>
+<li>對一些需特殊設定的設定項進行再賦值</li>
+</ul>
+<p><strong>需要你去做的事：</strong></p>
+<ul>
+<li>將 <a href="https://github.com/EDDYCJY/go-gin-example/blob/a338ddec103c9506b4c7ed16d9f5386040d99b4b/models/models.go#L23">models.go</a>、<a href="https://github.com/EDDYCJY/go-gin-example/blob/a338ddec103c9506b4c7ed16d9f5386040d99b4b/pkg/setting/setting.go#L23">setting.go</a>、<a href="https://github.com/EDDYCJY/go-gin-example/blob/a338ddec103c9506b4c7ed16d9f5386040d99b4b/pkg/logging/log.go#L32-L37">pkg/logging/log.go</a> 的 init 函式修改為 Setup 方法</li>
+<li>將 <a href="https://github.com/EDDYCJY/go-gin-example/blob/a338ddec103c9506b4c7ed16d9f5386040d99b4b/models/models.go#L23-L39">models/models.go</a> 獨立讀取的 DB 設定項刪除，改為統一讀取 setting</li>
+<li>將 <a href="https://github.com/EDDYCJY/go-gin-example/blob/a338ddec103c9506b4c7ed16d9f5386040d99b4b/pkg/logging/file.go#L10-L15">pkg/logging/file</a> 獨立的 LOG 設定項刪除，改為統一讀取 setting</li>
+</ul>
+<p>這幾項比較基礎，並沒有貼出來，我希望你可以自己動手，有問題的話可右拐 <a href="https://github.com/EDDYCJY/go-gin-example">專案地址</a></p>
+<p><strong>第二步</strong></p>
+<p>在這一步我們要設定初始化的流程，開啟 main.go 檔案，修改內容：</p>
+<pre><code>func main() {
+    setting.Setup()
+    models.Setup()
+    logging.Setup()
+
+    endless.DefaultReadTimeOut = setting.ServerSetting.ReadTimeout
+    endless.DefaultWriteTimeOut = setting.ServerSetting.WriteTimeout
+    endless.DefaultMaxHeaderBytes = 1 &lt;&lt; 20
+    endPoint := fmt.Sprintf(":%d", setting.ServerSetting.HttpPort)
+
+    server := endless.NewServer(endPoint, routers.InitRouter())
+    server.BeforeBegin = func(add string) {
+        log.Printf("Actual pid is %d", syscall.Getpid())
+    }
+
+    err := server.ListenAndServe()
+    if err != nil {
+        log.Printf("Server err: %v", err)
+    }
+}
+</code></pre>
+<p>修改完畢後，就成功將多模組的初始化函式放到啟動流程中了（先後順序也可以控制）</p>
+<p><strong>驗證</strong></p>
+<p>在這裡為止，針對本需求的設定最佳化就完畢了，你需要執行 <code>go run main.go</code> 驗證一下你的功能是否正常哦</p>
+<p>順帶留個基礎問題，大家可以思考下</p>
+<pre><code>ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
+ServerSetting.WriteTimeout = ServerSetting.ReadTimeout * time.Second
+</code></pre>
+<p>若將 setting.go 檔案中的這兩行刪除，會出現什麼問題，為什麼呢？</p>
+<h2 id="抽離-file"><a class="header" href="#抽離-file">抽離 File</a></h2>
+<p>在先前版本中，在 <a href="https://github.com/EDDYCJY/go-gin-example/blob/a338ddec103c9506b4c7ed16d9f5386040d99b4b/pkg/logging/file.go">logging/file.go</a> 中使用到了 os 的一些方法，我們透過前期規劃發現，這部分在上傳圖片功能中可以複用</p>
+<h3 id="第一步"><a class="header" href="#第一步">第一步</a></h3>
+<p>在 pkg 目錄下新建 file/file.go ，寫入檔案內容如下：</p>
+<pre><code>package file
+
+import (
+    "os"
+    "path"
+    "mime/multipart"
+    "io/ioutil"
+)
+
+func GetSize(f multipart.File) (int, error) {
+    content, err := ioutil.ReadAll(f)
+
+    return len(content), err
+}
+
+func GetExt(fileName string) string {
+    return path.Ext(fileName)
+}
+
+func CheckExist(src string) bool {
+    _, err := os.Stat(src)
+
+    return os.IsNotExist(err)
+}
+
+func CheckPermission(src string) bool {
+    _, err := os.Stat(src)
+
+    return os.IsPermission(err)
+}
+
+func IsNotExistMkDir(src string) error {
+    if notExist := CheckNotExist(src); notExist == true {
+        if err := MkDir(src); err != nil {
+            return err
+        }
+    }
+
+    return nil
+}
+
+func MkDir(src string) error {
+    err := os.MkdirAll(src, os.ModePerm)
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
+func Open(name string, flag int, perm os.FileMode) (*os.File, error) {
+    f, err := os.OpenFile(name, flag, perm)
+    if err != nil {
+        return nil, err
+    }
+
+    return f, nil
+}
+</code></pre>
+<p>在這裡我們一共封裝了 7個 方法</p>
+<ul>
+<li>GetSize：取得檔案大小</li>
+<li>GetExt：取得檔案字尾</li>
+<li>CheckExist：檢查檔案是否存在</li>
+<li>CheckPermission：檢查檔案許可權</li>
+<li>IsNotExistMkDir：如果不存在則新建資料夾</li>
+<li>MkDir：新建資料夾</li>
+<li>Open：開啟檔案</li>
+</ul>
+<p>在這裡我們用到了 <code>mime/multipart</code> 包，它主要實作了 MIME 的 multipart 解析，主要適用於 <a href="https://tools.ietf.org/html/rfc2388">HTTP</a> 和常見瀏覽器生成的 multipart 主體</p>
+<p>multipart 又是什麼，<a href="https://tools.ietf.org/html/rfc2388">rfc2388</a> 的 multipart/form-data 瞭解一下</p>
+<h3 id="第二步"><a class="header" href="#第二步">第二步</a></h3>
+<p>我們在第一步已經將 file 重新封裝了一層，在這一步我們將原先 logging 包的方法都修改掉</p>
+<p>1、開啟 pkg/logging/file.go 檔案，修改檔案內容：</p>
+<pre><code>package logging
+
+import (
+    "fmt"
+    "os"
+    "time"
+
+    "github.com/EDDYCJY/go-gin-example/pkg/setting"
+    "github.com/EDDYCJY/go-gin-example/pkg/file"
+)
+
+func getLogFilePath() string {
+    return fmt.Sprintf("%s%s", setting.AppSetting.RuntimeRootPath, setting.AppSetting.LogSavePath)
+}
+
+func getLogFileName() string {
+    return fmt.Sprintf("%s%s.%s",
+        setting.AppSetting.LogSaveName,
+        time.Now().Format(setting.AppSetting.TimeFormat),
+        setting.AppSetting.LogFileExt,
+    )
+}
+
+func openLogFile(fileName, filePath string) (*os.File, error) {
+    dir, err := os.Getwd()
+    if err != nil {
+        return nil, fmt.Errorf("os.Getwd err: %v", err)
+    }
+
+    src := dir + "/" + filePath
+    perm := file.CheckPermission(src)
+    if perm == true {
+        return nil, fmt.Errorf("file.CheckPermission Permission denied src: %s", src)
+    }
+
+    err = file.IsNotExistMkDir(src)
+    if err != nil {
+        return nil, fmt.Errorf("file.IsNotExistMkDir src: %s, err: %v", src, err)
+    }
+
+    f, err := file.Open(src + fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+    if err != nil {
+        return nil, fmt.Errorf("Fail to OpenFile :%v", err)
+    }
+
+    return f, nil
+}
+</code></pre>
+<p>我們將引用都改為了 file/file.go 包裡的方法</p>
+<p>2、開啟 pkg/logging/log.go 檔案，修改檔案內容:</p>
+<pre><code>package logging
+
+...
+
+func Setup() {
+    var err error
+    filePath := getLogFilePath()
+    fileName := getLogFileName()
+    F, err = openLogFile(fileName, filePath)
+    if err != nil {
+        log.Fatalln(err)
+    }
+
+    logger = log.New(F, DefaultPrefix, log.LstdFlags)
+}
+
+...
+</code></pre>
+<p>由於原方法形參改變了，因此 openLogFile 也需要調整</p>
+<h2 id="實作上傳圖片介面"><a class="header" href="#實作上傳圖片介面">實作上傳圖片介面</a></h2>
+<p>這一小節，我們開始實作上次圖片相關的一些方法和功能</p>
+<p>首先需要在 blog_article 中增加欄位 <code>cover_image_url</code>，格式為 <code>varchar(255) DEFAULT '' COMMENT '封面图片地址'</code></p>
+<h3 id="第零步"><a class="header" href="#第零步">第零步</a></h3>
+<p>一般不會直接將上傳的圖片名暴露出來，因此我們對圖片名進行 MD5 來達到這個效果</p>
+<p>在 util 目錄下新建 md5.go，寫入檔案內容：</p>
+<pre><code>package util
+
+import (
+    "crypto/md5"
+    "encoding/hex"
+)
+
+func EncodeMD5(value string) string {
+    m := md5.New()
+    m.Write([]byte(value))
+
+    return hex.EncodeToString(m.Sum(nil))
+}
+</code></pre>
+<h3 id="第一步-1"><a class="header" href="#第一步-1">第一步</a></h3>
+<p>在先前我們已經把底層方法給封裝好了，實質這一步為封裝 image 的處理邏輯</p>
+<p>在 pkg 目錄下新建 upload/image.go 檔案，寫入檔案內容：</p>
+<pre><code>package upload
+
+import (
+    "os"
+    "path"
+    "log"
+    "fmt"
+    "strings"
+    "mime/multipart"
+
+    "github.com/EDDYCJY/go-gin-example/pkg/file"
+    "github.com/EDDYCJY/go-gin-example/pkg/setting"
+    "github.com/EDDYCJY/go-gin-example/pkg/logging"
+    "github.com/EDDYCJY/go-gin-example/pkg/util"
+)
+
+func GetImageFullUrl(name string) string {
+    return setting.AppSetting.ImagePrefixUrl + "/" + GetImagePath() + name
+}
+
+func GetImageName(name string) string {
+    ext := path.Ext(name)
+    fileName := strings.TrimSuffix(name, ext)
+    fileName = util.EncodeMD5(fileName)
+
+    return fileName + ext
+}
+
+func GetImagePath() string {
+    return setting.AppSetting.ImageSavePath
+}
+
+func GetImageFullPath() string {
+    return setting.AppSetting.RuntimeRootPath + GetImagePath()
+}
+
+func CheckImageExt(fileName string) bool {
+    ext := file.GetExt(fileName)
+    for _, allowExt := range setting.AppSetting.ImageAllowExts {
+        if strings.ToUpper(allowExt) == strings.ToUpper(ext) {
+            return true
+        }
+    }
+
+    return false
+}
+
+func CheckImageSize(f multipart.File) bool {
+    size, err := file.GetSize(f)
+    if err != nil {
+        log.Println(err)
+        logging.Warn(err)
+        return false
+    }
+
+    return size &lt;= setting.AppSetting.ImageMaxSize
+}
+
+func CheckImage(src string) error {
+    dir, err := os.Getwd()
+    if err != nil {
+        return fmt.Errorf("os.Getwd err: %v", err)
+    }
+
+    err = file.IsNotExistMkDir(dir + "/" + src)
+    if err != nil {
+        return fmt.Errorf("file.IsNotExistMkDir err: %v", err)
+    }
+
+    perm := file.CheckPermission(src)
+    if perm == true {
+        return fmt.Errorf("file.CheckPermission Permission denied src: %s", src)
+    }
+
+    return nil
+}
+</code></pre>
+<p>在這裡我們實作了 7 個方法，如下：</p>
+<ul>
+<li>GetImageFullUrl：取得圖片完整訪問URL</li>
+<li>GetImageName：取得圖片名稱</li>
+<li>GetImagePath：取得圖片路徑</li>
+<li>GetImageFullPath：取得圖片完整路徑</li>
+<li>CheckImageExt：檢查圖片字尾</li>
+<li>CheckImageSize：檢查圖片大小</li>
+<li>CheckImage：檢查圖片</li>
+</ul>
+<p>這裡基本是對底層程式碼的二次封裝，為了更靈活的處理一些圖片特有的邏輯，並且方便修改，不直接對外暴露下層</p>
+<h3 id="第二步-1"><a class="header" href="#第二步-1">第二步</a></h3>
+<p>這一步將編寫上傳圖片的業務邏輯，在 routers/api 目錄下 新建 upload.go 檔案，寫入檔案內容:</p>
+<pre><code>package api
+
+import (
+    "net/http"
+
+    "github.com/gin-gonic/gin"
+
+    "github.com/EDDYCJY/go-gin-example/pkg/e"
+    "github.com/EDDYCJY/go-gin-example/pkg/logging"
+    "github.com/EDDYCJY/go-gin-example/pkg/upload"
+)
+
+func UploadImage(c *gin.Context) {
+    code := e.SUCCESS
+    data := make(map[string]string)
+
+    file, image, err := c.Request.FormFile("image")
+    if err != nil {
+        logging.Warn(err)
+        code = e.ERROR
+        c.JSON(http.StatusOK, gin.H{
+            "code": code,
+            "msg":  e.GetMsg(code),
+            "data": data,
+        })
+    }
+
+    if image == nil {
+        code = e.INVALID_PARAMS
+    } else {
+        imageName := upload.GetImageName(image.Filename)
+        fullPath := upload.GetImageFullPath()
+        savePath := upload.GetImagePath()
+
+        src := fullPath + imageName
+        if ! upload.CheckImageExt(imageName) || ! upload.CheckImageSize(file) {
+            code = e.ERROR_UPLOAD_CHECK_IMAGE_FORMAT
+        } else {
+            err := upload.CheckImage(fullPath)
+            if err != nil {
+                logging.Warn(err)
+                code = e.ERROR_UPLOAD_CHECK_IMAGE_FAIL
+            } else if err := c.SaveUploadedFile(image, src); err != nil {
+                logging.Warn(err)
+                code = e.ERROR_UPLOAD_SAVE_IMAGE_FAIL
+            } else {
+                data["image_url"] = upload.GetImageFullUrl(imageName)
+                data["image_save_url"] = savePath + imageName
+            }
+        }
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "code": code,
+        "msg":  e.GetMsg(code),
+        "data": data,
+    })
+}
+</code></pre>
+<p>所涉及的錯誤碼（需在 pkg/e/code.go、msg.go 新增）：</p>
+<pre><code>// 保存图片失败
+ERROR_UPLOAD_SAVE_IMAGE_FAIL = 30001
+// 检查图片失败
+ERROR_UPLOAD_CHECK_IMAGE_FAIL = 30002
+// 校验图片错误，图片格式或大小有问题
+ERROR_UPLOAD_CHECK_IMAGE_FORMAT = 30003
+</code></pre>
+<p>在這一大段的業務邏輯中，我們做了如下事情：</p>
+<ul>
+<li>c.Request.FormFile：取得上傳的圖片（返回提供的表單鍵的第一個檔案）</li>
+<li>CheckImageExt、CheckImageSize檢查圖片大小，檢查圖片字尾</li>
+<li>CheckImage：檢查上傳圖片所需（許可權、資料夾）</li>
+<li>SaveUploadedFile：儲存圖片</li>
+</ul>
+<p>總的來說，就是 入參 -&gt; 檢查 -》 儲存 的應用流程</p>
+<h3 id="第三步"><a class="header" href="#第三步">第三步</a></h3>
+<p>開啟 routers/router.go 檔案，增加路由 <code>r.POST("/upload", api.UploadImage)</code> ，如：</p>
+<pre><code>func InitRouter() *gin.Engine {
+    r := gin.New()
+    ...
+    r.GET("/auth", api.GetAuth)
+    r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+    r.POST("/upload", api.UploadImage)
+
+    apiv1 := r.Group("/api/v1")
+    apiv1.Use(jwt.JWT())
+    {
+        ...
+    }
+
+    return r
+}
+</code></pre>
+<h3 id="驗證"><a class="header" href="#驗證">驗證</a></h3>
+<p>最後我們請求一下上傳圖片的介面，測試所編寫的功能</p>
+<p><img src="../images/fc206e98bd8e-NjdkvxS.jpg" alt="image" /></p>
+<p>檢查目錄下是否含檔案（注意許可權問題）</p>
+<pre><code>$ pwd
+$GOPATH/src/github.com/EDDYCJY/go-gin-example/runtime/upload/images
+
+$ ll
+... 96a3be3cf272e017046d1b2674a52bd3.jpg
+... c39fa784216313cf2faa7c98739fc367.jpeg
+</code></pre>
+<p>在這裡我們一共返回了 2 個引數，一個是完整的訪問 URL，另一個為儲存路徑</p>
+<h2 id="實作-httpfileserver"><a class="header" href="#實作-httpfileserver">實作 http.FileServer</a></h2>
+<p>在完成了上一小節後，我們還需要讓前端能夠訪問到圖片，一般是如下：</p>
+<ul>
+<li>CDN </li>
+<li>http.FileSystem</li>
+</ul>
+<p>在公司的話，CDN 或自建分散式檔案系統居多，也不需要過多關注。而在實踐裡的話肯定是本地搭建了，Go 本身對此就有很好的支援，而 Gin 更是再封裝了一層，只需要在路由增加一行程式碼即可</p>
+<h3 id="rstaticfs"><a class="header" href="#rstaticfs">r.StaticFS</a></h3>
+<p>開啟 routers/router.go 檔案，增加路由 <code>r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))</code>，如：</p>
+<pre><code>func InitRouter() *gin.Engine {
+    ...
+    r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
+
+    r.GET("/auth", api.GetAuth)
+    r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+    r.POST("/upload", api.UploadImage)
+    ...
+}
+</code></pre>
+<h3 id="它做了什麼"><a class="header" href="#它做了什麼">它做了什麼</a></h3>
+<p>當訪問 $HOST/upload/images 時，將會讀取到 $GOPATH/src/github.com/EDDYCJY/go-gin-example/runtime/upload/images 下的檔案</p>
+<p>而這行程式碼又做了什麼事呢，我們來看看方法原型</p>
+<pre><code>// StaticFS works just like `Static()` but a custom `http.FileSystem` can be used instead.
+// Gin by default user: gin.Dir()
+func (group *RouterGroup) StaticFS(relativePath string, fs http.FileSystem) IRoutes {
+    if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
+        panic("URL parameters can not be used when serving a static folder")
+    }
+    handler := group.createStaticHandler(relativePath, fs)
+    urlPattern := path.Join(relativePath, "/*filepath")
+
+    // Register GET and HEAD handlers
+    group.GET(urlPattern, handler)
+    group.HEAD(urlPattern, handler)
+    return group.returnObj()
+}
+</code></pre>
+<p>首先在暴露的 URL 中禁止了 * 和 : 符號的使用，透過 <code>createStaticHandler</code> 建立了靜態檔案服務，實質最終呼叫的還是 <code>fileServer.ServeHTTP</code> 和一些處理邏輯了</p>
+<pre><code>func (group *RouterGroup) createStaticHandler(relativePath string, fs http.FileSystem) HandlerFunc {
+    absolutePath := group.calculateAbsolutePath(relativePath)
+    fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
+    _, nolisting := fs.(*onlyfilesFS)
+    return func(c *Context) {
+        if nolisting {
+            c.Writer.WriteHeader(404)
+        }
+        fileServer.ServeHTTP(c.Writer, c.Request)
+    }
+}
+</code></pre>
+<h4 id="httpstripprefix"><a class="header" href="#httpstripprefix">http.StripPrefix</a></h4>
+<p>我們可以留意下 <code>fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))</code> 這段語句，在靜態檔案服務中很常見，它有什麼作用呢？</p>
+<p><code>http.StripPrefix</code> 主要作用是從請求 URL 的路徑中刪除給定的字首，最終返回一個 <code>Handler</code></p>
+<p>通常 http.FileServer 要與 http.StripPrefix 相結合使用，否則當你執行：</p>
+<pre><code>http.Handle("/upload/images", http.FileServer(http.Dir("upload/images")))
+</code></pre>
+<p>會無法正確的訪問到檔案目錄，因為 <code>/upload/images</code> 也包含在了 URL 路徑中，必須使用：</p>
+<pre><code>http.Handle("/upload/images", http.StripPrefix("upload/images", http.FileServer(http.Dir("upload/images"))))
+</code></pre>
+<h4 id="filepath"><a class="header" href="#filepath">/*filepath</a></h4>
+<p>到下面可以看到 <code>urlPattern := path.Join(relativePath, "/*filepath")</code>，<code>/*filepath</code> 你是誰，你在這裡有什麼用，你是 Gin 的產物嗎?</p>
+<p>透過語義可得知是路由的處理邏輯，而 Gin 的路由是基於 httprouter 的，透過查閱文件可得到以下資訊</p>
+<pre><code>Pattern: /src/*filepath
+
+ /src/                     match
+ /src/somefile.go          match
+ /src/subdir/somefile.go   match
+</code></pre>
+<p><code>*filepath</code> 將匹配所有檔案路徑，並且 <code>*filepath</code> 必須在 Pattern 的最後</p>
+<h3 id="驗證-1"><a class="header" href="#驗證-1">驗證</a></h3>
+<p>重新執行 <code>go run main.go</code> ，去訪問剛剛在 upload 介面得到的圖片地址，檢查 http.FileSystem 是否正常</p>
+<p><img src="../images/106cf33f13ec-zlNeiTt.jpg" alt="image" /></p>
+<h2 id="修改文章介面"><a class="header" href="#修改文章介面">修改文章介面</a></h2>
+<p>接下來，需要你修改 routers/api/v1/article.go 的 AddArticle、EditArticle 兩個介面</p>
+<ul>
+<li>新增、更新文章介面：支援入參 cover_image_url</li>
+<li>新增、更新文章介面：增加對 cover_image_url 的非空、最長長度校驗</li>
+</ul>
+<p>這塊前面文章講過，如果有問題可以參考專案的程式碼👌</p>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>在這章節中，我們簡單的分析了下需求，對應用做出了一個小規劃並實施</p>
+<p>完成了清單中的功能點和最佳化，在實際專案中也是常見的場景，希望你能夠細細品嚐並針對一些點進行深入學習</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<h3 id="本系列示例程式碼"><a class="header" href="#本系列示例程式碼">本系列示例程式碼</a></h3>
+<ul>
+<li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
+</ul>
+<h2 id="關於"><a class="header" href="#關於">關於</a></h2>
+<h3 id="修改記錄"><a class="header" href="#修改記錄">修改記錄</a></h3>
+<ul>
+<li>第一版：2018年02月16日釋出文章</li>
+<li>第二版：2019年10月02日修改文章</li>
+</ul>
+<h2 id=""><a class="header" href="#">？</a></h2>
+<p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
+<h3 id="我的微信公眾號"><a class="header" href="#我的微信公眾號">我的微信公眾號</a></h3>
+<p><img src="../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-3-ke-gin/cron.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-3-ke-gin/application-redis.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-3-ke-gin/cron.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-3-ke-gin/application-redis.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

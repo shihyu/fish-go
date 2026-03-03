@@ -1,0 +1,447 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>9.1 Go 大殺器之效能剖析 PProf - 跟煎魚學 Go</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">跟煎魚學 Go</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://eddycjy.gitbook.io/golang" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="91-go-大殺器之效能剖析-pprof"><a class="header" href="#91-go-大殺器之效能剖析-pprof">9.1 Go 大殺器之效能剖析 PProf</a></h1>
+<h2 id="前言"><a class="header" href="#前言">前言</a></h2>
+<p>寫了幾噸程式碼，實作了幾百個介面。功能測試也通過了，終於成功的部署上線了</p>
+<p>結果，效能不佳，什麼鬼？😭</p>
+<h2 id="想做效能分析"><a class="header" href="#想做效能分析">想做效能分析</a></h2>
+<h3 id="pprof"><a class="header" href="#pprof">PProf</a></h3>
+<p>想要進行效能最佳化，首先矚目在 Go 自身提供的工具鏈來作為分析依據，本文將帶你學習、使用 Go 後花園，涉及如下：</p>
+<ul>
+<li>runtime/pprof：採集程式（非 Server）的執行資料進行分析</li>
+<li>net/http/pprof：採集 HTTP Server 的執行時資料進行分析</li>
+</ul>
+<h3 id="是什麼"><a class="header" href="#是什麼">是什麼</a></h3>
+<p>pprof 是用於視覺化和分析效能分析資料的工具</p>
+<p>pprof 以 <a href="https://github.com/google/pprof/blob/master/proto/profile.proto">profile.proto</a> 讀取分析樣本的集合，並生成報告以視覺化並幫助分析資料（支援文字和圖形報告）</p>
+<p>profile.proto 是一個 Protocol Buffer v3 的描述檔案，它描述了一組 callstack 和 symbolization 資訊， 作用是表示統計分析的一組取樣的呼叫棧，是很常見的 stacktrace 設定檔案格式</p>
+<h3 id="支援什麼使用模式"><a class="header" href="#支援什麼使用模式">支援什麼使用模式</a></h3>
+<ul>
+<li>Report generation：報告生成</li>
+<li>Interactive terminal use：互動式終端使用</li>
+<li>Web interface：Web 介面</li>
+</ul>
+<h3 id="可以做什麼"><a class="header" href="#可以做什麼">可以做什麼</a></h3>
+<ul>
+<li>CPU Profiling：CPU 分析，按照一定的頻率採集所監聽的應用程式 CPU（含暫存器）的使用情況，可確定應用程式在主動消耗 CPU 週期時花費時間的位置</li>
+<li>Memory Profiling：記憶體分析，在應用程式進行堆分配時記錄堆疊跟蹤，用於監視當前和歷史記憶體使用情況，以及檢查記憶體洩漏</li>
+<li>Block Profiling：阻塞分析，記錄 goroutine 阻塞等待同步（包括定時器通道）的位置</li>
+<li>Mutex Profiling：互斥鎖分析，報告互斥鎖的競爭情況</li>
+</ul>
+<h2 id="一個簡單的例子"><a class="header" href="#一個簡單的例子">一個簡單的例子</a></h2>
+<p>我們將編寫一個簡單且有點問題的例子，用於基本的程式初步分析</p>
+<h3 id="編寫-demo-檔案"><a class="header" href="#編寫-demo-檔案">編寫 demo 檔案</a></h3>
+<p>（1）demo.go，檔案內容：</p>
+<pre><code class="language-go">package main
+
+import (
+    "log"
+    "net/http"
+    _ "net/http/pprof"
+    "github.com/EDDYCJY/go-pprof-example/data"
+)
+
+func main() {
+    go func() {
+        for {
+            log.Println(data.Add("https://github.com/EDDYCJY"))
+        }
+    }()
+
+    http.ListenAndServe("0.0.0.0:6060", nil)
+}
+```go
+（2）data/d.go，檔案內容：
+
+```go
+package data
+
+var datas []string
+
+func Add(str string) string {
+    data := []byte(str)
+    sData := string(data)
+    datas = append(datas, sData)
+
+    return sData
+}
+</code></pre>
+<p>執行這個檔案，你的 HTTP 服務會多出 /debug/pprof 的 endpoint 可用於觀察應用程式的情況</p>
+<h3 id="分析"><a class="header" href="#分析">分析</a></h3>
+<h4 id="一透過-web-介面"><a class="header" href="#一透過-web-介面">一、透過 Web 介面</a></h4>
+<p>檢視當前總覽：訪問 <code>http://127.0.0.1:6060/debug/pprof/</code></p>
+<pre><code>/debug/pprof/
+
+profiles:
+0    block
+5    goroutine
+3    heap
+0    mutex
+9    threadcreate
+
+full goroutine stack dump
+</code></pre>
+<p>這個頁面中有許多子頁面，咱們繼續深究下去，看看可以得到什麼？</p>
+<ul>
+<li>cpu（CPU Profiling）: <code>$HOST/debug/pprof/profile</code>，預設進行 30s 的 CPU Profiling，得到一個分析用的 profile 檔案</li>
+<li>block（Block Profiling）：<code>$HOST/debug/pprof/block</code>，檢視導致阻塞同步的堆疊跟蹤</li>
+<li>goroutine：<code>$HOST/debug/pprof/goroutine</code>，檢視當前所有執行的 goroutines 堆疊跟蹤</li>
+<li>heap（Memory Profiling）: <code>$HOST/debug/pprof/heap</code>，檢視活動物件的記憶體分配情況</li>
+<li>mutex（Mutex Profiling）：<code>$HOST/debug/pprof/mutex</code>，檢視導致互斥鎖的競爭持有者的堆疊跟蹤</li>
+<li>threadcreate：<code>$HOST/debug/pprof/threadcreate</code>，檢視建立新OS執行緒的堆疊跟蹤</li>
+</ul>
+<h4 id="二透過互動式終端使用"><a class="header" href="#二透過互動式終端使用">二、透過互動式終端使用</a></h4>
+<p>（1）go tool pprof <a href="http://localhost:6060/debug/pprof/profile?seconds=60">http://localhost:6060/debug/pprof/profile?seconds=60</a></p>
+<pre><code class="language-bash">$ go tool pprof http://localhost:6060/debug/pprof/profile\?seconds\=60
+
+Fetching profile over HTTP from http://localhost:6060/debug/pprof/profile?seconds=60
+Saved profile in /Users/eddycjy/pprof/pprof.samples.cpu.007.pb.gz
+Type: cpu
+Duration: 1mins, Total samples = 26.55s (44.15%)
+Entering interactive mode (type "help" for commands, "o" for options)
+(pprof)
+</code></pre>
+<p>執行該命令後，需等待 60 秒（可調整 seconds 的值），pprof 會進行 CPU Profiling。結束後將預設進入 pprof 的互動式命令模式，可以對分析的結果進行檢視或匯出。具體可執行 <code>pprof help</code> 檢視命令說明</p>
+<pre><code class="language-bash">(pprof) top10
+Showing nodes accounting for 25.92s, 97.63% of 26.55s total
+Dropped 85 nodes (cum &lt;= 0.13s)
+Showing top 10 nodes out of 21
+      flat  flat%   sum%        cum   cum%
+    23.28s 87.68% 87.68%     23.29s 87.72%  syscall.Syscall
+     0.77s  2.90% 90.58%      0.77s  2.90%  runtime.memmove
+     0.58s  2.18% 92.77%      0.58s  2.18%  runtime.freedefer
+     0.53s  2.00% 94.76%      1.42s  5.35%  runtime.scanobject
+     0.36s  1.36% 96.12%      0.39s  1.47%  runtime.heapBitsForObject
+     0.35s  1.32% 97.44%      0.45s  1.69%  runtime.greyobject
+     0.02s 0.075% 97.51%     24.96s 94.01%  main.main.func1
+     0.01s 0.038% 97.55%     23.91s 90.06%  os.(*File).Write
+     0.01s 0.038% 97.59%      0.19s  0.72%  runtime.mallocgc
+     0.01s 0.038% 97.63%     23.30s 87.76%  syscall.Write
+</code></pre>
+<ul>
+<li>flat：給定函式上執行耗時</li>
+<li>flat%：同上的 CPU 執行耗時總比例</li>
+<li>sum%：給定函式累積使用 CPU 總比例</li>
+<li>cum：當前函式加上它之上的呼叫執行總耗時</li>
+<li>cum%：同上的 CPU 執行耗時總比例</li>
+</ul>
+<p>最後一列為函式名稱，在大多數的情況下，我們可以透過這五列得出一個應用程式的執行情況，加以最佳化 🤔</p>
+<p>（2）go tool pprof <a href="http://localhost:6060/debug/pprof/heap">http://localhost:6060/debug/pprof/heap</a></p>
+<pre><code class="language-bash">$ go tool pprof http://localhost:6060/debug/pprof/heap
+Fetching profile over HTTP from http://localhost:6060/debug/pprof/heap
+Saved profile in /Users/eddycjy/pprof/pprof.alloc_objects.alloc_space.inuse_objects.inuse_space.008.pb.gz
+Type: inuse_space
+Entering interactive mode (type "help" for commands, "o" for options)
+(pprof) top
+Showing nodes accounting for 837.48MB, 100% of 837.48MB total
+      flat  flat%   sum%        cum   cum%
+  837.48MB   100%   100%   837.48MB   100%  main.main.func1
+</code></pre>
+<ul>
+<li>-inuse_space：分析應用程式的常駐記憶體佔用情況</li>
+<li>-alloc_objects：分析應用程式的記憶體臨時分配情況</li>
+</ul>
+<p>（3） go tool pprof <a href="http://localhost:6060/debug/pprof/block">http://localhost:6060/debug/pprof/block</a></p>
+<p>（4） go tool pprof <a href="http://localhost:6060/debug/pprof/mutex">http://localhost:6060/debug/pprof/mutex</a></p>
+<h4 id="三pprof-視覺化介面"><a class="header" href="#三pprof-視覺化介面">三、PProf 視覺化介面</a></h4>
+<p>這是令人期待的一小節。在這之前，我們需要簡單的編寫好測試用例來跑一下</p>
+<p><strong>編寫測試用例</strong></p>
+<p>（1）新建 data/d_test.go，檔案內容：</p>
+<pre><code>package data
+
+import "testing"
+
+const url = "https://github.com/EDDYCJY"
+
+func TestAdd(t *testing.T) {
+    s := Add(url)
+    if s == "" {
+        t.Errorf("Test.Add error!")
+    }
+}
+
+func BenchmarkAdd(b *testing.B) {
+    for i := 0; i &lt; b.N; i++ {
+        Add(url)
+    }
+}
+</code></pre>
+<p>（2）執行測試用例</p>
+<pre><code>$ go test -bench=. -cpuprofile=cpu.prof
+pkg: github.com/EDDYCJY/go-pprof-example/data
+BenchmarkAdd-4       10000000           187 ns/op
+PASS
+ok      github.com/EDDYCJY/go-pprof-example/data    2.300s
+</code></pre>
+<p>-memprofile 也可以瞭解一下</p>
+<p><strong>啟動 PProf 視覺化介面</strong></p>
+<p><strong>方法一：</strong></p>
+<pre><code>$ go tool pprof -http=:8080 cpu.prof
+</code></pre>
+<p><strong>方法二：</strong></p>
+<pre><code>$ go tool pprof cpu.prof 
+$ (pprof) web
+</code></pre>
+<p>如果出現 <code>Could not execute dot; may need to install graphviz.</code>，就是提示你要安裝 <code>graphviz</code> 了 （請右拐谷歌）</p>
+<p><strong>檢視 PProf 視覺化介面</strong></p>
+<p>（1）Top</p>
+<p><img src="../images/18bb6e67d3e4-RxJO0zH.jpg" alt="image" /></p>
+<p>（2）Graph</p>
+<p><img src="../images/9e0b6b90a3c5-Bowv9PX.jpg" alt="image" /></p>
+<p>框越大，線越粗代表它佔用的時間越大哦</p>
+<p>（3）Peek</p>
+<p><img src="../images/3b689d7c3779-V67zTDQ.jpg" alt="image" /></p>
+<p>（4）Source</p>
+<p><img src="../images/17073784fbc9-3K81wyn.jpg" alt="image" /></p>
+<p>透過 PProf 的視覺化介面，我們能夠更方便、更直觀的看到 Go 應用程式的呼叫鏈、使用情況等，並且在 View 選單欄中，還支援如上多種方式的切換</p>
+<p>你想想，在煩惱不知道什麼問題的時候，能用這些輔助工具來檢測問題，是不是瞬間效率翻倍了呢 👌</p>
+<h4 id="四pprof-火焰圖"><a class="header" href="#四pprof-火焰圖">四、PProf 火焰圖</a></h4>
+<p>另一種視覺化資料的方法是火焰圖，需手動安裝原生 PProf 工具：</p>
+<p>（1） 安裝 PProf</p>
+<pre><code>$ go get -u github.com/google/pprof
+</code></pre>
+<p>（2） 啟動 PProf 視覺化介面:</p>
+<pre><code>$ pprof -http=:8080 cpu.prof
+</code></pre>
+<p>（3） 檢視 PProf 視覺化介面</p>
+<p>開啟 PProf 的視覺化介面時，你會明顯發現比官方工具鏈的 PProf 精緻一些，並且多了 Flame Graph（火焰圖）</p>
+<p>它就是本次的目標之一，它的最大優點是動態的。呼叫順序由上到下（A -&gt; B -&gt; C -&gt; D），每一塊代表一個函式，越大代表佔用 CPU 的時間更長。同時它也支援點選塊深入進行分析！</p>
+<p><img src="../images/844b1fbb9ce5-g58bQpg.jpg" alt="image" /></p>
+<h2 id="總結"><a class="header" href="#總結">總結</a></h2>
+<p>在本章節，粗略地介紹了 Go 的效能利器 PProf。在特定的場景中，PProf 給定位、剖析問題帶了極大的幫助</p>
+<p>希望本文對你有所幫助，另外建議能夠自己實際操作一遍，最好是可以深入琢磨一下，內含大量的用法、知識點 🤓</p>
+<h2 id="思考題"><a class="header" href="#思考題">思考題</a></h2>
+<p>你很優秀的看到了最後，那麼有兩道簡單的思考題，希望拓展你的思路</p>
+<p>（1）flat 一定大於 cum 嗎，為什麼？什麼場景下 cum 會比 flat 大？</p>
+<p>（2）本章節的 demo 程式碼，有什麼效能問題？怎麼解決它？</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../di-9-ke-gong-ju.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../di-9-ke-gong-ju/go-tool-trace.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../di-9-ke-gong-ju.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../di-9-ke-gong-ju/go-tool-trace.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
