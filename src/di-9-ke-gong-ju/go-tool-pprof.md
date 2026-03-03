@@ -63,7 +63,7 @@ func main() {
 
     http.ListenAndServe("0.0.0.0:6060", nil)
 }
-```go
+```
 （2）data/d.go，檔案內容：
 
 ```go
@@ -181,7 +181,7 @@ Showing nodes accounting for 837.48MB, 100% of 837.48MB total
 
 （1）新建 data/d\_test.go，檔案內容：
 
-```
+```go
 package data
 
 import "testing"

@@ -406,7 +406,7 @@ func GenerateArticlePoster(c *gin.Context) {
 
 在 routers/router.go 檔案，增加如下程式碼:
 
-```
+```go
 r.StaticFS("/qrcode", http.Dir(qrcode.GetQrCodeFullPath()))
 ```
 

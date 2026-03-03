@@ -359,7 +359,7 @@ func RegisterSearchServiceServer(s *grpc.Server, srv SearchServiceServer) {
 
 你想亂傳糊弄一下？不可能的，請乖乖定義與 Protobuf 一致的介面方法。但是那個 `&_SearchService_serviceDesc` 又有什麼作用呢？程式碼如下：
 
-```
+```go
 // search.pb.go
 var _SearchService_serviceDesc = grpc.ServiceDesc{
     ServiceName: "proto.SearchService",
@@ -515,7 +515,7 @@ func DialContext(ctx context.Context, target string, opts ...DialOption) (conn *
 
 我們可以有幾個核心方法一直在等待/處理訊號，透過分析底層原始碼可得知。涉及如下：
 
-```
+```go
 func (ac *addrConn) connect()
 func (ac *addrConn) resetTransport()
 func (ac *addrConn) createTransport(addr resolver.Address, copts transport.ConnectOptions, connectDeadline time.Time)

@@ -72,7 +72,7 @@ func main() {
 
 ## 看一下轉換後
 
-```
+```go
 var hiter map_iteration_struct
 for mapiterinit(type, range, &hiter); hiter.key != nil; mapiternext(&hiter) {
     index_temp = *hiter.key

@@ -54,7 +54,7 @@ type App struct {
 
 新建 pkg/export/excel.go 檔案，如下：
 
-```
+```go
 package export
 
 import "github.com/EDDYCJY/go-gin-example/pkg/setting"
@@ -76,7 +76,7 @@ func GetExcelFullPath() string {
 
 ## 嘗試一下標準庫
 
-```
+```go
 f, err := os.Create(export.GetExcelFullPath() + "test.csv")
 if err != nil {
     panic(err)
@@ -107,7 +107,7 @@ w.WriteAll(data)
 
 3、csv.NewWriter：
 
-```
+```go
 func NewWriter(w io.Writer) *Writer {
     return &Writer{
         Comma: ',',
@@ -118,7 +118,7 @@ func NewWriter(w io.Writer) *Writer {
 
 4、w\.WriteAll：
 
-```
+```go
 func (w *Writer) WriteAll(records [][]string) error {
     for _, record := range records {
         err := w.Write(record)
@@ -138,7 +138,7 @@ WriteAll 實際是對 Write 的封裝，需要注意在最後呼叫了 `w.w.Flus
 
 開啟 service/tag.go，增加 Export 方法，如下：
 
-```
+```go
 func (t *Tag) Export() (string, error) {
     tags, err := t.GetAll()
     if err != nil {
@@ -194,7 +194,7 @@ func (t *Tag) Export() (string, error) {
 
 開啟 routers/api/v1/tag.go，增加如下方法：
 
-```
+```go
 func ExportTag(c *gin.Context) {
     appG := app.Gin{C: c}
     name := c.PostForm("name")
@@ -258,7 +258,7 @@ apiv1.Use(jwt.JWT())
 
 開啟 router.go 檔案，增加程式碼如下：
 
-```
+```go
 r.StaticFS("/export", http.Dir(export.GetExcelFullPath()))
 ```
 
@@ -274,7 +274,7 @@ r.StaticFS("/export", http.Dir(export.GetExcelFullPath()))
 
 開啟 service/tag.go，增加 Import 方法，如下：
 
-```
+```go
 func (t *Tag) Import(r io.Reader) error {
     xlsx, err := excelize.OpenReader(r)
     if err != nil {
@@ -301,7 +301,7 @@ func (t *Tag) Import(r io.Reader) error {
 
 開啟 routers/api/v1/tag.go，增加如下方法：
 
-```
+```go
 func ImportTag(c *gin.Context) {
     appG := app.Gin{C: c}
 

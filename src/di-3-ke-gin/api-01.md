@@ -158,7 +158,7 @@ TABLE_PREFIX = blog_
 
 建立呼叫設定的`setting`模組，在`go-gin-example`的`pkg`目錄下新建`setting`目錄（注意新增 replace 設定），新建 `setting.go` 檔案，寫入內容：
 
-```
+```go
 package setting
 
 import (
@@ -241,7 +241,7 @@ go-gin-example
 
 **1、 code.go：**
 
-```
+```go
 package e
 
 const (
@@ -262,7 +262,7 @@ const (
 
 **2、 msg.go：**
 
-```
+```go
 package e
 
 var MsgFlags = map[int]string {
@@ -300,7 +300,7 @@ go get -u github.com/unknwon/com
 
 在`util`目錄下新建`pagination.go`，寫入內容：
 
-```
+```go
 package util
 
 import (
@@ -337,7 +337,7 @@ go get -u github.com/go-sql-driver/mysql
 
 完成後，在`go-gin-example`的`models`目錄下新建`models.go`，用於`models`的初始化使用
 
-```
+```go
 package models
 
 import (
@@ -409,7 +409,7 @@ func CloseDB() {
 
 在`go-gin-example`下建立`main.go`作為啟動檔案（也就是`main`包），我們先寫個**Demo**，幫助大家理解，寫入檔案內容：
 
-```
+```go
 package main
 
 import (
@@ -451,7 +451,7 @@ func main() {
  - using code:    gin.SetMode(gin.ReleaseMode)
 
 [GIN-debug] GET    /test                     --> main.main.func1 (3 handlers)
-```go
+```
 在本機執行`curl 127.0.0.1:8000/test`，檢查是否返回`{"message":"test"}`。
 
 ### 知識點
@@ -474,7 +474,7 @@ func main() {
 
 1、http.Server：
 
-```
+```go
 type Server struct {
     Addr    string
     Handler Handler
@@ -502,7 +502,7 @@ type Server struct {
 
 2、 ListenAndServe：
 
-```
+```go
 func (srv *Server) ListenAndServe() error {
     addr := srv.Addr
     if addr == "" {
@@ -524,7 +524,7 @@ func (srv *Server) ListenAndServe() error {
 
 我們看看`r.Run`的實作：
 
-```
+```go
 func (engine *Engine) Run(addr ...string) (err error) {
     defer func() { debugPrintError(err) }()
 
@@ -541,7 +541,7 @@ func (engine *Engine) Run(addr ...string) (err error) {
 
 首先我們可以看下`Default()`的實作
 
-```
+```go
 // Default returns an Engine instance with the Logger and Recovery middleware already attached.
 func Default() *Engine {
     debugPrintWARNINGDefault()
@@ -553,7 +553,7 @@ func Default() *Engine {
 
 大家可以看到預設情況下，已經附加了日誌、恢復中介軟體的引擎例項。並且在開頭呼叫了`debugPrintWARNINGDefault()`，而它的實作就是輸出該行日誌
 
-```
+```go
 func debugPrintWARNINGDefault() {
     debugPrint(`[WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
 `)
@@ -568,7 +568,7 @@ func debugPrintWARNINGDefault() {
 
 在`go-gin-example`下`routers`目錄新建`router.go`檔案，寫入內容：
 
-```
+```go
 package routers
 
 import (
@@ -598,7 +598,7 @@ func InitRouter() *gin.Engine {
 
 修改`main.go`的檔案內容：
 
-```
+```go
 package main
 
 import (

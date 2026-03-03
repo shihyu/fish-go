@@ -678,7 +678,7 @@ func NewServer(opt ...ServerOption) *Server
 ```
 我們在此處建立了一個沒有註冊服務的`grpc`服務端，還沒有開始接受請求
 
-```
+```go
 grpcServer := grpc.NewServer(opts...)
 ```
 
@@ -690,7 +690,7 @@ pb.RegisterHelloWorldServer(grpcServer, NewHelloService())
 
 **5、建立`grpc-gateway`關聯元件**
 
-```
+```go
 ctx := context.Background()
 dcreds, err := credentials.NewClientTLSFromFile(CertPemPath, CertName)
 if err != nil {
@@ -706,7 +706,7 @@ dopts := []grpc.DialOption{grpc.WithTransportCredentials(dcreds)}
 
 **6、建立`HTTP NewServeMux`及註冊`grpc-gateway`邏輯**
 
-```
+```go
 gwmux := runtime.NewServeMux()
 
 // register grpc-gateway pb
@@ -755,7 +755,7 @@ func NewServeMux(opts ...ServeMuxOption) *ServeMux {
 ```
 （3）`http.NewServeMux()`的`Handle`方法
 
-```
+```go
 func (mux *ServeMux) Handle(pattern string, handler Handler)
 ```
 
@@ -769,7 +769,7 @@ func (mux *ServeMux) Handle(pattern string, handler Handler)
 
 **7、註冊具體服務**
 
-```
+```go
 if err := pb.RegisterHelloWorldHandlerFromEndpoint(ctx, gwmux, EndPoint, dopts); err != nil {
     log.Println("Failed to register gw server: %v\n", err)
 }

@@ -69,7 +69,7 @@ go-grpc-example
 
 ### Server
 
-```
+```go
 grpc.NewServer()
 ```
 
@@ -77,7 +77,7 @@ grpc.NewServer()
 
 ### Client
 
-```
+```go
 conn, err := grpc.Dial(":"+PORT, grpc.WithInsecure())
 ```
 

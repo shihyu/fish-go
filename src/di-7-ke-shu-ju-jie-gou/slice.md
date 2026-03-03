@@ -326,7 +326,7 @@ dnums: [1 1 2 3], len: 4, cap: 6
 
 ### 原型
 
-```
+```go
 func copy（dst，src [] T）int
 ```
 

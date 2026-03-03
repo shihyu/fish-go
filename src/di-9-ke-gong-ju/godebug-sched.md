@@ -160,7 +160,7 @@ G18: status=2() m=4 lockedm=-1
 
 那麼在實際執行中還有什麼原因會導致這種現象呢，我們一起看看，如下：
 
-```
+```go
     waitReasonZero                                    // ""
     waitReasonGCAssistMarking                         // "GC assist marking"
     waitReasonIOWait                                  // "IO wait"

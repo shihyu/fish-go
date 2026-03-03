@@ -238,7 +238,7 @@ func New(out io.Writer, prefix string, flag int) *Logger
 ```
 其實是在標準庫內，如果你剛剛細心的看了前面的小節，不難發現其預設實作了一個 Logger 元件
 
-```
+```go
 var std = New(os.Stderr, "", LstdFlags)
 ```
 

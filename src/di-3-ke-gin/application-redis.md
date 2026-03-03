@@ -386,7 +386,7 @@ func GetArticle(c *gin.Context) {
 
 例如 service/article\_service 下的 `articleService.Get()` 方法：
 
-```
+```go
 func (a *Article) Get() (*models.Article, error) {
     var cacheArticle *models.Article
 
@@ -414,7 +414,7 @@ func (a *Article) Get() (*models.Article, error) {
 
 而對於 gorm 的 錯誤返回設定，只需要修改 models/article.go 如下:
 
-```
+```go
 func GetArticle(id int) (*Article, error) {
     var article Article
     err := db.Where("id = ? AND deleted_on = ? ", id, 0).First(&article).Related(&article.Tag).Error

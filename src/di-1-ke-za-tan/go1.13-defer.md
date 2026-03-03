@@ -138,7 +138,7 @@ func deferproc(siz int32, fn *funcval) { // arguments of fn follow fn
 
 ### esc
 
-```
+```go
 // src/cmd/compile/internal/gc/esc.go
 case ODEFER:
     if e.loopdepth == 1 { // top level

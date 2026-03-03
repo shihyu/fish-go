@@ -206,7 +206,7 @@ H --> I(在新创建的 p 和 m 上运行 runtime-main)
 
 顯然，我們要研究的是 runtime 裡的 `schedinit` 方法，如下：
 
-```
+```go
 func schedinit() {
     ...
     stackinit()
@@ -237,7 +237,7 @@ func schedinit() {
 
 接下來我們正式的分析一下 `mallocinit` 方法，在引導流程中， `mallocinit` 主要承擔 Go 程式的記憶體分配器的初始化動作，而今天主要是針對虛擬記憶體地址這塊進行拆解，如下：
 
-```
+```go
 func mallocinit() {
     ...
     if sys.PtrSize == 8 {
@@ -275,7 +275,7 @@ func mallocinit() {
 
 可能會有小夥伴問，為什麼要判斷是 32 位還是 64 位的系統，這是因為不同位數的虛擬記憶體的定址範圍是不同的，因此要進行區分，否則會出現高位的虛擬記憶體對映問題。而在申請保留空間時，我們會經常提到 `arenaHint` 結構體，它是 `arenaHints`連結串列裡的一個節點，結構如下：
 
-```
+```go
 type arenaHint struct {
     addr uintptr
     down bool
@@ -301,7 +301,7 @@ type arenaHint struct {
 
 我們剛剛透過上述的分析，已經知道 `mallocinit` 的用途了，但是你可能還是會有疑惑，就是我們之前所看到的 `mmap` 系統呼叫，和它又有什麼關係呢，怎麼就關聯到一起了，接下來我們先一起來看看更下層的程式碼，如下：
 
-```
+```go
 func sysAlloc(n uintptr, sysStat *uint64) unsafe.Pointer {
     p, err := mmap(nil, n, _PROT_READ|_PROT_WRITE, _MAP_ANON|_MAP_PRIVATE, -1, 0)
     ...
@@ -341,7 +341,7 @@ for i := 0x7f; i >= 0; i-- {
 
 實際上在呼叫 `mheap_.arenaHintAlloc.alloc()` 時，呼叫的是 `mheap` 下的 `sysAlloc` 方法，而 `sysAlloc` 又會與 `mmap` 方法產生呼叫關係，並且這個方法與常規的 `sysAlloc` 還不大一樣，如下：
 
-```
+```go
 var mheap_ mheap
 ...
 func (h *mheap) sysAlloc(n uintptr) (v unsafe.Pointer, size uintptr) {

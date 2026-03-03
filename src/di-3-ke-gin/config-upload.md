@@ -67,7 +67,7 @@ func main() {
 
 在這段程式碼中，可以注意 ServerSetting 取了地址，為什麼 MapTo 必須地址入參呢？
 
-```
+```go
 // MapTo maps section to given struct.
 func (s *Section) MapTo(v interface{}) error {
     typ := reflect.TypeOf(v)
@@ -154,7 +154,7 @@ TablePrefix = blog_
 
 開啟 pkg/setting/setting.go 檔案，修改如下：
 
-```
+```go
 package setting
 
 import (
@@ -248,7 +248,7 @@ func Setup() {
 
 在這一步我們要設定初始化的流程，開啟 main.go 檔案，修改內容：
 
-```
+```go
 func main() {
     setting.Setup()
     models.Setup()
@@ -294,7 +294,7 @@ ServerSetting.WriteTimeout = ServerSetting.ReadTimeout * time.Second
 
 在 pkg 目錄下新建 file/file.go ，寫入檔案內容如下：
 
-```
+```go
 package file
 
 import (
@@ -375,7 +375,7 @@ multipart 又是什麼，[rfc2388](https://tools.ietf.org/html/rfc2388) 的 mult
 
 1、開啟 pkg/logging/file.go 檔案，修改檔案內容：
 
-```
+```go
 package logging
 
 import (
@@ -429,7 +429,7 @@ func openLogFile(fileName, filePath string) (*os.File, error) {
 
 2、開啟 pkg/logging/log.go 檔案，修改檔案內容:
 
-```
+```go
 package logging
 
 ...
@@ -463,7 +463,7 @@ func Setup() {
 
 在 util 目錄下新建 md5.go，寫入檔案內容：
 
-```
+```go
 package util
 
 import (
@@ -485,7 +485,7 @@ func EncodeMD5(value string) string {
 
 在 pkg 目錄下新建 upload/image.go 檔案，寫入檔案內容：
 
-```
+```go
 package upload
 
 import (
@@ -580,7 +580,7 @@ func CheckImage(src string) error {
 
 這一步將編寫上傳圖片的業務邏輯，在 routers/api 目錄下 新建 upload.go 檔案，寫入檔案內容:
 
-```
+```go
 package api
 
 import (
@@ -665,7 +665,7 @@ ERROR_UPLOAD_CHECK_IMAGE_FORMAT = 30003
 
 開啟 routers/router.go 檔案，增加路由 `r.POST("/upload", api.UploadImage)` ，如：
 
-```
+```go
 func InitRouter() *gin.Engine {
     r := gin.New()
     ...
@@ -715,7 +715,7 @@ $ ll
 
 開啟 routers/router.go 檔案，增加路由 `r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))`，如：
 
-```
+```go
 func InitRouter() *gin.Engine {
     ...
     r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
@@ -733,7 +733,7 @@ func InitRouter() *gin.Engine {
 
 而這行程式碼又做了什麼事呢，我們來看看方法原型
 
-```
+```go
 // StaticFS works just like `Static()` but a custom `http.FileSystem` can be used instead.
 // Gin by default user: gin.Dir()
 func (group *RouterGroup) StaticFS(relativePath string, fs http.FileSystem) IRoutes {
@@ -752,7 +752,7 @@ func (group *RouterGroup) StaticFS(relativePath string, fs http.FileSystem) IRou
 
 首先在暴露的 URL 中禁止了 \* 和 : 符號的使用，透過 `createStaticHandler` 建立了靜態檔案服務，實質最終呼叫的還是 `fileServer.ServeHTTP` 和一些處理邏輯了
 
-```
+```go
 func (group *RouterGroup) createStaticHandler(relativePath string, fs http.FileSystem) HandlerFunc {
     absolutePath := group.calculateAbsolutePath(relativePath)
     fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
@@ -774,13 +774,13 @@ func (group *RouterGroup) createStaticHandler(relativePath string, fs http.FileS
 
 通常 http.FileServer 要與 http.StripPrefix 相結合使用，否則當你執行：
 
-```
+```go
 http.Handle("/upload/images", http.FileServer(http.Dir("upload/images")))
 ```
 
 會無法正確的訪問到檔案目錄，因為 `/upload/images` 也包含在了 URL 路徑中，必須使用：
 
-```
+```go
 http.Handle("/upload/images", http.StripPrefix("upload/images", http.FileServer(http.Dir("upload/images"))))
 ```
 

@@ -274,7 +274,7 @@ formatLoop:
 
 在特殊情況下，若提供的引數集比 verb 識別符號多。fmt 將會貪婪檢查下去，將多出的引數集以特定的格式輸出，如下：
 
-```
+```go
 fmt.Printf("%d", 1, 2, 3)
 // 1%!(EXTRA int=2, int=3)
 ```
@@ -377,7 +377,7 @@ func (p *pp) printArg(arg interface{}, verb rune) {
 
 它主要用於格式化並處理錯誤的行為。我們可以一起來看看，程式碼如下：
 
-```
+```go
 func (p *pp) badVerb(verb rune) {
     p.erroring = true
     p.buf.WriteString(percentBangString)
@@ -399,7 +399,7 @@ func (p *pp) badVerb(verb rune) {
 
 在處理錯誤格式化時，我們可以對比以下例子：
 
-```
+```go
 fmt.Printf("%s", []int64{1, 2, 3})
 // [%!s(int64=1) %!s(int64=2) %!s(int64=3)]%
 ```

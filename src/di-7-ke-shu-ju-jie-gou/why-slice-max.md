@@ -37,7 +37,7 @@ func maxSliceCap(elemsize uintptr) uintptr {
 ```
 ## maxElems
 
-```
+```go
 var maxElems = [...]uintptr{
     ^uintptr(0),
     maxAlloc / 1, maxAlloc / 2, maxAlloc / 3, maxAlloc / 4,
@@ -139,7 +139,7 @@ func main() {
 
 ### maxAlloc
 
-```
+```go
 const GoarchMips = 0
 const GoarchMipsle = 0
 const GoarchWasm = 0

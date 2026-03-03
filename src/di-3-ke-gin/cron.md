@@ -200,7 +200,7 @@ func (c *Cron) Schedule(schedule Schedule, cmd Job) {
 
 在當前執行的程式中啟動 Cron 排程程式。其實這裡的主體是 goroutine + for + select + timer 的排程控制哦
 
-```
+```go
 func (c *Cron) Run() {
     if c.running {
         return
