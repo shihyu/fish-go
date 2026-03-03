@@ -541,7 +541,7 @@ func GenerateArticlePoster(c *gin.Context) {
 <p>其所涉及、關聯的庫都建議研究一下</p>
 <h3 id="staticfs"><a class="header" href="#staticfs">StaticFS</a></h3>
 <p>在 routers/router.go 檔案，增加如下程式碼:</p>
-<pre><code>r.StaticFS("/qrcode", http.Dir(qrcode.GetQrCodeFullPath()))
+<pre><code class="language-go">r.StaticFS("/qrcode", http.Dir(qrcode.GetQrCodeFullPath()))
 </code></pre>
 <h3 id="驗證-1"><a class="header" href="#驗證-1">驗證</a></h3>
 <p><img src="../images/868d2c15184b-kR1sqR6.jpg" alt="image" /></p>

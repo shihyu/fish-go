@@ -454,7 +454,7 @@ func RegisterSearchServiceServer(s *grpc.Server, srv SearchServiceServer) {
 <p>還記得我們平時編寫的 Protobuf 嗎？在生成出來的 <code>.pb.go</code> 檔案中，會定義出 Service APIs interface 的具體實作約束。而我們在 gRPC Server 進行註冊時，會傳入應用 Service 的功能介面實作，此時生成的 <code>RegisterServer</code> 方法就會保證兩者之間的一致性。</p>
 <h4 id="步驟二service-api-idl"><a class="header" href="#步驟二service-api-idl">步驟二：Service API IDL</a></h4>
 <p>你想亂傳糊弄一下？不可能的，請乖乖定義與 Protobuf 一致的介面方法。但是那個 <code>&amp;_SearchService_serviceDesc</code> 又有什麼作用呢？程式碼如下：</p>
-<pre><code>// search.pb.go
+<pre><code class="language-go">// search.pb.go
 var _SearchService_serviceDesc = grpc.ServiceDesc{
     ServiceName: "proto.SearchService",
     HandlerType: (*SearchServiceServer)(nil),
@@ -591,7 +591,7 @@ func DialContext(ctx context.Context, target string, opts ...DialOption) (conn *
 <p>之前聽到有的人說呼叫 <code>grpc.Dial</code> 後客戶端就已經與服務端建立起了連線，但這對不對呢？我們先鳥瞰全貌，看看正在跑的 goroutine。如下：</p>
 <p><img src="../images/e0e0ce1ab2f4-yPK1KZn.jpg" alt="image" /></p>
 <p>我們可以有幾個核心方法一直在等待/處理訊號，透過分析底層原始碼可得知。涉及如下：</p>
-<pre><code>func (ac *addrConn) connect()
+<pre><code class="language-go">func (ac *addrConn) connect()
 func (ac *addrConn) resetTransport()
 func (ac *addrConn) createTransport(addr resolver.Address, copts transport.ConnectOptions, connectDeadline time.Time)
 func (ac *addrConn) getReadyTransport()

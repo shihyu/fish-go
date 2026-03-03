@@ -384,7 +384,7 @@ func Panic(v ...interface{}) {
 <pre><code class="language-go">func New(out io.Writer, prefix string, flag int) *Logger
 </code></pre>
 <p>其實是在標準庫內，如果你剛剛細心的看了前面的小節，不難發現其預設實作了一個 Logger 元件</p>
-<pre><code>var std = New(os.Stderr, "", LstdFlags)
+<pre><code class="language-go">var std = New(os.Stderr, "", LstdFlags)
 </code></pre>
 <p>這也是一個小小的精妙之處 ⭕️</p>
 <h2 id="總結"><a class="header" href="#總結">總結</a></h2>

@@ -218,7 +218,7 @@ ExportSavePath = export/
 <p>（注意修改 image.go 的 GetImageFullUrl 方法）</p>
 <h2 id="pkg"><a class="header" href="#pkg">pkg</a></h2>
 <p>新建 pkg/export/excel.go 檔案，如下：</p>
-<pre><code>package export
+<pre><code class="language-go">package export
 
 import "github.com/EDDYCJY/go-gin-example/pkg/setting"
 
@@ -236,7 +236,7 @@ func GetExcelFullPath() string {
 </code></pre>
 <p>這裡編寫了一些常用的方法，以後取值方式如果有變動，直接改內部程式碼即可，對外不可見</p>
 <h2 id="嘗試一下標準庫"><a class="header" href="#嘗試一下標準庫">嘗試一下標準庫</a></h2>
-<pre><code>f, err := os.Create(export.GetExcelFullPath() + "test.csv")
+<pre><code class="language-go">f, err := os.Create(export.GetExcelFullPath() + "test.csv")
 if err != nil {
     panic(err)
 }
@@ -259,7 +259,7 @@ w.WriteAll(data)
 <p>2、f.WriteString("\xEF\xBB\xBF")：</p>
 <p><code>\xEF\xBB\xBF</code> 是 UTF-8 BOM 的 16 進位制格式，在這裡的用處是標識檔案的編碼格式，通常會出現在檔案的開頭，因此第一步就要將其寫入。如果不標識 UTF-8 的編碼格式的話，寫入的漢字會顯示為亂碼</p>
 <p>3、csv.NewWriter：</p>
-<pre><code>func NewWriter(w io.Writer) *Writer {
+<pre><code class="language-go">func NewWriter(w io.Writer) *Writer {
     return &amp;Writer{
         Comma: ',',
         w:     bufio.NewWriter(w),
@@ -267,7 +267,7 @@ w.WriteAll(data)
 }
 </code></pre>
 <p>4、w.WriteAll：</p>
-<pre><code>func (w *Writer) WriteAll(records [][]string) error {
+<pre><code class="language-go">func (w *Writer) WriteAll(records [][]string) error {
     for _, record := range records {
         err := w.Write(record)
         if err != nil {
@@ -281,7 +281,7 @@ w.WriteAll(data)
 <h2 id="匯出"><a class="header" href="#匯出">匯出</a></h2>
 <h3 id="service-方法"><a class="header" href="#service-方法">Service 方法</a></h3>
 <p>開啟 service/tag.go，增加 Export 方法，如下：</p>
-<pre><code>func (t *Tag) Export() (string, error) {
+<pre><code class="language-go">func (t *Tag) Export() (string, error) {
     tags, err := t.GetAll()
     if err != nil {
         return "", err
@@ -333,7 +333,7 @@ w.WriteAll(data)
 </code></pre>
 <h2 id="routers-入口"><a class="header" href="#routers-入口">routers 入口</a></h2>
 <p>開啟 routers/api/v1/tag.go，增加如下方法：</p>
-<pre><code>func ExportTag(c *gin.Context) {
+<pre><code class="language-go">func ExportTag(c *gin.Context) {
     appG := app.Gin{C: c}
     name := c.PostForm("name")
     state := -1
@@ -383,7 +383,7 @@ apiv1.Use(jwt.JWT())
 <h3 id="staticfs"><a class="header" href="#staticfs">StaticFS</a></h3>
 <p>那你想想，現在直接訪問地址肯定是無法下載檔案的，那麼該如何做呢？</p>
 <p>開啟 router.go 檔案，增加程式碼如下：</p>
-<pre><code>r.StaticFS("/export", http.Dir(export.GetExcelFullPath()))
+<pre><code class="language-go">r.StaticFS("/export", http.Dir(export.GetExcelFullPath()))
 </code></pre>
 <p>若你不理解，強烈建議溫習下前面的章節，舉一反三</p>
 <h2 id="驗證下載"><a class="header" href="#驗證下載">驗證下載</a></h2>
@@ -391,7 +391,7 @@ apiv1.Use(jwt.JWT())
 <h2 id="匯入"><a class="header" href="#匯入">匯入</a></h2>
 <h3 id="service-方法-1"><a class="header" href="#service-方法-1">Service 方法</a></h3>
 <p>開啟 service/tag.go，增加 Import 方法，如下：</p>
-<pre><code>func (t *Tag) Import(r io.Reader) error {
+<pre><code class="language-go">func (t *Tag) Import(r io.Reader) error {
     xlsx, err := excelize.OpenReader(r)
     if err != nil {
         return err
@@ -414,7 +414,7 @@ apiv1.Use(jwt.JWT())
 </code></pre>
 <h2 id="routers-入口-1"><a class="header" href="#routers-入口-1">routers 入口</a></h2>
 <p>開啟 routers/api/v1/tag.go，增加如下方法：</p>
-<pre><code>func ImportTag(c *gin.Context) {
+<pre><code class="language-go">func ImportTag(c *gin.Context) {
     appG := app.Gin{C: c}
 
     file, _, err := c.Request.FormFile("file")

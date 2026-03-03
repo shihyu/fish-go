@@ -201,7 +201,7 @@
 }
 </code></pre>
 <p>函式原型：</p>
-<pre><code>type UnaryServerInterceptor func(ctx context.Context, req interface{}, info *UnaryServerInfo, handler UnaryHandler) (resp interface{}, err error)
+<pre><code class="language-go">type UnaryServerInterceptor func(ctx context.Context, req interface{}, info *UnaryServerInfo, handler UnaryHandler) (resp interface{}, err error)
 </code></pre>
 <p>透過檢視原始碼可得知，要完成一個攔截器需要實作 <code>UnaryServerInterceptor</code> 方法。形參如下：</p>
 <ul>
@@ -220,7 +220,7 @@
 <h3 id="如何實作多個攔截器"><a class="header" href="#如何實作多個攔截器">如何實作多個攔截器</a></h3>
 <p>另外，可以發現 gRPC 本身居然只能設定一個攔截器，難道所有的邏輯都只能寫在一起？</p>
 <p>關於這一點，你可以放心。採用開源專案 <a href="https://github.com/grpc-ecosystem/go-grpc-middleware">go-grpc-middleware</a> 就可以解決這個問題，本章也會使用它。</p>
-<pre><code>import "github.com/grpc-ecosystem/go-grpc-middleware"
+<pre><code class="language-go">import "github.com/grpc-ecosystem/go-grpc-middleware"
 
 myServer := grpc.NewServer(
     grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(

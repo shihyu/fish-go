@@ -314,7 +314,7 @@ G18: status=2() m=4 lockedm=-1
 </code></pre>
 <p>在這個片段中，G1 的執行狀態為 <code>_Gwaiting</code>，並沒有分配 M 和鎖定。這時候你可能好奇在片段中括號裡的是什麼東西呢，其實是因為該 <code>status=4</code> 是表示 <code>Goroutine</code> 在<strong>執行時時被阻止</strong>，而阻止它的事件就是 <code>semacquire</code> 事件，是因為 <code>semacquire</code> 會檢查訊號量的情況，在合適的時機就呼叫 <code>goparkunlock</code> 函式，把當前 <code>Goroutine</code> 放進等待佇列，並把它設為 <code>_Gwaiting</code> 狀態。</p>
 <p>那麼在實際執行中還有什麼原因會導致這種現象呢，我們一起看看，如下：</p>
-<pre><code>    waitReasonZero                                    // ""
+<pre><code class="language-go">    waitReasonZero                                    // ""
     waitReasonGCAssistMarking                         // "GC assist marking"
     waitReasonIOWait                                  // "IO wait"
     waitReasonChanReceiveNilChan                      // "chan receive (nil chan)"

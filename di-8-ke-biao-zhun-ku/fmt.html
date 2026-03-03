@@ -421,7 +421,7 @@ formatLoop:
 <li>常規流程處理完畢</li>
 </ol>
 <p>在特殊情況下，若提供的引數集比 verb 識別符號多。fmt 將會貪婪檢查下去，將多出的引數集以特定的格式輸出，如下：</p>
-<pre><code>fmt.Printf("%d", 1, 2, 3)
+<pre><code class="language-go">fmt.Printf("%d", 1, 2, 3)
 // 1%!(EXTRA int=2, int=3)
 </code></pre>
 <ul>
@@ -510,7 +510,7 @@ formatLoop:
 <p>其中有兩個特殊的方法，分別是 <code>handleMethods</code> 和 <code>badVerb</code>，接下來分別來看看他們的作用是什麼</p>
 <p>1、badVerb</p>
 <p>它主要用於格式化並處理錯誤的行為。我們可以一起來看看，程式碼如下：</p>
-<pre><code>func (p *pp) badVerb(verb rune) {
+<pre><code class="language-go">func (p *pp) badVerb(verb rune) {
     p.erroring = true
     p.buf.WriteString(percentBangString)
     p.buf.WriteRune(verb)
@@ -529,7 +529,7 @@ formatLoop:
 }
 </code></pre>
 <p>在處理錯誤格式化時，我們可以對比以下例子：</p>
-<pre><code>fmt.Printf("%s", []int64{1, 2, 3})
+<pre><code class="language-go">fmt.Printf("%s", []int64{1, 2, 3})
 // [%!s(int64=1) %!s(int64=2) %!s(int64=3)]%
 </code></pre>
 <p>在 badVerb 中可以看到錯誤字串的處理主要分為以下部分：</p>

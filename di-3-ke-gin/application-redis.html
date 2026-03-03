@@ -500,7 +500,7 @@ func (g *Gin) Response(httpCode, errCode int, data interface{}) {
 </code></pre>
 <p>這裡有幾個值得變動點，主要是在內部增加了錯誤返回，如果存在錯誤則直接返回。另外進行了分層，業務邏輯內聚到了 service 層中去，而 routers/api（controller）顯著減輕，程式碼會更加的直觀</p>
 <p>例如 service/article_service 下的 <code>articleService.Get()</code> 方法：</p>
-<pre><code>func (a *Article) Get() (*models.Article, error) {
+<pre><code class="language-go">func (a *Article) Get() (*models.Article, error) {
     var cacheArticle *models.Article
 
     cache := cache_service.Article{ID: a.ID}
@@ -525,7 +525,7 @@ func (g *Gin) Response(httpCode, errCode int, data interface{}) {
 }
 </code></pre>
 <p>而對於 gorm 的 錯誤返回設定，只需要修改 models/article.go 如下:</p>
-<pre><code>func GetArticle(id int) (*Article, error) {
+<pre><code class="language-go">func GetArticle(id int) (*Article, error) {
     var article Article
     err := db.Where("id = ? AND deleted_on = ? ", id, 0).First(&amp;article).Related(&amp;article.Tag).Error
     if err != nil &amp;&amp; err != gorm.ErrRecordNotFound {

@@ -330,7 +330,7 @@ H --&gt; I(在新创建的 p 和 m 上运行 runtime-main)
 <p>注：來自@曹大的 《Go 程式的啟動流程》和@全成的 《Go 程式是怎樣跑起來的》，推薦大家閱讀。</p>
 <h4 id="初始化執行環境"><a class="header" href="#初始化執行環境">初始化執行環境</a></h4>
 <p>顯然，我們要研究的是 runtime 裡的 <code>schedinit</code> 方法，如下：</p>
-<pre><code>func schedinit() {
+<pre><code class="language-go">func schedinit() {
     ...
     stackinit()
     mallocinit()
@@ -355,7 +355,7 @@ H --&gt; I(在新创建的 p 和 m 上运行 runtime-main)
 <h4 id="初始化記憶體分配器"><a class="header" href="#初始化記憶體分配器">初始化記憶體分配器</a></h4>
 <p><strong>mallocinit</strong></p>
 <p>接下來我們正式的分析一下 <code>mallocinit</code> 方法，在引導流程中， <code>mallocinit</code> 主要承擔 Go 程式的記憶體分配器的初始化動作，而今天主要是針對虛擬記憶體地址這塊進行拆解，如下：</p>
-<pre><code>func mallocinit() {
+<pre><code class="language-go">func mallocinit() {
     ...
     if sys.PtrSize == 8 {
         for i := 0x7f; i &gt;= 0; i-- {
@@ -391,7 +391,7 @@ H --&gt; I(在新创建的 p 和 m 上运行 runtime-main)
 <li>儲存剛剛計算的 arena 的資訊到 <code>arenaHint</code> 中。</li>
 </ul>
 <p>可能會有小夥伴問，為什麼要判斷是 32 位還是 64 位的系統，這是因為不同位數的虛擬記憶體的定址範圍是不同的，因此要進行區分，否則會出現高位的虛擬記憶體對映問題。而在申請保留空間時，我們會經常提到 <code>arenaHint</code> 結構體，它是 <code>arenaHints</code>連結串列裡的一個節點，結構如下：</p>
-<pre><code>type arenaHint struct {
+<pre><code class="language-go">type arenaHint struct {
     addr uintptr
     down bool
     next *arenaHint
@@ -412,7 +412,7 @@ H --&gt; I(在新创建的 p 和 m 上运行 runtime-main)
 <p>在這裡的話，你需要理解 arean 區域在 Go 記憶體裡的作用就可以了。</p>
 <p><strong>mmap</strong></p>
 <p>我們剛剛透過上述的分析，已經知道 <code>mallocinit</code> 的用途了，但是你可能還是會有疑惑，就是我們之前所看到的 <code>mmap</code> 系統呼叫，和它又有什麼關係呢，怎麼就關聯到一起了，接下來我們先一起來看看更下層的程式碼，如下：</p>
-<pre><code>func sysAlloc(n uintptr, sysStat *uint64) unsafe.Pointer {
+<pre><code class="language-go">func sysAlloc(n uintptr, sysStat *uint64) unsafe.Pointer {
     p, err := mmap(nil, n, _PROT_READ|_PROT_WRITE, _MAP_ANON|_MAP_PRIVATE, -1, 0)
     ...
     mSysStatInc(sysStat, n)
@@ -446,7 +446,7 @@ func sysMap(v unsafe.Pointer, n uintptr, sysStat *uint64) {
 }
 </code></pre>
 <p>實際上在呼叫 <code>mheap_.arenaHintAlloc.alloc()</code> 時，呼叫的是 <code>mheap</code> 下的 <code>sysAlloc</code> 方法，而 <code>sysAlloc</code> 又會與 <code>mmap</code> 方法產生呼叫關係，並且這個方法與常規的 <code>sysAlloc</code> 還不大一樣，如下：</p>
-<pre><code>var mheap_ mheap
+<pre><code class="language-go">var mheap_ mheap
 ...
 func (h *mheap) sysAlloc(n uintptr) (v unsafe.Pointer, size uintptr) {
     ...

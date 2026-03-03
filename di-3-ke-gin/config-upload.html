@@ -231,7 +231,7 @@ func main() {
 }
 </code></pre>
 <p>在這段程式碼中，可以注意 ServerSetting 取了地址，為什麼 MapTo 必須地址入參呢？</p>
-<pre><code>// MapTo maps section to given struct.
+<pre><code class="language-go">// MapTo maps section to given struct.
 func (s *Section) MapTo(v interface{}) error {
     typ := reflect.TypeOf(v)
     val := reflect.ValueOf(v)
@@ -298,7 +298,7 @@ TablePrefix = blog_
 <p><strong>第一步</strong></p>
 <p>將散落在其他檔案裡的設定都刪掉，<strong>統一在 setting 中處理</strong>以及<strong>修改 init 函式為 Setup 方法</strong></p>
 <p>開啟 pkg/setting/setting.go 檔案，修改如下：</p>
-<pre><code>package setting
+<pre><code class="language-go">package setting
 
 import (
     "log"
@@ -387,7 +387,7 @@ func Setup() {
 <p>這幾項比較基礎，並沒有貼出來，我希望你可以自己動手，有問題的話可右拐 <a href="https://github.com/EDDYCJY/go-gin-example">專案地址</a></p>
 <p><strong>第二步</strong></p>
 <p>在這一步我們要設定初始化的流程，開啟 main.go 檔案，修改內容：</p>
-<pre><code>func main() {
+<pre><code class="language-go">func main() {
     setting.Setup()
     models.Setup()
     logging.Setup()
@@ -420,7 +420,7 @@ ServerSetting.WriteTimeout = ServerSetting.ReadTimeout * time.Second
 <p>在先前版本中，在 <a href="https://github.com/EDDYCJY/go-gin-example/blob/a338ddec103c9506b4c7ed16d9f5386040d99b4b/pkg/logging/file.go">logging/file.go</a> 中使用到了 os 的一些方法，我們透過前期規劃發現，這部分在上傳圖片功能中可以複用</p>
 <h3 id="第一步"><a class="header" href="#第一步">第一步</a></h3>
 <p>在 pkg 目錄下新建 file/file.go ，寫入檔案內容如下：</p>
-<pre><code>package file
+<pre><code class="language-go">package file
 
 import (
     "os"
@@ -494,7 +494,7 @@ func Open(name string, flag int, perm os.FileMode) (*os.File, error) {
 <h3 id="第二步"><a class="header" href="#第二步">第二步</a></h3>
 <p>我們在第一步已經將 file 重新封裝了一層，在這一步我們將原先 logging 包的方法都修改掉</p>
 <p>1、開啟 pkg/logging/file.go 檔案，修改檔案內容：</p>
-<pre><code>package logging
+<pre><code class="language-go">package logging
 
 import (
     "fmt"
@@ -544,7 +544,7 @@ func openLogFile(fileName, filePath string) (*os.File, error) {
 </code></pre>
 <p>我們將引用都改為了 file/file.go 包裡的方法</p>
 <p>2、開啟 pkg/logging/log.go 檔案，修改檔案內容:</p>
-<pre><code>package logging
+<pre><code class="language-go">package logging
 
 ...
 
@@ -569,7 +569,7 @@ func Setup() {
 <h3 id="第零步"><a class="header" href="#第零步">第零步</a></h3>
 <p>一般不會直接將上傳的圖片名暴露出來，因此我們對圖片名進行 MD5 來達到這個效果</p>
 <p>在 util 目錄下新建 md5.go，寫入檔案內容：</p>
-<pre><code>package util
+<pre><code class="language-go">package util
 
 import (
     "crypto/md5"
@@ -586,7 +586,7 @@ func EncodeMD5(value string) string {
 <h3 id="第一步-1"><a class="header" href="#第一步-1">第一步</a></h3>
 <p>在先前我們已經把底層方法給封裝好了，實質這一步為封裝 image 的處理邏輯</p>
 <p>在 pkg 目錄下新建 upload/image.go 檔案，寫入檔案內容：</p>
-<pre><code>package upload
+<pre><code class="language-go">package upload
 
 import (
     "os"
@@ -676,7 +676,7 @@ func CheckImage(src string) error {
 <p>這裡基本是對底層程式碼的二次封裝，為了更靈活的處理一些圖片特有的邏輯，並且方便修改，不直接對外暴露下層</p>
 <h3 id="第二步-1"><a class="header" href="#第二步-1">第二步</a></h3>
 <p>這一步將編寫上傳圖片的業務邏輯，在 routers/api 目錄下 新建 upload.go 檔案，寫入檔案內容:</p>
-<pre><code>package api
+<pre><code class="language-go">package api
 
 import (
     "net/http"
@@ -753,7 +753,7 @@ ERROR_UPLOAD_CHECK_IMAGE_FORMAT = 30003
 <p>總的來說，就是 入參 -&gt; 檢查 -》 儲存 的應用流程</p>
 <h3 id="第三步"><a class="header" href="#第三步">第三步</a></h3>
 <p>開啟 routers/router.go 檔案，增加路由 <code>r.POST("/upload", api.UploadImage)</code> ，如：</p>
-<pre><code>func InitRouter() *gin.Engine {
+<pre><code class="language-go">func InitRouter() *gin.Engine {
     r := gin.New()
     ...
     r.GET("/auth", api.GetAuth)
@@ -790,7 +790,7 @@ $ ll
 <p>在公司的話，CDN 或自建分散式檔案系統居多，也不需要過多關注。而在實踐裡的話肯定是本地搭建了，Go 本身對此就有很好的支援，而 Gin 更是再封裝了一層，只需要在路由增加一行程式碼即可</p>
 <h3 id="rstaticfs"><a class="header" href="#rstaticfs">r.StaticFS</a></h3>
 <p>開啟 routers/router.go 檔案，增加路由 <code>r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))</code>，如：</p>
-<pre><code>func InitRouter() *gin.Engine {
+<pre><code class="language-go">func InitRouter() *gin.Engine {
     ...
     r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
 
@@ -803,7 +803,7 @@ $ ll
 <h3 id="它做了什麼"><a class="header" href="#它做了什麼">它做了什麼</a></h3>
 <p>當訪問 $HOST/upload/images 時，將會讀取到 $GOPATH/src/github.com/EDDYCJY/go-gin-example/runtime/upload/images 下的檔案</p>
 <p>而這行程式碼又做了什麼事呢，我們來看看方法原型</p>
-<pre><code>// StaticFS works just like `Static()` but a custom `http.FileSystem` can be used instead.
+<pre><code class="language-go">// StaticFS works just like `Static()` but a custom `http.FileSystem` can be used instead.
 // Gin by default user: gin.Dir()
 func (group *RouterGroup) StaticFS(relativePath string, fs http.FileSystem) IRoutes {
     if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
@@ -819,7 +819,7 @@ func (group *RouterGroup) StaticFS(relativePath string, fs http.FileSystem) IRou
 }
 </code></pre>
 <p>首先在暴露的 URL 中禁止了 * 和 : 符號的使用，透過 <code>createStaticHandler</code> 建立了靜態檔案服務，實質最終呼叫的還是 <code>fileServer.ServeHTTP</code> 和一些處理邏輯了</p>
-<pre><code>func (group *RouterGroup) createStaticHandler(relativePath string, fs http.FileSystem) HandlerFunc {
+<pre><code class="language-go">func (group *RouterGroup) createStaticHandler(relativePath string, fs http.FileSystem) HandlerFunc {
     absolutePath := group.calculateAbsolutePath(relativePath)
     fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
     _, nolisting := fs.(*onlyfilesFS)
@@ -835,10 +835,10 @@ func (group *RouterGroup) StaticFS(relativePath string, fs http.FileSystem) IRou
 <p>我們可以留意下 <code>fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))</code> 這段語句，在靜態檔案服務中很常見，它有什麼作用呢？</p>
 <p><code>http.StripPrefix</code> 主要作用是從請求 URL 的路徑中刪除給定的字首，最終返回一個 <code>Handler</code></p>
 <p>通常 http.FileServer 要與 http.StripPrefix 相結合使用，否則當你執行：</p>
-<pre><code>http.Handle("/upload/images", http.FileServer(http.Dir("upload/images")))
+<pre><code class="language-go">http.Handle("/upload/images", http.FileServer(http.Dir("upload/images")))
 </code></pre>
 <p>會無法正確的訪問到檔案目錄，因為 <code>/upload/images</code> 也包含在了 URL 路徑中，必須使用：</p>
-<pre><code>http.Handle("/upload/images", http.StripPrefix("upload/images", http.FileServer(http.Dir("upload/images"))))
+<pre><code class="language-go">http.Handle("/upload/images", http.StripPrefix("upload/images", http.FileServer(http.Dir("upload/images"))))
 </code></pre>
 <h4 id="filepath"><a class="header" href="#filepath">/*filepath</a></h4>
 <p>到下面可以看到 <code>urlPattern := path.Join(relativePath, "/*filepath")</code>，<code>/*filepath</code> 你是誰，你在這裡有什麼用，你是 Gin 的產物嗎?</p>

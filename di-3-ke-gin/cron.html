@@ -332,7 +332,7 @@ func NewWithLocation(location *time.Location) *Cron {
 </code></pre>
 <p>3、c.Start()</p>
 <p>在當前執行的程式中啟動 Cron 排程程式。其實這裡的主體是 goroutine + for + select + timer 的排程控制哦</p>
-<pre><code>func (c *Cron) Run() {
+<pre><code class="language-go">func (c *Cron) Run() {
     if c.running {
         return
     }

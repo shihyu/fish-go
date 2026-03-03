@@ -304,7 +304,7 @@ NAME = blog
 TABLE_PREFIX = blog_
 </code></pre>
 <p>建立呼叫設定的<code>setting</code>模組，在<code>go-gin-example</code>的<code>pkg</code>目錄下新建<code>setting</code>目錄（注意新增 replace 設定），新建 <code>setting.go</code> 檔案，寫入內容：</p>
-<pre><code>package setting
+<pre><code class="language-go">package setting
 
 import (
     "log"
@@ -379,7 +379,7 @@ func LoadApp() {
 <h2 id="編寫api錯誤碼包"><a class="header" href="#編寫api錯誤碼包">編寫API錯誤碼包</a></h2>
 <p>建立錯誤碼的<code>e</code>模組，在<code>go-gin-example</code>的<code>pkg</code>目錄下新建<code>e</code>目錄（注意新增 replace 設定），新建<code>code.go</code>和<code>msg.go</code>檔案，寫入內容：</p>
 <p><strong>1、 code.go：</strong></p>
-<pre><code>package e
+<pre><code class="language-go">package e
 
 const (
     SUCCESS = 200
@@ -397,7 +397,7 @@ const (
 )
 </code></pre>
 <p><strong>2、 msg.go：</strong></p>
-<pre><code>package e
+<pre><code class="language-go">package e
 
 var MsgFlags = map[int]string {
     SUCCESS : "ok",
@@ -427,7 +427,7 @@ func GetMsg(code int) string {
 </code></pre>
 <h3 id="編寫分頁頁碼的取得方法"><a class="header" href="#編寫分頁頁碼的取得方法">編寫分頁頁碼的取得方法</a></h3>
 <p>在<code>util</code>目錄下新建<code>pagination.go</code>，寫入內容：</p>
-<pre><code>package util
+<pre><code class="language-go">package util
 
 import (
     "github.com/gin-gonic/gin"
@@ -454,7 +454,7 @@ func GetPage(c *gin.Context) int {
 <pre><code>go get -u github.com/go-sql-driver/mysql
 </code></pre>
 <p>完成後，在<code>go-gin-example</code>的<code>models</code>目錄下新建<code>models.go</code>，用於<code>models</code>的初始化使用</p>
-<pre><code>package models
+<pre><code class="language-go">package models
 
 import (
     "log"
@@ -520,7 +520,7 @@ func CloseDB() {
 <p>最基礎的準備工作完成啦，讓我們開始編寫Demo吧！</p>
 <h3 id="編寫demo"><a class="header" href="#編寫demo">編寫Demo</a></h3>
 <p>在<code>go-gin-example</code>下建立<code>main.go</code>作為啟動檔案（也就是<code>main</code>包），我們先寫個<strong>Demo</strong>，幫助大家理解，寫入檔案內容：</p>
-<pre><code>package main
+<pre><code class="language-go">package main
 
 import (
     "fmt"
@@ -558,171 +558,149 @@ func main() {
  - using code:    gin.SetMode(gin.ReleaseMode)
 
 [GIN-debug] GET    /test                     --&gt; main.main.func1 (3 handlers)
-```go
-在本機執行`curl 127.0.0.1:8000/test`，檢查是否返回`{"message":"test"}`。
-
-### 知識點
-
-**那麼，我們來延伸一下Demo所涉及的知識點！**
-
-#### 標準庫
-
-* [fmt](https://golang.org/pkg/fmt/)：實作了類似C語言printf和scanf的格式化I/O。格式化動作（'verb'）源自C語言但更簡單
-* [net/http](https://golang.org/pkg/net/http/)：提供了HTTP客戶端和服務端的實作
-
-#### **Gin**
-
-* [gin.Default()](https://gowalker.org/github.com/gin-gonic/gin#Default)：返回Gin的`type Engine struct{...}`，裡面包含`RouterGroup`，相當於建立一個路由`Handlers`，可以後期繫結各類的路由規則和函式、中介軟體等
-* [router.GET(...){...}](https://gowalker.org/github.com/gin-gonic/gin#IRoutes)：建立不同的HTTP方法繫結到`Handlers`中，也支援POST、PUT、DELETE、PATCH、OPTIONS、HEAD 等常用的Restful方法
-* [gin.H{...}](https://gowalker.org/github.com/gin-gonic/gin#H)：就是一個`map[string]interface{}`
-* [gin.Context](https://gowalker.org/github.com/gin-gonic/gin#Context)：`Context`是`gin`中的上下文，它允許我們在中介軟體之間傳遞變數、管理流、驗證JSON請求、響應JSON請求等，在`gin`中包含大量`Context`的方法，例如我們常用的`DefaultQuery`、`Query`、`DefaultPostForm`、`PostForm`等等
-
-#### \&amp;http.Server 和 ListenAndServe？
-
-1、http.Server：
-
 </code></pre>
-<p>type Server struct {
-Addr    string
-Handler Handler
-TLSConfig *tls.Config
-ReadTimeout time.Duration
-ReadHeaderTimeout time.Duration
-WriteTimeout time.Duration
-IdleTimeout time.Duration
-MaxHeaderBytes int
-ConnState func(net.Conn, ConnState)
-ErrorLog *log.Logger
-}</p>
-<pre><code>
-* Addr：監聽的TCP地址，格式為`:8000`
-* Handler：http控制代碼，實質為`ServeHTTP`，用於處理程式響應HTTP請求
-* TLSConfig：安全傳輸層協議（TLS）的設定
-* ReadTimeout：允許讀取的最大時間
-* ReadHeaderTimeout：允許讀取請求頭的最大時間
-* WriteTimeout：允許寫入的最大時間
-* IdleTimeout：等待的最大時間
-* MaxHeaderBytes：請求頭的最大位元組數
-* ConnState：指定一個可選的回撥函式，當客戶端連線發生變化時呼叫
-* ErrorLog：指定一個可選的日誌記錄器，用於接收程式的意外行為和底層系統錯誤；如果未設定或為`nil`則預設以日誌包的標準日誌記錄器完成（也就是在控制檯輸出）
-
-2、 ListenAndServe：
-
-</code></pre>
-<p>func (srv *Server) ListenAndServe() error {
-addr := srv.Addr
-if addr == "" {
-addr = ":http"
+<p>在本機執行<code>curl 127.0.0.1:8000/test</code>，檢查是否返回<code>{"message":"test"}</code>。</p>
+<h3 id="知識點"><a class="header" href="#知識點">知識點</a></h3>
+<p><strong>那麼，我們來延伸一下Demo所涉及的知識點！</strong></p>
+<h4 id="標準庫"><a class="header" href="#標準庫">標準庫</a></h4>
+<ul>
+<li><a href="https://golang.org/pkg/fmt/">fmt</a>：實作了類似C語言printf和scanf的格式化I/O。格式化動作（'verb'）源自C語言但更簡單</li>
+<li><a href="https://golang.org/pkg/net/http/">net/http</a>：提供了HTTP客戶端和服務端的實作</li>
+</ul>
+<h4 id="gin"><a class="header" href="#gin"><strong>Gin</strong></a></h4>
+<ul>
+<li><a href="https://gowalker.org/github.com/gin-gonic/gin#Default">gin.Default()</a>：返回Gin的<code>type Engine struct{...}</code>，裡面包含<code>RouterGroup</code>，相當於建立一個路由<code>Handlers</code>，可以後期繫結各類的路由規則和函式、中介軟體等</li>
+<li><a href="https://gowalker.org/github.com/gin-gonic/gin#IRoutes">router.GET(...){...}</a>：建立不同的HTTP方法繫結到<code>Handlers</code>中，也支援POST、PUT、DELETE、PATCH、OPTIONS、HEAD 等常用的Restful方法</li>
+<li><a href="https://gowalker.org/github.com/gin-gonic/gin#H">gin.H{...}</a>：就是一個<code>map[string]interface{}</code></li>
+<li><a href="https://gowalker.org/github.com/gin-gonic/gin#Context">gin.Context</a>：<code>Context</code>是<code>gin</code>中的上下文，它允許我們在中介軟體之間傳遞變數、管理流、驗證JSON請求、響應JSON請求等，在<code>gin</code>中包含大量<code>Context</code>的方法，例如我們常用的<code>DefaultQuery</code>、<code>Query</code>、<code>DefaultPostForm</code>、<code>PostForm</code>等等</li>
+</ul>
+<h4 id="httpserver-和-listenandserve"><a class="header" href="#httpserver-和-listenandserve">&amp;http.Server 和 ListenAndServe？</a></h4>
+<p>1、http.Server：</p>
+<pre><code class="language-go">type Server struct {
+    Addr    string
+    Handler Handler
+    TLSConfig *tls.Config
+    ReadTimeout time.Duration
+    ReadHeaderTimeout time.Duration
+    WriteTimeout time.Duration
+    IdleTimeout time.Duration
+    MaxHeaderBytes int
+    ConnState func(net.Conn, ConnState)
+    ErrorLog *log.Logger
 }
-ln, err := net.Listen("tcp", addr)
-if err != nil {
-return err
+</code></pre>
+<ul>
+<li>Addr：監聽的TCP地址，格式為<code>:8000</code></li>
+<li>Handler：http控制代碼，實質為<code>ServeHTTP</code>，用於處理程式響應HTTP請求</li>
+<li>TLSConfig：安全傳輸層協議（TLS）的設定</li>
+<li>ReadTimeout：允許讀取的最大時間</li>
+<li>ReadHeaderTimeout：允許讀取請求頭的最大時間</li>
+<li>WriteTimeout：允許寫入的最大時間</li>
+<li>IdleTimeout：等待的最大時間</li>
+<li>MaxHeaderBytes：請求頭的最大位元組數</li>
+<li>ConnState：指定一個可選的回撥函式，當客戶端連線發生變化時呼叫</li>
+<li>ErrorLog：指定一個可選的日誌記錄器，用於接收程式的意外行為和底層系統錯誤；如果未設定或為<code>nil</code>則預設以日誌包的標準日誌記錄器完成（也就是在控制檯輸出）</li>
+</ul>
+<p>2、 ListenAndServe：</p>
+<pre><code class="language-go">func (srv *Server) ListenAndServe() error {
+    addr := srv.Addr
+    if addr == "" {
+        addr = ":http"
+    }
+    ln, err := net.Listen("tcp", addr)
+    if err != nil {
+        return err
+    }
+    return srv.Serve(tcpKeepAliveListener{ln.(*net.TCPListener)})
 }
-return srv.Serve(tcpKeepAliveListener{ln.(*net.TCPListener)})
-}</p>
-<pre><code>
-開始監聽服務，監聽TCP網路地址，Addr和呼叫應用程式處理連線上的請求。
-
-我們在原始碼中看到`Addr`是呼叫我們在`&amp;http.Server`中設定的引數，因此我們在設定時要用`&amp;`，我們要改變引數的值，因為我們`ListenAndServe`和其他一些方法需要用到`&amp;http.Server`中的引數，他們是相互影響的。
-
-3、 `http.ListenAndServe`和 [連載一](https://segmentfault.com/a/1190000013297625#articleHeader5) 的`r.Run()`有區別嗎？
-
-我們看看`r.Run`的實作：
-
 </code></pre>
-<p>func (engine *Engine) Run(addr ...string) (err error) {
-defer func() { debugPrintError(err) }()</p>
-<pre><code>address := resolveAddress(addr)
-debugPrint("Listening and serving HTTP on %s\n", address)
-err = http.ListenAndServe(address, engine)
-return
+<p>開始監聽服務，監聽TCP網路地址，Addr和呼叫應用程式處理連線上的請求。</p>
+<p>我們在原始碼中看到<code>Addr</code>是呼叫我們在<code>&amp;http.Server</code>中設定的引數，因此我們在設定時要用<code>&amp;</code>，我們要改變引數的值，因為我們<code>ListenAndServe</code>和其他一些方法需要用到<code>&amp;http.Server</code>中的引數，他們是相互影響的。</p>
+<p>3、 <code>http.ListenAndServe</code>和 <a href="https://segmentfault.com/a/1190000013297625#articleHeader5">連載一</a> 的<code>r.Run()</code>有區別嗎？</p>
+<p>我們看看<code>r.Run</code>的實作：</p>
+<pre><code class="language-go">func (engine *Engine) Run(addr ...string) (err error) {
+    defer func() { debugPrintError(err) }()
+
+    address := resolveAddress(addr)
+    debugPrint("Listening and serving HTTP on %s\n", address)
+    err = http.ListenAndServe(address, engine)
+    return
+}
 </code></pre>
-<p>}</p>
-<pre><code>
-透過分析原始碼，得知**本質上沒有區別**，同時也得知了啟動`gin`時的監聽debug資訊在這裡輸出。
-
-4、 為什麼Demo裡會有`WARNING`？
-
-首先我們可以看下`Default()`的實作
-
-</code></pre>
-<p>// Default returns an Engine instance with the Logger and Recovery middleware already attached.
+<p>透過分析原始碼，得知<strong>本質上沒有區別</strong>，同時也得知了啟動<code>gin</code>時的監聽debug資訊在這裡輸出。</p>
+<p>4、 為什麼Demo裡會有<code>WARNING</code>？</p>
+<p>首先我們可以看下<code>Default()</code>的實作</p>
+<pre><code class="language-go">// Default returns an Engine instance with the Logger and Recovery middleware already attached.
 func Default() *Engine {
-debugPrintWARNINGDefault()
-engine := New()
-engine.Use(Logger(), Recovery())
-return engine
-}</p>
-<pre><code>
-大家可以看到預設情況下，已經附加了日誌、恢復中介軟體的引擎例項。並且在開頭呼叫了`debugPrintWARNINGDefault()`，而它的實作就是輸出該行日誌
-
-</code></pre>
-<p>func debugPrintWARNINGDefault() {
-debugPrint(<code>[WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached. </code>)
-}</p>
-<pre><code>
-而另外一個`Running in "debug" mode. Switch to "release" mode in production.`，是執行模式原因，並不難理解，已在設定檔案的管控下 :-)，運維人員隨時就可以修改它的設定。
-
-5、 Demo的`router.GET`等路由規則可以不寫在`main`包中嗎？
-
-我們發現`router.GET`等路由規則，在Demo中被編寫在了`main`包中，感覺很奇怪，我們去抽離這部分邏輯！
-
-在`go-gin-example`下`routers`目錄新建`router.go`檔案，寫入內容：
-
-</code></pre>
-<p>package routers</p>
-<p>import (
-"github.com/gin-gonic/gin"</p>
-<pre><code>"github.com/EDDYCJY/go-gin-example/pkg/setting"
-</code></pre>
-<p>)</p>
-<p>func InitRouter() *gin.Engine {
-r := gin.New()</p>
-<pre><code>r.Use(gin.Logger())
-
-r.Use(gin.Recovery())
-
-gin.SetMode(setting.RunMode)
-
-r.GET("/test", func(c *gin.Context) {
-    c.JSON(200, gin.H{
-        "message": "test",
-    })
-})
-
-return r
-</code></pre>
-<p>}</p>
-<pre><code>
-修改`main.go`的檔案內容：
-
-</code></pre>
-<p>package main</p>
-<p>import (
-"fmt"
-"net/http"</p>
-<pre><code>"github.com/EDDYCJY/go-gin-example/routers"
-"github.com/EDDYCJY/go-gin-example/pkg/setting"
-</code></pre>
-<p>)</p>
-<p>func main() {
-router := routers.InitRouter()</p>
-<pre><code>s := &amp;http.Server{
-    Addr:           fmt.Sprintf(":%d", setting.HTTPPort),
-    Handler:        router,
-    ReadTimeout:    setting.ReadTimeout,
-    WriteTimeout:   setting.WriteTimeout,
-    MaxHeaderBytes: 1 &lt;&lt; 20,
+    debugPrintWARNINGDefault()
+    engine := New()
+    engine.Use(Logger(), Recovery())
+    return engine
 }
-
-s.ListenAndServe()
 </code></pre>
-<p>}</p>
-<pre><code>
-當前目錄結構：
-
+<p>大家可以看到預設情況下，已經附加了日誌、恢復中介軟體的引擎例項。並且在開頭呼叫了<code>debugPrintWARNINGDefault()</code>，而它的實作就是輸出該行日誌</p>
+<pre><code class="language-go">func debugPrintWARNINGDefault() {
+    debugPrint(`[WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+`)
+}
 </code></pre>
-<p>go-gin-example/
+<p>而另外一個<code>Running in "debug" mode. Switch to "release" mode in production.</code>，是執行模式原因，並不難理解，已在設定檔案的管控下 :-)，運維人員隨時就可以修改它的設定。</p>
+<p>5、 Demo的<code>router.GET</code>等路由規則可以不寫在<code>main</code>包中嗎？</p>
+<p>我們發現<code>router.GET</code>等路由規則，在Demo中被編寫在了<code>main</code>包中，感覺很奇怪，我們去抽離這部分邏輯！</p>
+<p>在<code>go-gin-example</code>下<code>routers</code>目錄新建<code>router.go</code>檔案，寫入內容：</p>
+<pre><code class="language-go">package routers
+
+import (
+    "github.com/gin-gonic/gin"
+
+    "github.com/EDDYCJY/go-gin-example/pkg/setting"
+)
+
+func InitRouter() *gin.Engine {
+    r := gin.New()
+
+    r.Use(gin.Logger())
+
+    r.Use(gin.Recovery())
+
+    gin.SetMode(setting.RunMode)
+
+    r.GET("/test", func(c *gin.Context) {
+        c.JSON(200, gin.H{
+            "message": "test",
+        })
+    })
+
+    return r
+}
+</code></pre>
+<p>修改<code>main.go</code>的檔案內容：</p>
+<pre><code class="language-go">package main
+
+import (
+    "fmt"
+    "net/http"
+
+    "github.com/EDDYCJY/go-gin-example/routers"
+    "github.com/EDDYCJY/go-gin-example/pkg/setting"
+)
+
+func main() {
+    router := routers.InitRouter()
+
+    s := &amp;http.Server{
+        Addr:           fmt.Sprintf(":%d", setting.HTTPPort),
+        Handler:        router,
+        ReadTimeout:    setting.ReadTimeout,
+        WriteTimeout:   setting.WriteTimeout,
+        MaxHeaderBytes: 1 &lt;&lt; 20,
+    }
+
+    s.ListenAndServe()
+}
+</code></pre>
+<p>當前目錄結構：</p>
+<pre><code>go-gin-example/
 ├── conf
 │   └── app.ini
 ├── main.go
@@ -739,33 +717,25 @@ s.ListenAndServe()
 │       └── pagination.go
 ├── routers
 │   └── router.go
-├── runtime</p>
-<pre><code>
-重啟服務，執行 `curl 127.0.0.1:8000/test`檢視是否正確返回。
-
-下一節，我們將以我們的 Demo 為起點進行修改，開始編碼！
-
-## 參考
-
-### 本系列示例程式碼
-
-* [go-gin-example](https://github.com/EDDYCJY/go-gin-example)
-
-## 關於
-
-### 修改記錄
-
-* 第一版：2018年02月16日釋出文章
-* 第二版：2019年10月01日修改文章
-
-## ？
-
-如果有任何疑問或錯誤，歡迎在 [issues](https://github.com/EDDYCJY/blog) 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。
-
-### 我的微信公眾號
-
-![image](../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg)
+├── runtime
 </code></pre>
+<p>重啟服務，執行 <code>curl 127.0.0.1:8000/test</code>檢視是否正確返回。</p>
+<p>下一節，我們將以我們的 Demo 為起點進行修改，開始編碼！</p>
+<h2 id="參考"><a class="header" href="#參考">參考</a></h2>
+<h3 id="本系列示例程式碼"><a class="header" href="#本系列示例程式碼">本系列示例程式碼</a></h3>
+<ul>
+<li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
+</ul>
+<h2 id="關於"><a class="header" href="#關於">關於</a></h2>
+<h3 id="修改記錄"><a class="header" href="#修改記錄">修改記錄</a></h3>
+<ul>
+<li>第一版：2018年02月16日釋出文章</li>
+<li>第二版：2019年10月01日修改文章</li>
+</ul>
+<h2 id=""><a class="header" href="#">？</a></h2>
+<p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
+<h3 id="我的微信公眾號"><a class="header" href="#我的微信公眾號">我的微信公眾號</a></h3>
+<p><img src="../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 
                     </main>
 

@@ -386,23 +386,19 @@ require (
         golang.org/x/sys v0.0.0-20190927073244-c990c680b611 // indirect
         gopkg.in/yaml.v2 v2.2.3 // indirect
 )
-```go
-確確實實發生了改變，那多出來的東西又是什麼呢，`go.mod` 檔案又儲存了什麼資訊呢，實際上 `go.mod` 檔案是啟用了 Go modules 的專案所必須的最重要的檔案，因為它描述了當前專案（也就是當前模組）的元資訊，每一行都以一個動詞開頭，目前有以下 5 個動詞:
-
-* module：用於定義當前專案的模組路徑。
-* go：用於設定預期的 Go 版本。
-* require：用於設定一個特定的模組版本。
-* exclude：用於從使用中排除一個特定的模組版本。
-* replace：用於將一個模組版本替換為另外一個模組版本。
-
-你可能還會疑惑 `indirect` 是什麼東西，`indirect` 的意思是傳遞依賴，也就是非直接依賴。
-
-### 測試
-
-編寫一個`test.go`檔案
-
-```go
-package main
+</code></pre>
+<p>確確實實發生了改變，那多出來的東西又是什麼呢，<code>go.mod</code> 檔案又儲存了什麼資訊呢，實際上 <code>go.mod</code> 檔案是啟用了 Go modules 的專案所必須的最重要的檔案，因為它描述了當前專案（也就是當前模組）的元資訊，每一行都以一個動詞開頭，目前有以下 5 個動詞:</p>
+<ul>
+<li>module：用於定義當前專案的模組路徑。</li>
+<li>go：用於設定預期的 Go 版本。</li>
+<li>require：用於設定一個特定的模組版本。</li>
+<li>exclude：用於從使用中排除一個特定的模組版本。</li>
+<li>replace：用於將一個模組版本替換為另外一個模組版本。</li>
+</ul>
+<p>你可能還會疑惑 <code>indirect</code> 是什麼東西，<code>indirect</code> 的意思是傳遞依賴，也就是非直接依賴。</p>
+<h3 id="測試"><a class="header" href="#測試">測試</a></h3>
+<p>編寫一個<code>test.go</code>檔案</p>
+<pre><code class="language-go">package main
 
 import "github.com/gin-gonic/gin"
 

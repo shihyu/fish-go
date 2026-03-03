@@ -236,7 +236,7 @@
 </ul>
 <p>但你可能會想，明明用的是 <code>for range</code> 進行迴圈迭代，怎麼出現了這兩個函式，怎麼回事？</p>
 <h2 id="看一下轉換後"><a class="header" href="#看一下轉換後">看一下轉換後</a></h2>
-<pre><code>var hiter map_iteration_struct
+<pre><code class="language-go">var hiter map_iteration_struct
 for mapiterinit(type, range, &amp;hiter); hiter.key != nil; mapiternext(&amp;hiter) {
     index_temp = *hiter.key
     value_temp = *hiter.val

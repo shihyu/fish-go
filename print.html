@@ -2427,7 +2427,7 @@ func RegisterSearchServiceServer(s *grpc.Server, srv SearchServiceServer) {
 <p>還記得我們平時編寫的 Protobuf 嗎？在生成出來的 <code>.pb.go</code> 檔案中，會定義出 Service APIs interface 的具體實作約束。而我們在 gRPC Server 進行註冊時，會傳入應用 Service 的功能介面實作，此時生成的 <code>RegisterServer</code> 方法就會保證兩者之間的一致性。</p>
 <h4 id="步驟二service-api-idl"><a class="header" href="#步驟二service-api-idl">步驟二：Service API IDL</a></h4>
 <p>你想亂傳糊弄一下？不可能的，請乖乖定義與 Protobuf 一致的介面方法。但是那個 <code>&amp;_SearchService_serviceDesc</code> 又有什麼作用呢？程式碼如下：</p>
-<pre><code>// search.pb.go
+<pre><code class="language-go">// search.pb.go
 var _SearchService_serviceDesc = grpc.ServiceDesc{
     ServiceName: "proto.SearchService",
     HandlerType: (*SearchServiceServer)(nil),
@@ -2564,7 +2564,7 @@ func DialContext(ctx context.Context, target string, opts ...DialOption) (conn *
 <p>之前聽到有的人說呼叫 <code>grpc.Dial</code> 後客戶端就已經與服務端建立起了連線，但這對不對呢？我們先鳥瞰全貌，看看正在跑的 goroutine。如下：</p>
 <p><img src="di-1-ke-za-tan/../images/e0e0ce1ab2f4-yPK1KZn.jpg" alt="image" /></p>
 <p>我們可以有幾個核心方法一直在等待/處理訊號，透過分析底層原始碼可得知。涉及如下：</p>
-<pre><code>func (ac *addrConn) connect()
+<pre><code class="language-go">func (ac *addrConn) connect()
 func (ac *addrConn) resetTransport()
 func (ac *addrConn) createTransport(addr resolver.Address, copts transport.ConnectOptions, connectDeadline time.Time)
 func (ac *addrConn) getReadyTransport()
@@ -2932,7 +2932,7 @@ ok      github.com/EDDYCJY/awesomeDefer    3.444s
 </ul>
 <h2 id="四編譯器如何選擇"><a class="header" href="#四編譯器如何選擇">四、編譯器如何選擇</a></h2>
 <h3 id="esc"><a class="header" href="#esc">esc</a></h3>
-<pre><code>// src/cmd/compile/internal/gc/esc.go
+<pre><code class="language-go">// src/cmd/compile/internal/gc/esc.go
 case ODEFER:
     if e.loopdepth == 1 { // top level
         n.Esc = EscNever // force stack allocation of defer record (see ssa.go)
@@ -3148,7 +3148,7 @@ H --&gt; I(在新创建的 p 和 m 上运行 runtime-main)
 <p>注：來自@曹大的 《Go 程式的啟動流程》和@全成的 《Go 程式是怎樣跑起來的》，推薦大家閱讀。</p>
 <h4 id="初始化執行環境"><a class="header" href="#初始化執行環境">初始化執行環境</a></h4>
 <p>顯然，我們要研究的是 runtime 裡的 <code>schedinit</code> 方法，如下：</p>
-<pre><code>func schedinit() {
+<pre><code class="language-go">func schedinit() {
     ...
     stackinit()
     mallocinit()
@@ -3173,7 +3173,7 @@ H --&gt; I(在新创建的 p 和 m 上运行 runtime-main)
 <h4 id="初始化記憶體分配器"><a class="header" href="#初始化記憶體分配器">初始化記憶體分配器</a></h4>
 <p><strong>mallocinit</strong></p>
 <p>接下來我們正式的分析一下 <code>mallocinit</code> 方法，在引導流程中， <code>mallocinit</code> 主要承擔 Go 程式的記憶體分配器的初始化動作，而今天主要是針對虛擬記憶體地址這塊進行拆解，如下：</p>
-<pre><code>func mallocinit() {
+<pre><code class="language-go">func mallocinit() {
     ...
     if sys.PtrSize == 8 {
         for i := 0x7f; i &gt;= 0; i-- {
@@ -3209,7 +3209,7 @@ H --&gt; I(在新创建的 p 和 m 上运行 runtime-main)
 <li>儲存剛剛計算的 arena 的資訊到 <code>arenaHint</code> 中。</li>
 </ul>
 <p>可能會有小夥伴問，為什麼要判斷是 32 位還是 64 位的系統，這是因為不同位數的虛擬記憶體的定址範圍是不同的，因此要進行區分，否則會出現高位的虛擬記憶體對映問題。而在申請保留空間時，我們會經常提到 <code>arenaHint</code> 結構體，它是 <code>arenaHints</code>連結串列裡的一個節點，結構如下：</p>
-<pre><code>type arenaHint struct {
+<pre><code class="language-go">type arenaHint struct {
     addr uintptr
     down bool
     next *arenaHint
@@ -3230,7 +3230,7 @@ H --&gt; I(在新创建的 p 和 m 上运行 runtime-main)
 <p>在這裡的話，你需要理解 arean 區域在 Go 記憶體裡的作用就可以了。</p>
 <p><strong>mmap</strong></p>
 <p>我們剛剛透過上述的分析，已經知道 <code>mallocinit</code> 的用途了，但是你可能還是會有疑惑，就是我們之前所看到的 <code>mmap</code> 系統呼叫，和它又有什麼關係呢，怎麼就關聯到一起了，接下來我們先一起來看看更下層的程式碼，如下：</p>
-<pre><code>func sysAlloc(n uintptr, sysStat *uint64) unsafe.Pointer {
+<pre><code class="language-go">func sysAlloc(n uintptr, sysStat *uint64) unsafe.Pointer {
     p, err := mmap(nil, n, _PROT_READ|_PROT_WRITE, _MAP_ANON|_MAP_PRIVATE, -1, 0)
     ...
     mSysStatInc(sysStat, n)
@@ -3264,7 +3264,7 @@ func sysMap(v unsafe.Pointer, n uintptr, sysStat *uint64) {
 }
 </code></pre>
 <p>實際上在呼叫 <code>mheap_.arenaHintAlloc.alloc()</code> 時，呼叫的是 <code>mheap</code> 下的 <code>sysAlloc</code> 方法，而 <code>sysAlloc</code> 又會與 <code>mmap</code> 方法產生呼叫關係，並且這個方法與常規的 <code>sysAlloc</code> 還不大一樣，如下：</p>
-<pre><code>var mheap_ mheap
+<pre><code class="language-go">var mheap_ mheap
 ...
 func (h *mheap) sysAlloc(n uintptr) (v unsafe.Pointer, size uintptr) {
     ...
@@ -3977,23 +3977,19 @@ require (
         golang.org/x/sys v0.0.0-20190927073244-c990c680b611 // indirect
         gopkg.in/yaml.v2 v2.2.3 // indirect
 )
-```go
-確確實實發生了改變，那多出來的東西又是什麼呢，`go.mod` 檔案又儲存了什麼資訊呢，實際上 `go.mod` 檔案是啟用了 Go modules 的專案所必須的最重要的檔案，因為它描述了當前專案（也就是當前模組）的元資訊，每一行都以一個動詞開頭，目前有以下 5 個動詞:
-
-* module：用於定義當前專案的模組路徑。
-* go：用於設定預期的 Go 版本。
-* require：用於設定一個特定的模組版本。
-* exclude：用於從使用中排除一個特定的模組版本。
-* replace：用於將一個模組版本替換為另外一個模組版本。
-
-你可能還會疑惑 `indirect` 是什麼東西，`indirect` 的意思是傳遞依賴，也就是非直接依賴。
-
-### 測試
-
-編寫一個`test.go`檔案
-
-```go
-package main
+</code></pre>
+<p>確確實實發生了改變，那多出來的東西又是什麼呢，<code>go.mod</code> 檔案又儲存了什麼資訊呢，實際上 <code>go.mod</code> 檔案是啟用了 Go modules 的專案所必須的最重要的檔案，因為它描述了當前專案（也就是當前模組）的元資訊，每一行都以一個動詞開頭，目前有以下 5 個動詞:</p>
+<ul>
+<li>module：用於定義當前專案的模組路徑。</li>
+<li>go：用於設定預期的 Go 版本。</li>
+<li>require：用於設定一個特定的模組版本。</li>
+<li>exclude：用於從使用中排除一個特定的模組版本。</li>
+<li>replace：用於將一個模組版本替換為另外一個模組版本。</li>
+</ul>
+<p>你可能還會疑惑 <code>indirect</code> 是什麼東西，<code>indirect</code> 的意思是傳遞依賴，也就是非直接依賴。</p>
+<h3 id="測試-3"><a class="header" href="#測試-3">測試</a></h3>
+<p>編寫一個<code>test.go</code>檔案</p>
+<pre><code class="language-go">package main
 
 import "github.com/gin-gonic/gin"
 
@@ -4186,7 +4182,7 @@ NAME = blog
 TABLE_PREFIX = blog_
 </code></pre>
 <p>建立呼叫設定的<code>setting</code>模組，在<code>go-gin-example</code>的<code>pkg</code>目錄下新建<code>setting</code>目錄（注意新增 replace 設定），新建 <code>setting.go</code> 檔案，寫入內容：</p>
-<pre><code>package setting
+<pre><code class="language-go">package setting
 
 import (
     "log"
@@ -4261,7 +4257,7 @@ func LoadApp() {
 <h2 id="編寫api錯誤碼包"><a class="header" href="#編寫api錯誤碼包">編寫API錯誤碼包</a></h2>
 <p>建立錯誤碼的<code>e</code>模組，在<code>go-gin-example</code>的<code>pkg</code>目錄下新建<code>e</code>目錄（注意新增 replace 設定），新建<code>code.go</code>和<code>msg.go</code>檔案，寫入內容：</p>
 <p><strong>1、 code.go：</strong></p>
-<pre><code>package e
+<pre><code class="language-go">package e
 
 const (
     SUCCESS = 200
@@ -4279,7 +4275,7 @@ const (
 )
 </code></pre>
 <p><strong>2、 msg.go：</strong></p>
-<pre><code>package e
+<pre><code class="language-go">package e
 
 var MsgFlags = map[int]string {
     SUCCESS : "ok",
@@ -4309,7 +4305,7 @@ func GetMsg(code int) string {
 </code></pre>
 <h3 id="編寫分頁頁碼的取得方法"><a class="header" href="#編寫分頁頁碼的取得方法">編寫分頁頁碼的取得方法</a></h3>
 <p>在<code>util</code>目錄下新建<code>pagination.go</code>，寫入內容：</p>
-<pre><code>package util
+<pre><code class="language-go">package util
 
 import (
     "github.com/gin-gonic/gin"
@@ -4336,7 +4332,7 @@ func GetPage(c *gin.Context) int {
 <pre><code>go get -u github.com/go-sql-driver/mysql
 </code></pre>
 <p>完成後，在<code>go-gin-example</code>的<code>models</code>目錄下新建<code>models.go</code>，用於<code>models</code>的初始化使用</p>
-<pre><code>package models
+<pre><code class="language-go">package models
 
 import (
     "log"
@@ -4402,7 +4398,7 @@ func CloseDB() {
 <p>最基礎的準備工作完成啦，讓我們開始編寫Demo吧！</p>
 <h3 id="編寫demo"><a class="header" href="#編寫demo">編寫Demo</a></h3>
 <p>在<code>go-gin-example</code>下建立<code>main.go</code>作為啟動檔案（也就是<code>main</code>包），我們先寫個<strong>Demo</strong>，幫助大家理解，寫入檔案內容：</p>
-<pre><code>package main
+<pre><code class="language-go">package main
 
 import (
     "fmt"
@@ -4440,171 +4436,149 @@ func main() {
  - using code:    gin.SetMode(gin.ReleaseMode)
 
 [GIN-debug] GET    /test                     --&gt; main.main.func1 (3 handlers)
-```go
-在本機執行`curl 127.0.0.1:8000/test`，檢查是否返回`{"message":"test"}`。
-
-### 知識點
-
-**那麼，我們來延伸一下Demo所涉及的知識點！**
-
-#### 標準庫
-
-* [fmt](https://golang.org/pkg/fmt/)：實作了類似C語言printf和scanf的格式化I/O。格式化動作（'verb'）源自C語言但更簡單
-* [net/http](https://golang.org/pkg/net/http/)：提供了HTTP客戶端和服務端的實作
-
-#### **Gin**
-
-* [gin.Default()](https://gowalker.org/github.com/gin-gonic/gin#Default)：返回Gin的`type Engine struct{...}`，裡面包含`RouterGroup`，相當於建立一個路由`Handlers`，可以後期繫結各類的路由規則和函式、中介軟體等
-* [router.GET(...){...}](https://gowalker.org/github.com/gin-gonic/gin#IRoutes)：建立不同的HTTP方法繫結到`Handlers`中，也支援POST、PUT、DELETE、PATCH、OPTIONS、HEAD 等常用的Restful方法
-* [gin.H{...}](https://gowalker.org/github.com/gin-gonic/gin#H)：就是一個`map[string]interface{}`
-* [gin.Context](https://gowalker.org/github.com/gin-gonic/gin#Context)：`Context`是`gin`中的上下文，它允許我們在中介軟體之間傳遞變數、管理流、驗證JSON請求、響應JSON請求等，在`gin`中包含大量`Context`的方法，例如我們常用的`DefaultQuery`、`Query`、`DefaultPostForm`、`PostForm`等等
-
-#### \&amp;http.Server 和 ListenAndServe？
-
-1、http.Server：
-
 </code></pre>
-<p>type Server struct {
-Addr    string
-Handler Handler
-TLSConfig *tls.Config
-ReadTimeout time.Duration
-ReadHeaderTimeout time.Duration
-WriteTimeout time.Duration
-IdleTimeout time.Duration
-MaxHeaderBytes int
-ConnState func(net.Conn, ConnState)
-ErrorLog *log.Logger
-}</p>
-<pre><code>
-* Addr：監聽的TCP地址，格式為`:8000`
-* Handler：http控制代碼，實質為`ServeHTTP`，用於處理程式響應HTTP請求
-* TLSConfig：安全傳輸層協議（TLS）的設定
-* ReadTimeout：允許讀取的最大時間
-* ReadHeaderTimeout：允許讀取請求頭的最大時間
-* WriteTimeout：允許寫入的最大時間
-* IdleTimeout：等待的最大時間
-* MaxHeaderBytes：請求頭的最大位元組數
-* ConnState：指定一個可選的回撥函式，當客戶端連線發生變化時呼叫
-* ErrorLog：指定一個可選的日誌記錄器，用於接收程式的意外行為和底層系統錯誤；如果未設定或為`nil`則預設以日誌包的標準日誌記錄器完成（也就是在控制檯輸出）
-
-2、 ListenAndServe：
-
-</code></pre>
-<p>func (srv *Server) ListenAndServe() error {
-addr := srv.Addr
-if addr == "" {
-addr = ":http"
+<p>在本機執行<code>curl 127.0.0.1:8000/test</code>，檢查是否返回<code>{"message":"test"}</code>。</p>
+<h3 id="知識點"><a class="header" href="#知識點">知識點</a></h3>
+<p><strong>那麼，我們來延伸一下Demo所涉及的知識點！</strong></p>
+<h4 id="標準庫"><a class="header" href="#標準庫">標準庫</a></h4>
+<ul>
+<li><a href="https://golang.org/pkg/fmt/">fmt</a>：實作了類似C語言printf和scanf的格式化I/O。格式化動作（'verb'）源自C語言但更簡單</li>
+<li><a href="https://golang.org/pkg/net/http/">net/http</a>：提供了HTTP客戶端和服務端的實作</li>
+</ul>
+<h4 id="gin"><a class="header" href="#gin"><strong>Gin</strong></a></h4>
+<ul>
+<li><a href="https://gowalker.org/github.com/gin-gonic/gin#Default">gin.Default()</a>：返回Gin的<code>type Engine struct{...}</code>，裡面包含<code>RouterGroup</code>，相當於建立一個路由<code>Handlers</code>，可以後期繫結各類的路由規則和函式、中介軟體等</li>
+<li><a href="https://gowalker.org/github.com/gin-gonic/gin#IRoutes">router.GET(...){...}</a>：建立不同的HTTP方法繫結到<code>Handlers</code>中，也支援POST、PUT、DELETE、PATCH、OPTIONS、HEAD 等常用的Restful方法</li>
+<li><a href="https://gowalker.org/github.com/gin-gonic/gin#H">gin.H{...}</a>：就是一個<code>map[string]interface{}</code></li>
+<li><a href="https://gowalker.org/github.com/gin-gonic/gin#Context">gin.Context</a>：<code>Context</code>是<code>gin</code>中的上下文，它允許我們在中介軟體之間傳遞變數、管理流、驗證JSON請求、響應JSON請求等，在<code>gin</code>中包含大量<code>Context</code>的方法，例如我們常用的<code>DefaultQuery</code>、<code>Query</code>、<code>DefaultPostForm</code>、<code>PostForm</code>等等</li>
+</ul>
+<h4 id="httpserver-和-listenandserve"><a class="header" href="#httpserver-和-listenandserve">&amp;http.Server 和 ListenAndServe？</a></h4>
+<p>1、http.Server：</p>
+<pre><code class="language-go">type Server struct {
+    Addr    string
+    Handler Handler
+    TLSConfig *tls.Config
+    ReadTimeout time.Duration
+    ReadHeaderTimeout time.Duration
+    WriteTimeout time.Duration
+    IdleTimeout time.Duration
+    MaxHeaderBytes int
+    ConnState func(net.Conn, ConnState)
+    ErrorLog *log.Logger
 }
-ln, err := net.Listen("tcp", addr)
-if err != nil {
-return err
+</code></pre>
+<ul>
+<li>Addr：監聽的TCP地址，格式為<code>:8000</code></li>
+<li>Handler：http控制代碼，實質為<code>ServeHTTP</code>，用於處理程式響應HTTP請求</li>
+<li>TLSConfig：安全傳輸層協議（TLS）的設定</li>
+<li>ReadTimeout：允許讀取的最大時間</li>
+<li>ReadHeaderTimeout：允許讀取請求頭的最大時間</li>
+<li>WriteTimeout：允許寫入的最大時間</li>
+<li>IdleTimeout：等待的最大時間</li>
+<li>MaxHeaderBytes：請求頭的最大位元組數</li>
+<li>ConnState：指定一個可選的回撥函式，當客戶端連線發生變化時呼叫</li>
+<li>ErrorLog：指定一個可選的日誌記錄器，用於接收程式的意外行為和底層系統錯誤；如果未設定或為<code>nil</code>則預設以日誌包的標準日誌記錄器完成（也就是在控制檯輸出）</li>
+</ul>
+<p>2、 ListenAndServe：</p>
+<pre><code class="language-go">func (srv *Server) ListenAndServe() error {
+    addr := srv.Addr
+    if addr == "" {
+        addr = ":http"
+    }
+    ln, err := net.Listen("tcp", addr)
+    if err != nil {
+        return err
+    }
+    return srv.Serve(tcpKeepAliveListener{ln.(*net.TCPListener)})
 }
-return srv.Serve(tcpKeepAliveListener{ln.(*net.TCPListener)})
-}</p>
-<pre><code>
-開始監聽服務，監聽TCP網路地址，Addr和呼叫應用程式處理連線上的請求。
-
-我們在原始碼中看到`Addr`是呼叫我們在`&amp;http.Server`中設定的引數，因此我們在設定時要用`&amp;`，我們要改變引數的值，因為我們`ListenAndServe`和其他一些方法需要用到`&amp;http.Server`中的引數，他們是相互影響的。
-
-3、 `http.ListenAndServe`和 [連載一](https://segmentfault.com/a/1190000013297625#articleHeader5) 的`r.Run()`有區別嗎？
-
-我們看看`r.Run`的實作：
-
 </code></pre>
-<p>func (engine *Engine) Run(addr ...string) (err error) {
-defer func() { debugPrintError(err) }()</p>
-<pre><code>address := resolveAddress(addr)
-debugPrint("Listening and serving HTTP on %s\n", address)
-err = http.ListenAndServe(address, engine)
-return
+<p>開始監聽服務，監聽TCP網路地址，Addr和呼叫應用程式處理連線上的請求。</p>
+<p>我們在原始碼中看到<code>Addr</code>是呼叫我們在<code>&amp;http.Server</code>中設定的引數，因此我們在設定時要用<code>&amp;</code>，我們要改變引數的值，因為我們<code>ListenAndServe</code>和其他一些方法需要用到<code>&amp;http.Server</code>中的引數，他們是相互影響的。</p>
+<p>3、 <code>http.ListenAndServe</code>和 <a href="https://segmentfault.com/a/1190000013297625#articleHeader5">連載一</a> 的<code>r.Run()</code>有區別嗎？</p>
+<p>我們看看<code>r.Run</code>的實作：</p>
+<pre><code class="language-go">func (engine *Engine) Run(addr ...string) (err error) {
+    defer func() { debugPrintError(err) }()
+
+    address := resolveAddress(addr)
+    debugPrint("Listening and serving HTTP on %s\n", address)
+    err = http.ListenAndServe(address, engine)
+    return
+}
 </code></pre>
-<p>}</p>
-<pre><code>
-透過分析原始碼，得知**本質上沒有區別**，同時也得知了啟動`gin`時的監聽debug資訊在這裡輸出。
-
-4、 為什麼Demo裡會有`WARNING`？
-
-首先我們可以看下`Default()`的實作
-
-</code></pre>
-<p>// Default returns an Engine instance with the Logger and Recovery middleware already attached.
+<p>透過分析原始碼，得知<strong>本質上沒有區別</strong>，同時也得知了啟動<code>gin</code>時的監聽debug資訊在這裡輸出。</p>
+<p>4、 為什麼Demo裡會有<code>WARNING</code>？</p>
+<p>首先我們可以看下<code>Default()</code>的實作</p>
+<pre><code class="language-go">// Default returns an Engine instance with the Logger and Recovery middleware already attached.
 func Default() *Engine {
-debugPrintWARNINGDefault()
-engine := New()
-engine.Use(Logger(), Recovery())
-return engine
-}</p>
-<pre><code>
-大家可以看到預設情況下，已經附加了日誌、恢復中介軟體的引擎例項。並且在開頭呼叫了`debugPrintWARNINGDefault()`，而它的實作就是輸出該行日誌
-
-</code></pre>
-<p>func debugPrintWARNINGDefault() {
-debugPrint(<code>[WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached. </code>)
-}</p>
-<pre><code>
-而另外一個`Running in "debug" mode. Switch to "release" mode in production.`，是執行模式原因，並不難理解，已在設定檔案的管控下 :-)，運維人員隨時就可以修改它的設定。
-
-5、 Demo的`router.GET`等路由規則可以不寫在`main`包中嗎？
-
-我們發現`router.GET`等路由規則，在Demo中被編寫在了`main`包中，感覺很奇怪，我們去抽離這部分邏輯！
-
-在`go-gin-example`下`routers`目錄新建`router.go`檔案，寫入內容：
-
-</code></pre>
-<p>package routers</p>
-<p>import (
-"github.com/gin-gonic/gin"</p>
-<pre><code>"github.com/EDDYCJY/go-gin-example/pkg/setting"
-</code></pre>
-<p>)</p>
-<p>func InitRouter() *gin.Engine {
-r := gin.New()</p>
-<pre><code>r.Use(gin.Logger())
-
-r.Use(gin.Recovery())
-
-gin.SetMode(setting.RunMode)
-
-r.GET("/test", func(c *gin.Context) {
-    c.JSON(200, gin.H{
-        "message": "test",
-    })
-})
-
-return r
-</code></pre>
-<p>}</p>
-<pre><code>
-修改`main.go`的檔案內容：
-
-</code></pre>
-<p>package main</p>
-<p>import (
-"fmt"
-"net/http"</p>
-<pre><code>"github.com/EDDYCJY/go-gin-example/routers"
-"github.com/EDDYCJY/go-gin-example/pkg/setting"
-</code></pre>
-<p>)</p>
-<p>func main() {
-router := routers.InitRouter()</p>
-<pre><code>s := &amp;http.Server{
-    Addr:           fmt.Sprintf(":%d", setting.HTTPPort),
-    Handler:        router,
-    ReadTimeout:    setting.ReadTimeout,
-    WriteTimeout:   setting.WriteTimeout,
-    MaxHeaderBytes: 1 &lt;&lt; 20,
+    debugPrintWARNINGDefault()
+    engine := New()
+    engine.Use(Logger(), Recovery())
+    return engine
 }
-
-s.ListenAndServe()
 </code></pre>
-<p>}</p>
-<pre><code>
-當前目錄結構：
-
+<p>大家可以看到預設情況下，已經附加了日誌、恢復中介軟體的引擎例項。並且在開頭呼叫了<code>debugPrintWARNINGDefault()</code>，而它的實作就是輸出該行日誌</p>
+<pre><code class="language-go">func debugPrintWARNINGDefault() {
+    debugPrint(`[WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+`)
+}
 </code></pre>
-<p>go-gin-example/
+<p>而另外一個<code>Running in "debug" mode. Switch to "release" mode in production.</code>，是執行模式原因，並不難理解，已在設定檔案的管控下 :-)，運維人員隨時就可以修改它的設定。</p>
+<p>5、 Demo的<code>router.GET</code>等路由規則可以不寫在<code>main</code>包中嗎？</p>
+<p>我們發現<code>router.GET</code>等路由規則，在Demo中被編寫在了<code>main</code>包中，感覺很奇怪，我們去抽離這部分邏輯！</p>
+<p>在<code>go-gin-example</code>下<code>routers</code>目錄新建<code>router.go</code>檔案，寫入內容：</p>
+<pre><code class="language-go">package routers
+
+import (
+    "github.com/gin-gonic/gin"
+
+    "github.com/EDDYCJY/go-gin-example/pkg/setting"
+)
+
+func InitRouter() *gin.Engine {
+    r := gin.New()
+
+    r.Use(gin.Logger())
+
+    r.Use(gin.Recovery())
+
+    gin.SetMode(setting.RunMode)
+
+    r.GET("/test", func(c *gin.Context) {
+        c.JSON(200, gin.H{
+            "message": "test",
+        })
+    })
+
+    return r
+}
+</code></pre>
+<p>修改<code>main.go</code>的檔案內容：</p>
+<pre><code class="language-go">package main
+
+import (
+    "fmt"
+    "net/http"
+
+    "github.com/EDDYCJY/go-gin-example/routers"
+    "github.com/EDDYCJY/go-gin-example/pkg/setting"
+)
+
+func main() {
+    router := routers.InitRouter()
+
+    s := &amp;http.Server{
+        Addr:           fmt.Sprintf(":%d", setting.HTTPPort),
+        Handler:        router,
+        ReadTimeout:    setting.ReadTimeout,
+        WriteTimeout:   setting.WriteTimeout,
+        MaxHeaderBytes: 1 &lt;&lt; 20,
+    }
+
+    s.ListenAndServe()
+}
+</code></pre>
+<p>當前目錄結構：</p>
+<pre><code>go-gin-example/
 ├── conf
 │   └── app.ini
 ├── main.go
@@ -4621,33 +4595,25 @@ s.ListenAndServe()
 │       └── pagination.go
 ├── routers
 │   └── router.go
-├── runtime</p>
-<pre><code>
-重啟服務，執行 `curl 127.0.0.1:8000/test`檢視是否正確返回。
-
-下一節，我們將以我們的 Demo 為起點進行修改，開始編碼！
-
-## 參考
-
-### 本系列示例程式碼
-
-* [go-gin-example](https://github.com/EDDYCJY/go-gin-example)
-
-## 關於
-
-### 修改記錄
-
-* 第一版：2018年02月16日釋出文章
-* 第二版：2019年10月01日修改文章
-
-## ？
-
-如果有任何疑問或錯誤，歡迎在 [issues](https://github.com/EDDYCJY/blog) 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。
-
-### 我的微信公眾號
-
-![image](../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg)
+├── runtime
 </code></pre>
+<p>重啟服務，執行 <code>curl 127.0.0.1:8000/test</code>檢視是否正確返回。</p>
+<p>下一節，我們將以我們的 Demo 為起點進行修改，開始編碼！</p>
+<h2 id="參考-7"><a class="header" href="#參考-7">參考</a></h2>
+<h3 id="本系列示例程式碼-1"><a class="header" href="#本系列示例程式碼-1">本系列示例程式碼</a></h3>
+<ul>
+<li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
+</ul>
+<h2 id="關於-1"><a class="header" href="#關於-1">關於</a></h2>
+<h3 id="修改記錄-1"><a class="header" href="#修改記錄-1">修改記錄</a></h3>
+<ul>
+<li>第一版：2018年02月16日釋出文章</li>
+<li>第二版：2019年10月01日修改文章</li>
+</ul>
+<h2 id="-2"><a class="header" href="#-2">？</a></h2>
+<p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
+<h3 id="我的微信公眾號-2"><a class="header" href="#我的微信公眾號-2">我的微信公眾號</a></h3>
+<p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="33-gin搭建blog-apis-二"><a class="header" href="#33-gin搭建blog-apis-二">3.3 Gin搭建Blog API's （二）</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
 <h2 id="涉及知識點"><a class="header" href="#涉及知識點">涉及知識點</a></h2>
@@ -5082,20 +5048,20 @@ func EditTag(id int, data interface {}) bool {
 <li>DELETE訪問<a href="http://127.0.0.1:8000/api/v1/tags/1%EF%BC%8C%E6%9F%A5%E7%9C%8Bcode%E6%98%AF%E5%90%A6%E8%BF%94%E5%9B%9E200">http://127.0.0.1:8000/api/v1/tags/1，檢視code是否返回200</a></li>
 </ul>
 <p>至此，Tag的API's完成，下一節我們將開始Article的API's編寫！</p>
-<h2 id="參考-7"><a class="header" href="#參考-7">參考</a></h2>
-<h3 id="本系列示例程式碼-1"><a class="header" href="#本系列示例程式碼-1">本系列示例程式碼</a></h3>
+<h2 id="參考-8"><a class="header" href="#參考-8">參考</a></h2>
+<h3 id="本系列示例程式碼-2"><a class="header" href="#本系列示例程式碼-2">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
-<h2 id="關於-1"><a class="header" href="#關於-1">關於</a></h2>
-<h3 id="修改記錄-1"><a class="header" href="#修改記錄-1">修改記錄</a></h3>
+<h2 id="關於-2"><a class="header" href="#關於-2">關於</a></h2>
+<h3 id="修改記錄-2"><a class="header" href="#修改記錄-2">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月01日修改文章</li>
 </ul>
-<h2 id="-2"><a class="header" href="#-2">？</a></h2>
+<h2 id="-3"><a class="header" href="#-3">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-2"><a class="header" href="#我的微信公眾號-2">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-3"><a class="header" href="#我的微信公眾號-3">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="34-gin搭建blog-apis-三"><a class="header" href="#34-gin搭建blog-apis-三">3.4 Gin搭建Blog API's （三）</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
@@ -5647,20 +5613,20 @@ func DeleteArticle(c *gin.Context) {
 <li>DELETE：<a href="http://127.0.0.1:8000/api/v1/articles/1">http://127.0.0.1:8000/api/v1/articles/1</a></li>
 </ul>
 <p>至此，我們的API's編寫就到這裡，下一節我們將介紹另外的一些技巧！</p>
-<h2 id="參考-8"><a class="header" href="#參考-8">參考</a></h2>
-<h3 id="本系列示例程式碼-2"><a class="header" href="#本系列示例程式碼-2">本系列示例程式碼</a></h3>
+<h2 id="參考-9"><a class="header" href="#參考-9">參考</a></h2>
+<h3 id="本系列示例程式碼-3"><a class="header" href="#本系列示例程式碼-3">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
-<h2 id="關於-2"><a class="header" href="#關於-2">關於</a></h2>
-<h3 id="修改記錄-2"><a class="header" href="#修改記錄-2">修改記錄</a></h3>
+<h2 id="關於-3"><a class="header" href="#關於-3">關於</a></h2>
+<h3 id="修改記錄-3"><a class="header" href="#修改記錄-3">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月01日修改文章</li>
 </ul>
-<h2 id="-3"><a class="header" href="#-3">？</a></h2>
+<h2 id="-4"><a class="header" href="#-4">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-3"><a class="header" href="#我的微信公眾號-3">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-4"><a class="header" href="#我的微信公眾號-4">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="35-使用jwt進行身份校驗"><a class="header" href="#35-使用jwt進行身份校驗">3.5 使用JWT進行身份校驗</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
@@ -6028,20 +5994,20 @@ func InitRouter() *gin.Engine {
 }
 </code></pre>
 <p>返回正確，至此我們的<code>jwt-go</code>在<code>Gin</code>中的驗證就完成了！</p>
-<h2 id="參考-9"><a class="header" href="#參考-9">參考</a></h2>
-<h3 id="本系列示例程式碼-3"><a class="header" href="#本系列示例程式碼-3">本系列示例程式碼</a></h3>
+<h2 id="參考-10"><a class="header" href="#參考-10">參考</a></h2>
+<h3 id="本系列示例程式碼-4"><a class="header" href="#本系列示例程式碼-4">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
-<h2 id="關於-3"><a class="header" href="#關於-3">關於</a></h2>
-<h3 id="修改記錄-3"><a class="header" href="#修改記錄-3">修改記錄</a></h3>
+<h2 id="關於-4"><a class="header" href="#關於-4">關於</a></h2>
+<h3 id="修改記錄-4"><a class="header" href="#修改記錄-4">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月01日修改文章</li>
 </ul>
-<h2 id="-4"><a class="header" href="#-4">？</a></h2>
+<h2 id="-5"><a class="header" href="#-5">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-4"><a class="header" href="#我的微信公眾號-4">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-5"><a class="header" href="#我的微信公眾號-5">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="36-編寫一個簡單的檔案日誌"><a class="header" href="#36-編寫一個簡單的檔案日誌">3.6 編寫一個簡單的檔案日誌</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
@@ -6329,24 +6295,24 @@ func GetAuth(c *gin.Context) {
 </code></pre>
 <p>日誌結構一切正常，我們的記錄模式都為<code>Info</code>，因此字首是對的，並且我們是入參有問題，也把錯誤記錄下來了，這樣排錯就很方便了！</p>
 <p>至此，本節就完成了，這只是一個簡單的擴充套件，實際上我們線上專案要使用的檔案日誌，是更復雜一些，開動你的大腦 舉一反三吧！</p>
-<h2 id="參考-10"><a class="header" href="#參考-10">參考</a></h2>
-<h3 id="本系列示例程式碼-4"><a class="header" href="#本系列示例程式碼-4">本系列示例程式碼</a></h3>
+<h2 id="參考-11"><a class="header" href="#參考-11">參考</a></h2>
+<h3 id="本系列示例程式碼-5"><a class="header" href="#本系列示例程式碼-5">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
-<h2 id="關於-4"><a class="header" href="#關於-4">關於</a></h2>
-<h3 id="修改記錄-4"><a class="header" href="#修改記錄-4">修改記錄</a></h3>
+<h2 id="關於-5"><a class="header" href="#關於-5">關於</a></h2>
+<h3 id="修改記錄-5"><a class="header" href="#修改記錄-5">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月01日修改文章</li>
 </ul>
-<h2 id="-5"><a class="header" href="#-5">？</a></h2>
+<h2 id="-6"><a class="header" href="#-6">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-5"><a class="header" href="#我的微信公眾號-5">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-6"><a class="header" href="#我的微信公眾號-6">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="37-優雅的重啟服務"><a class="header" href="#37-優雅的重啟服務">3.7 優雅的重啟服務</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
-<h2 id="知識點"><a class="header" href="#知識點">知識點</a></h2>
+<h2 id="知識點-1"><a class="header" href="#知識點-1">知識點</a></h2>
 <ul>
 <li>訊號量的瞭解。</li>
 <li>應用熱更新。</li>
@@ -6562,8 +6528,8 @@ func main() {
 </code></pre>
 <h2 id="小結-14"><a class="header" href="#小結-14">小結</a></h2>
 <p>在日常的服務中，優雅的重啟（熱更新）是非常重要的一環。而 <code>Golang</code> 在 <code>HTTP</code> 服務方面的熱更新也有不少方案了，我們應該根據實際應用場景挑選最合適的</p>
-<h2 id="參考-11"><a class="header" href="#參考-11">參考</a></h2>
-<h3 id="本系列示例程式碼-5"><a class="header" href="#本系列示例程式碼-5">本系列示例程式碼</a></h3>
+<h2 id="參考-12"><a class="header" href="#參考-12">參考</a></h2>
+<h3 id="本系列示例程式碼-6"><a class="header" href="#本系列示例程式碼-6">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
@@ -6574,15 +6540,15 @@ func main() {
 <li><a href="https://github.com/facebookgo/grace">grace</a></li>
 <li><a href="https://github.com/golang/go/commit/0cbb12f0bbaeb3893b3d011fdb1a270291747ab0">plugin: new package for loading plugins · golang/go@0cbb12f · GitHub</a></li>
 </ul>
-<h2 id="關於-5"><a class="header" href="#關於-5">關於</a></h2>
-<h3 id="修改記錄-5"><a class="header" href="#修改記錄-5">修改記錄</a></h3>
+<h2 id="關於-6"><a class="header" href="#關於-6">關於</a></h2>
+<h3 id="修改記錄-6"><a class="header" href="#修改記錄-6">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月01日修改文章</li>
 </ul>
-<h2 id="-6"><a class="header" href="#-6">？</a></h2>
+<h2 id="-7"><a class="header" href="#-7">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-6"><a class="header" href="#我的微信公眾號-6">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-7"><a class="header" href="#我的微信公眾號-7">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="38-為它加上swagger"><a class="header" href="#38-為它加上swagger">3.8 為它加上Swagger</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
@@ -6688,20 +6654,20 @@ func InitRouter() *gin.Engine {
 <h3 id="驗證-2"><a class="header" href="#驗證-2">驗證</a></h3>
 <p>大功告成，訪問一下 <code>http://127.0.0.1:8000/swagger/index.html</code>， 檢視 <code>API</code> 文件生成是否正確</p>
 <p><img src="di-3-ke-gin/../images/6c7e1e64f523-703b677c6756129c33b5308c1655a35c.png" alt="image" /></p>
-<h2 id="參考-12"><a class="header" href="#參考-12">參考</a></h2>
-<h3 id="本系列示例程式碼-6"><a class="header" href="#本系列示例程式碼-6">本系列示例程式碼</a></h3>
+<h2 id="參考-13"><a class="header" href="#參考-13">參考</a></h2>
+<h3 id="本系列示例程式碼-7"><a class="header" href="#本系列示例程式碼-7">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
-<h2 id="關於-6"><a class="header" href="#關於-6">關於</a></h2>
-<h3 id="修改記錄-6"><a class="header" href="#修改記錄-6">修改記錄</a></h3>
+<h2 id="關於-7"><a class="header" href="#關於-7">關於</a></h2>
+<h3 id="修改記錄-7"><a class="header" href="#修改記錄-7">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月01日修改文章</li>
 </ul>
-<h2 id="-7"><a class="header" href="#-7">？</a></h2>
+<h2 id="-8"><a class="header" href="#-8">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-7"><a class="header" href="#我的微信公眾號-7">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-8"><a class="header" href="#我的微信公眾號-8">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="39-將golang應用部署到docker"><a class="header" href="#39-將golang應用部署到docker">3.9 將Golang應用部署到Docker</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
@@ -7002,8 +6968,8 @@ CONTAINER ID        IMAGE                     COMMAND                  ...      
 <h4 id="驗證-3"><a class="header" href="#驗證-3">驗證</a></h4>
 <p>接下來交由你進行驗證，目標是建立一些測試表和資料，然後刪除當前容器，重新建立的容器，資料庫資料也依然存在（當然了資料卷指向要一致）</p>
 <p>我已驗證完畢，你呢？</p>
-<h2 id="參考-13"><a class="header" href="#參考-13">參考</a></h2>
-<h3 id="本系列示例程式碼-7"><a class="header" href="#本系列示例程式碼-7">本系列示例程式碼</a></h3>
+<h2 id="參考-14"><a class="header" href="#參考-14">參考</a></h2>
+<h3 id="本系列示例程式碼-8"><a class="header" href="#本系列示例程式碼-8">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
@@ -7011,15 +6977,15 @@ CONTAINER ID        IMAGE                     COMMAND                  ...      
 <ul>
 <li><a href="https://www.gitbook.com/book/yeasy/docker_practice/details">Docker —— 從入門到實踐</a></li>
 </ul>
-<h2 id="關於-7"><a class="header" href="#關於-7">關於</a></h2>
-<h3 id="修改記錄-7"><a class="header" href="#修改記錄-7">修改記錄</a></h3>
+<h2 id="關於-8"><a class="header" href="#關於-8">關於</a></h2>
+<h3 id="修改記錄-8"><a class="header" href="#修改記錄-8">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月01日修改文章</li>
 </ul>
-<h2 id="-8"><a class="header" href="#-8">？</a></h2>
+<h2 id="-9"><a class="header" href="#-9">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-8"><a class="header" href="#我的微信公眾號-8">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-9"><a class="header" href="#我的微信公眾號-9">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="310-定製-gorm-callbacks"><a class="header" href="#310-定製-gorm-callbacks">3.10 定製 GORM Callbacks</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
@@ -7241,8 +7207,8 @@ func addExtraSpaceIfExist(str string) string {
 <p>在這一章節中，我們結合 GORM 完成了新增、更新、查詢的 Callbacks，在實際專案中常常也是這麼使用</p>
 <p>畢竟，一個鉤子的事，就沒有必要自己手寫過多不必要的程式碼了</p>
 <p>（注意，增加了軟刪除後，先前的程式碼需要增加 <code>deleted_on</code> 的判斷）</p>
-<h2 id="參考-14"><a class="header" href="#參考-14">參考</a></h2>
-<h3 id="本系列示例程式碼-8"><a class="header" href="#本系列示例程式碼-8">本系列示例程式碼</a></h3>
+<h2 id="參考-15"><a class="header" href="#參考-15">參考</a></h2>
+<h3 id="本系列示例程式碼-9"><a class="header" href="#本系列示例程式碼-9">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
@@ -7250,19 +7216,19 @@ func addExtraSpaceIfExist(str string) string {
 <ul>
 <li><a href="http://gorm.io/docs/write_plugins.html">gorm</a></li>
 </ul>
-<h2 id="關於-8"><a class="header" href="#關於-8">關於</a></h2>
-<h3 id="修改記錄-8"><a class="header" href="#修改記錄-8">修改記錄</a></h3>
+<h2 id="關於-9"><a class="header" href="#關於-9">關於</a></h2>
+<h3 id="修改記錄-9"><a class="header" href="#修改記錄-9">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月01日修改文章</li>
 </ul>
-<h2 id="-9"><a class="header" href="#-9">？</a></h2>
+<h2 id="-10"><a class="header" href="#-10">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-9"><a class="header" href="#我的微信公眾號-9">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-10"><a class="header" href="#我的微信公眾號-10">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="311-cron定時任務"><a class="header" href="#311-cron定時任務">3.11 Cron定時任務</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
-<h2 id="知識點-1"><a class="header" href="#知識點-1">知識點</a></h2>
+<h2 id="知識點-2"><a class="header" href="#知識點-2">知識點</a></h2>
 <ul>
 <li>完成定時任務的功能</li>
 </ul>
@@ -7414,7 +7380,7 @@ func NewWithLocation(location *time.Location) *Cron {
 </code></pre>
 <p>3、c.Start()</p>
 <p>在當前執行的程式中啟動 Cron 排程程式。其實這裡的主體是 goroutine + for + select + timer 的排程控制哦</p>
-<pre><code>func (c *Cron) Run() {
+<pre><code class="language-go">func (c *Cron) Run() {
     if c.running {
         return
     }
@@ -7452,24 +7418,24 @@ func NewWithLocation(location *time.Location) *Cron {
 <p>可以不依賴系統的 Crontab 設定，指不定哪一天就用上了呢</p>
 <h2 id="問題-7"><a class="header" href="#問題-7">問題</a></h2>
 <p>如果你手動修改計算機的系統時間，是會導致定時任務錯亂的，所以一般不要亂來。</p>
-<h2 id="參考-15"><a class="header" href="#參考-15">參考</a></h2>
-<h3 id="本系列示例程式碼-9"><a class="header" href="#本系列示例程式碼-9">本系列示例程式碼</a></h3>
+<h2 id="參考-16"><a class="header" href="#參考-16">參考</a></h2>
+<h3 id="本系列示例程式碼-10"><a class="header" href="#本系列示例程式碼-10">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
-<h2 id="關於-9"><a class="header" href="#關於-9">關於</a></h2>
-<h3 id="修改記錄-9"><a class="header" href="#修改記錄-9">修改記錄</a></h3>
+<h2 id="關於-10"><a class="header" href="#關於-10">關於</a></h2>
+<h3 id="修改記錄-10"><a class="header" href="#修改記錄-10">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月02日修改文章</li>
 </ul>
-<h2 id="-10"><a class="header" href="#-10">？</a></h2>
+<h2 id="-11"><a class="header" href="#-11">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-10"><a class="header" href="#我的微信公眾號-10">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-11"><a class="header" href="#我的微信公眾號-11">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="312-最佳化設定結構及實作圖片上傳"><a class="header" href="#312-最佳化設定結構及實作圖片上傳">3.12 最佳化設定結構及實作圖片上傳</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
-<h2 id="知識點-2"><a class="header" href="#知識點-2">知識點</a></h2>
+<h2 id="知識點-3"><a class="header" href="#知識點-3">知識點</a></h2>
 <ul>
 <li>重構、調整結構</li>
 </ul>
@@ -7520,7 +7486,7 @@ func main() {
 }
 </code></pre>
 <p>在這段程式碼中，可以注意 ServerSetting 取了地址，為什麼 MapTo 必須地址入參呢？</p>
-<pre><code>// MapTo maps section to given struct.
+<pre><code class="language-go">// MapTo maps section to given struct.
 func (s *Section) MapTo(v interface{}) error {
     typ := reflect.TypeOf(v)
     val := reflect.ValueOf(v)
@@ -7587,7 +7553,7 @@ TablePrefix = blog_
 <p><strong>第一步</strong></p>
 <p>將散落在其他檔案裡的設定都刪掉，<strong>統一在 setting 中處理</strong>以及<strong>修改 init 函式為 Setup 方法</strong></p>
 <p>開啟 pkg/setting/setting.go 檔案，修改如下：</p>
-<pre><code>package setting
+<pre><code class="language-go">package setting
 
 import (
     "log"
@@ -7676,7 +7642,7 @@ func Setup() {
 <p>這幾項比較基礎，並沒有貼出來，我希望你可以自己動手，有問題的話可右拐 <a href="https://github.com/EDDYCJY/go-gin-example">專案地址</a></p>
 <p><strong>第二步</strong></p>
 <p>在這一步我們要設定初始化的流程，開啟 main.go 檔案，修改內容：</p>
-<pre><code>func main() {
+<pre><code class="language-go">func main() {
     setting.Setup()
     models.Setup()
     logging.Setup()
@@ -7709,7 +7675,7 @@ ServerSetting.WriteTimeout = ServerSetting.ReadTimeout * time.Second
 <p>在先前版本中，在 <a href="https://github.com/EDDYCJY/go-gin-example/blob/a338ddec103c9506b4c7ed16d9f5386040d99b4b/pkg/logging/file.go">logging/file.go</a> 中使用到了 os 的一些方法，我們透過前期規劃發現，這部分在上傳圖片功能中可以複用</p>
 <h3 id="第一步"><a class="header" href="#第一步">第一步</a></h3>
 <p>在 pkg 目錄下新建 file/file.go ，寫入檔案內容如下：</p>
-<pre><code>package file
+<pre><code class="language-go">package file
 
 import (
     "os"
@@ -7783,7 +7749,7 @@ func Open(name string, flag int, perm os.FileMode) (*os.File, error) {
 <h3 id="第二步"><a class="header" href="#第二步">第二步</a></h3>
 <p>我們在第一步已經將 file 重新封裝了一層，在這一步我們將原先 logging 包的方法都修改掉</p>
 <p>1、開啟 pkg/logging/file.go 檔案，修改檔案內容：</p>
-<pre><code>package logging
+<pre><code class="language-go">package logging
 
 import (
     "fmt"
@@ -7833,7 +7799,7 @@ func openLogFile(fileName, filePath string) (*os.File, error) {
 </code></pre>
 <p>我們將引用都改為了 file/file.go 包裡的方法</p>
 <p>2、開啟 pkg/logging/log.go 檔案，修改檔案內容:</p>
-<pre><code>package logging
+<pre><code class="language-go">package logging
 
 ...
 
@@ -7858,7 +7824,7 @@ func Setup() {
 <h3 id="第零步"><a class="header" href="#第零步">第零步</a></h3>
 <p>一般不會直接將上傳的圖片名暴露出來，因此我們對圖片名進行 MD5 來達到這個效果</p>
 <p>在 util 目錄下新建 md5.go，寫入檔案內容：</p>
-<pre><code>package util
+<pre><code class="language-go">package util
 
 import (
     "crypto/md5"
@@ -7875,7 +7841,7 @@ func EncodeMD5(value string) string {
 <h3 id="第一步-1"><a class="header" href="#第一步-1">第一步</a></h3>
 <p>在先前我們已經把底層方法給封裝好了，實質這一步為封裝 image 的處理邏輯</p>
 <p>在 pkg 目錄下新建 upload/image.go 檔案，寫入檔案內容：</p>
-<pre><code>package upload
+<pre><code class="language-go">package upload
 
 import (
     "os"
@@ -7965,7 +7931,7 @@ func CheckImage(src string) error {
 <p>這裡基本是對底層程式碼的二次封裝，為了更靈活的處理一些圖片特有的邏輯，並且方便修改，不直接對外暴露下層</p>
 <h3 id="第二步-1"><a class="header" href="#第二步-1">第二步</a></h3>
 <p>這一步將編寫上傳圖片的業務邏輯，在 routers/api 目錄下 新建 upload.go 檔案，寫入檔案內容:</p>
-<pre><code>package api
+<pre><code class="language-go">package api
 
 import (
     "net/http"
@@ -8042,7 +8008,7 @@ ERROR_UPLOAD_CHECK_IMAGE_FORMAT = 30003
 <p>總的來說，就是 入參 -&gt; 檢查 -》 儲存 的應用流程</p>
 <h3 id="第三步"><a class="header" href="#第三步">第三步</a></h3>
 <p>開啟 routers/router.go 檔案，增加路由 <code>r.POST("/upload", api.UploadImage)</code> ，如：</p>
-<pre><code>func InitRouter() *gin.Engine {
+<pre><code class="language-go">func InitRouter() *gin.Engine {
     r := gin.New()
     ...
     r.GET("/auth", api.GetAuth)
@@ -8079,7 +8045,7 @@ $ ll
 <p>在公司的話，CDN 或自建分散式檔案系統居多，也不需要過多關注。而在實踐裡的話肯定是本地搭建了，Go 本身對此就有很好的支援，而 Gin 更是再封裝了一層，只需要在路由增加一行程式碼即可</p>
 <h3 id="rstaticfs"><a class="header" href="#rstaticfs">r.StaticFS</a></h3>
 <p>開啟 routers/router.go 檔案，增加路由 <code>r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))</code>，如：</p>
-<pre><code>func InitRouter() *gin.Engine {
+<pre><code class="language-go">func InitRouter() *gin.Engine {
     ...
     r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
 
@@ -8092,7 +8058,7 @@ $ ll
 <h3 id="它做了什麼"><a class="header" href="#它做了什麼">它做了什麼</a></h3>
 <p>當訪問 $HOST/upload/images 時，將會讀取到 $GOPATH/src/github.com/EDDYCJY/go-gin-example/runtime/upload/images 下的檔案</p>
 <p>而這行程式碼又做了什麼事呢，我們來看看方法原型</p>
-<pre><code>// StaticFS works just like `Static()` but a custom `http.FileSystem` can be used instead.
+<pre><code class="language-go">// StaticFS works just like `Static()` but a custom `http.FileSystem` can be used instead.
 // Gin by default user: gin.Dir()
 func (group *RouterGroup) StaticFS(relativePath string, fs http.FileSystem) IRoutes {
     if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
@@ -8108,7 +8074,7 @@ func (group *RouterGroup) StaticFS(relativePath string, fs http.FileSystem) IRou
 }
 </code></pre>
 <p>首先在暴露的 URL 中禁止了 * 和 : 符號的使用，透過 <code>createStaticHandler</code> 建立了靜態檔案服務，實質最終呼叫的還是 <code>fileServer.ServeHTTP</code> 和一些處理邏輯了</p>
-<pre><code>func (group *RouterGroup) createStaticHandler(relativePath string, fs http.FileSystem) HandlerFunc {
+<pre><code class="language-go">func (group *RouterGroup) createStaticHandler(relativePath string, fs http.FileSystem) HandlerFunc {
     absolutePath := group.calculateAbsolutePath(relativePath)
     fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
     _, nolisting := fs.(*onlyfilesFS)
@@ -8124,10 +8090,10 @@ func (group *RouterGroup) StaticFS(relativePath string, fs http.FileSystem) IRou
 <p>我們可以留意下 <code>fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))</code> 這段語句，在靜態檔案服務中很常見，它有什麼作用呢？</p>
 <p><code>http.StripPrefix</code> 主要作用是從請求 URL 的路徑中刪除給定的字首，最終返回一個 <code>Handler</code></p>
 <p>通常 http.FileServer 要與 http.StripPrefix 相結合使用，否則當你執行：</p>
-<pre><code>http.Handle("/upload/images", http.FileServer(http.Dir("upload/images")))
+<pre><code class="language-go">http.Handle("/upload/images", http.FileServer(http.Dir("upload/images")))
 </code></pre>
 <p>會無法正確的訪問到檔案目錄，因為 <code>/upload/images</code> 也包含在了 URL 路徑中，必須使用：</p>
-<pre><code>http.Handle("/upload/images", http.StripPrefix("upload/images", http.FileServer(http.Dir("upload/images"))))
+<pre><code class="language-go">http.Handle("/upload/images", http.StripPrefix("upload/images", http.FileServer(http.Dir("upload/images"))))
 </code></pre>
 <h4 id="filepath"><a class="header" href="#filepath">/*filepath</a></h4>
 <p>到下面可以看到 <code>urlPattern := path.Join(relativePath, "/*filepath")</code>，<code>/*filepath</code> 你是誰，你在這裡有什麼用，你是 Gin 的產物嗎?</p>
@@ -8152,20 +8118,20 @@ func (group *RouterGroup) StaticFS(relativePath string, fs http.FileSystem) IRou
 <h2 id="總結-10"><a class="header" href="#總結-10">總結</a></h2>
 <p>在這章節中，我們簡單的分析了下需求，對應用做出了一個小規劃並實施</p>
 <p>完成了清單中的功能點和最佳化，在實際專案中也是常見的場景，希望你能夠細細品嚐並針對一些點進行深入學習</p>
-<h2 id="參考-16"><a class="header" href="#參考-16">參考</a></h2>
-<h3 id="本系列示例程式碼-10"><a class="header" href="#本系列示例程式碼-10">本系列示例程式碼</a></h3>
+<h2 id="參考-17"><a class="header" href="#參考-17">參考</a></h2>
+<h3 id="本系列示例程式碼-11"><a class="header" href="#本系列示例程式碼-11">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
-<h2 id="關於-10"><a class="header" href="#關於-10">關於</a></h2>
-<h3 id="修改記錄-10"><a class="header" href="#修改記錄-10">修改記錄</a></h3>
+<h2 id="關於-11"><a class="header" href="#關於-11">關於</a></h2>
+<h3 id="修改記錄-11"><a class="header" href="#修改記錄-11">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月02日修改文章</li>
 </ul>
-<h2 id="-11"><a class="header" href="#-11">？</a></h2>
+<h2 id="-12"><a class="header" href="#-12">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-11"><a class="header" href="#我的微信公眾號-11">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-12"><a class="header" href="#我的微信公眾號-12">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="313-最佳化你的應用結構和實作redis快取"><a class="header" href="#313-最佳化你的應用結構和實作redis快取">3.13 最佳化你的應用結構和實作Redis快取</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
@@ -8489,7 +8455,7 @@ func (g *Gin) Response(httpCode, errCode int, data interface{}) {
 </code></pre>
 <p>這裡有幾個值得變動點，主要是在內部增加了錯誤返回，如果存在錯誤則直接返回。另外進行了分層，業務邏輯內聚到了 service 層中去，而 routers/api（controller）顯著減輕，程式碼會更加的直觀</p>
 <p>例如 service/article_service 下的 <code>articleService.Get()</code> 方法：</p>
-<pre><code>func (a *Article) Get() (*models.Article, error) {
+<pre><code class="language-go">func (a *Article) Get() (*models.Article, error) {
     var cacheArticle *models.Article
 
     cache := cache_service.Article{ID: a.ID}
@@ -8514,7 +8480,7 @@ func (g *Gin) Response(httpCode, errCode int, data interface{}) {
 }
 </code></pre>
 <p>而對於 gorm 的 錯誤返回設定，只需要修改 models/article.go 如下:</p>
-<pre><code>func GetArticle(id int) (*Article, error) {
+<pre><code class="language-go">func GetArticle(id int) (*Article, error) {
     var article Article
     err := db.Where("id = ? AND deleted_on = ? ", id, 0).First(&amp;article).Related(&amp;article.Tag).Error
     if err != nil &amp;&amp; err != gorm.ErrRecordNotFound {
@@ -8529,8 +8495,8 @@ func (g *Gin) Response(httpCode, errCode int, data interface{}) {
 <p>顯然，本章節並不是你跟著我敲系列。我給你的課題是 “實作 Redis 快取並最佳化既有的業務邏輯程式碼”</p>
 <p>讓其能夠不斷地適應業務的發展，讓程式碼更清晰易讀，且呈層級和結構性</p>
 <p>如果有疑惑，可以到 <a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a> 看看我是怎麼寫的，你是怎麼寫的，又分別有什麼優勢、劣勢，取長補短一波？</p>
-<h2 id="參考-17"><a class="header" href="#參考-17">參考</a></h2>
-<h3 id="本系列示例程式碼-11"><a class="header" href="#本系列示例程式碼-11">本系列示例程式碼</a></h3>
+<h2 id="參考-18"><a class="header" href="#參考-18">參考</a></h2>
+<h3 id="本系列示例程式碼-12"><a class="header" href="#本系列示例程式碼-12">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
@@ -8538,19 +8504,19 @@ func (g *Gin) Response(httpCode, errCode int, data interface{}) {
 <ul>
 <li><a href="https://coolshell.cn/articles/17757.html">如何重構“箭頭型”程式碼</a></li>
 </ul>
-<h2 id="關於-11"><a class="header" href="#關於-11">關於</a></h2>
-<h3 id="修改記錄-11"><a class="header" href="#修改記錄-11">修改記錄</a></h3>
+<h2 id="關於-12"><a class="header" href="#關於-12">關於</a></h2>
+<h3 id="修改記錄-12"><a class="header" href="#修改記錄-12">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月01日修改文章</li>
 </ul>
-<h2 id="-12"><a class="header" href="#-12">？</a></h2>
+<h2 id="-13"><a class="header" href="#-13">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-12"><a class="header" href="#我的微信公眾號-12">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-13"><a class="header" href="#我的微信公眾號-13">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="314-實作匯出匯入-excel"><a class="header" href="#314-實作匯出匯入-excel">3.14 實作匯出、匯入 Excel</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
-<h2 id="知識點-3"><a class="header" href="#知識點-3">知識點</a></h2>
+<h2 id="知識點-4"><a class="header" href="#知識點-4">知識點</a></h2>
 <ul>
 <li>匯出功能的實作</li>
 </ul>
@@ -8588,7 +8554,7 @@ ExportSavePath = export/
 <p>（注意修改 image.go 的 GetImageFullUrl 方法）</p>
 <h2 id="pkg"><a class="header" href="#pkg">pkg</a></h2>
 <p>新建 pkg/export/excel.go 檔案，如下：</p>
-<pre><code>package export
+<pre><code class="language-go">package export
 
 import "github.com/EDDYCJY/go-gin-example/pkg/setting"
 
@@ -8606,7 +8572,7 @@ func GetExcelFullPath() string {
 </code></pre>
 <p>這裡編寫了一些常用的方法，以後取值方式如果有變動，直接改內部程式碼即可，對外不可見</p>
 <h2 id="嘗試一下標準庫"><a class="header" href="#嘗試一下標準庫">嘗試一下標準庫</a></h2>
-<pre><code>f, err := os.Create(export.GetExcelFullPath() + "test.csv")
+<pre><code class="language-go">f, err := os.Create(export.GetExcelFullPath() + "test.csv")
 if err != nil {
     panic(err)
 }
@@ -8629,7 +8595,7 @@ w.WriteAll(data)
 <p>2、f.WriteString("\xEF\xBB\xBF")：</p>
 <p><code>\xEF\xBB\xBF</code> 是 UTF-8 BOM 的 16 進位制格式，在這裡的用處是標識檔案的編碼格式，通常會出現在檔案的開頭，因此第一步就要將其寫入。如果不標識 UTF-8 的編碼格式的話，寫入的漢字會顯示為亂碼</p>
 <p>3、csv.NewWriter：</p>
-<pre><code>func NewWriter(w io.Writer) *Writer {
+<pre><code class="language-go">func NewWriter(w io.Writer) *Writer {
     return &amp;Writer{
         Comma: ',',
         w:     bufio.NewWriter(w),
@@ -8637,7 +8603,7 @@ w.WriteAll(data)
 }
 </code></pre>
 <p>4、w.WriteAll：</p>
-<pre><code>func (w *Writer) WriteAll(records [][]string) error {
+<pre><code class="language-go">func (w *Writer) WriteAll(records [][]string) error {
     for _, record := range records {
         err := w.Write(record)
         if err != nil {
@@ -8651,7 +8617,7 @@ w.WriteAll(data)
 <h2 id="匯出"><a class="header" href="#匯出">匯出</a></h2>
 <h3 id="service-方法"><a class="header" href="#service-方法">Service 方法</a></h3>
 <p>開啟 service/tag.go，增加 Export 方法，如下：</p>
-<pre><code>func (t *Tag) Export() (string, error) {
+<pre><code class="language-go">func (t *Tag) Export() (string, error) {
     tags, err := t.GetAll()
     if err != nil {
         return "", err
@@ -8703,7 +8669,7 @@ w.WriteAll(data)
 </code></pre>
 <h2 id="routers-入口"><a class="header" href="#routers-入口">routers 入口</a></h2>
 <p>開啟 routers/api/v1/tag.go，增加如下方法：</p>
-<pre><code>func ExportTag(c *gin.Context) {
+<pre><code class="language-go">func ExportTag(c *gin.Context) {
     appG := app.Gin{C: c}
     name := c.PostForm("name")
     state := -1
@@ -8753,7 +8719,7 @@ apiv1.Use(jwt.JWT())
 <h3 id="staticfs"><a class="header" href="#staticfs">StaticFS</a></h3>
 <p>那你想想，現在直接訪問地址肯定是無法下載檔案的，那麼該如何做呢？</p>
 <p>開啟 router.go 檔案，增加程式碼如下：</p>
-<pre><code>r.StaticFS("/export", http.Dir(export.GetExcelFullPath()))
+<pre><code class="language-go">r.StaticFS("/export", http.Dir(export.GetExcelFullPath()))
 </code></pre>
 <p>若你不理解，強烈建議溫習下前面的章節，舉一反三</p>
 <h2 id="驗證下載"><a class="header" href="#驗證下載">驗證下載</a></h2>
@@ -8761,7 +8727,7 @@ apiv1.Use(jwt.JWT())
 <h2 id="匯入"><a class="header" href="#匯入">匯入</a></h2>
 <h3 id="service-方法-1"><a class="header" href="#service-方法-1">Service 方法</a></h3>
 <p>開啟 service/tag.go，增加 Import 方法，如下：</p>
-<pre><code>func (t *Tag) Import(r io.Reader) error {
+<pre><code class="language-go">func (t *Tag) Import(r io.Reader) error {
     xlsx, err := excelize.OpenReader(r)
     if err != nil {
         return err
@@ -8784,7 +8750,7 @@ apiv1.Use(jwt.JWT())
 </code></pre>
 <h2 id="routers-入口-1"><a class="header" href="#routers-入口-1">routers 入口</a></h2>
 <p>開啟 routers/api/v1/tag.go，增加如下方法：</p>
-<pre><code>func ImportTag(c *gin.Context) {
+<pre><code class="language-go">func ImportTag(c *gin.Context) {
     appG := app.Gin{C: c}
 
     file, _, err := c.Request.FormFile("file")
@@ -8832,24 +8798,24 @@ apiv1.Use(jwt.JWT())
 <li>artice ：匯入、匯出功能實作</li>
 </ul>
 <p>也不失為你很好的練手機會，如果有興趣，可以試試</p>
-<h2 id="參考-18"><a class="header" href="#參考-18">參考</a></h2>
-<h3 id="本系列示例程式碼-12"><a class="header" href="#本系列示例程式碼-12">本系列示例程式碼</a></h3>
+<h2 id="參考-19"><a class="header" href="#參考-19">參考</a></h2>
+<h3 id="本系列示例程式碼-13"><a class="header" href="#本系列示例程式碼-13">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
-<h2 id="關於-12"><a class="header" href="#關於-12">關於</a></h2>
-<h3 id="修改記錄-12"><a class="header" href="#修改記錄-12">修改記錄</a></h3>
+<h2 id="關於-13"><a class="header" href="#關於-13">關於</a></h2>
+<h3 id="修改記錄-13"><a class="header" href="#修改記錄-13">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月02日修改文章</li>
 </ul>
-<h2 id="-13"><a class="header" href="#-13">？</a></h2>
+<h2 id="-14"><a class="header" href="#-14">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-13"><a class="header" href="#我的微信公眾號-13">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-14"><a class="header" href="#我的微信公眾號-14">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="315-生成二維碼合併海報"><a class="header" href="#315-生成二維碼合併海報">3.15 生成二維碼、合併海報</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
-<h2 id="知識點-4"><a class="header" href="#知識點-4">知識點</a></h2>
+<h2 id="知識點-5"><a class="header" href="#知識點-5">知識點</a></h2>
 <ul>
 <li>圖片生成</li>
 <li>二維碼生成</li>
@@ -9210,7 +9176,7 @@ func GenerateArticlePoster(c *gin.Context) {
 <p>其所涉及、關聯的庫都建議研究一下</p>
 <h3 id="staticfs-1"><a class="header" href="#staticfs-1">StaticFS</a></h3>
 <p>在 routers/router.go 檔案，增加如下程式碼:</p>
-<pre><code>r.StaticFS("/qrcode", http.Dir(qrcode.GetQrCodeFullPath()))
+<pre><code class="language-go">r.StaticFS("/qrcode", http.Dir(qrcode.GetQrCodeFullPath()))
 </code></pre>
 <h3 id="驗證-11"><a class="header" href="#驗證-11">驗證</a></h3>
 <p><img src="di-3-ke-gin/../images/868d2c15184b-kR1sqR6.jpg" alt="image" /></p>
@@ -9219,24 +9185,24 @@ func GenerateArticlePoster(c *gin.Context) {
 <h2 id="總結-12"><a class="header" href="#總結-12">總結</a></h2>
 <p>在本章節實作了兩個很常見的業務功能，分別是生成二維碼和合並海報。希望你能夠仔細閱讀我給出的連結，這塊的知識量不少，想要用好影象處理的功能，必須理解對應的思路，舉一反三</p>
 <p>最後希望對你有所幫助 👌</p>
-<h2 id="參考-19"><a class="header" href="#參考-19">參考</a></h2>
-<h3 id="本系列示例程式碼-13"><a class="header" href="#本系列示例程式碼-13">本系列示例程式碼</a></h3>
+<h2 id="參考-20"><a class="header" href="#參考-20">參考</a></h2>
+<h3 id="本系列示例程式碼-14"><a class="header" href="#本系列示例程式碼-14">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
-<h2 id="關於-13"><a class="header" href="#關於-13">關於</a></h2>
-<h3 id="修改記錄-13"><a class="header" href="#修改記錄-13">修改記錄</a></h3>
+<h2 id="關於-14"><a class="header" href="#關於-14">關於</a></h2>
+<h3 id="修改記錄-14"><a class="header" href="#修改記錄-14">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月02日修改文章</li>
 </ul>
-<h2 id="-14"><a class="header" href="#-14">？</a></h2>
+<h2 id="-15"><a class="header" href="#-15">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-14"><a class="header" href="#我的微信公眾號-14">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-15"><a class="header" href="#我的微信公眾號-15">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="316-在圖片上繪製文字"><a class="header" href="#316-在圖片上繪製文字">3.16 在圖片上繪製文字</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
-<h2 id="知識點-5"><a class="header" href="#知識點-5">知識點</a></h2>
+<h2 id="知識點-6"><a class="header" href="#知識點-6">知識點</a></h2>
 <ul>
 <li>字型庫使用</li>
 <li>圖片合成</li>
@@ -9377,24 +9343,24 @@ func (a *ArticlePosterBg) DrawPoster(d *DrawText, fontName string) error {
 <p><img src="di-3-ke-gin/../images/af06b347ae49-qaaG0LE.jpg" alt="image" /></p>
 <h2 id="總結-13"><a class="header" href="#總結-13">總結</a></h2>
 <p>在本章節在 <a href="https://github.com/EDDYCJY/blog/blob/master/golang/gin/2018-07-04-Gin%E5%AE%9E%E8%B7%B5-%E8%BF%9E%E8%BD%BD%E5%8D%81%E4%BA%94-%E7%94%9F%E6%88%90%E4%BA%8C%E7%BB%B4%E7%A0%81-%E5%90%88%E5%B9%B6%E6%B5%B7%E6%8A%A5.md">連載十五</a> 的基礎上增加了繪製文字，在實作上並不困難，而這兩塊需求一般會同時出現，大家可以多加練習，瞭解裡面的邏輯和其他 API 😁</p>
-<h2 id="參考-20"><a class="header" href="#參考-20">參考</a></h2>
-<h3 id="本系列示例程式碼-14"><a class="header" href="#本系列示例程式碼-14">本系列示例程式碼</a></h3>
+<h2 id="參考-21"><a class="header" href="#參考-21">參考</a></h2>
+<h3 id="本系列示例程式碼-15"><a class="header" href="#本系列示例程式碼-15">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
-<h2 id="關於-14"><a class="header" href="#關於-14">關於</a></h2>
-<h3 id="修改記錄-14"><a class="header" href="#修改記錄-14">修改記錄</a></h3>
+<h2 id="關於-15"><a class="header" href="#關於-15">關於</a></h2>
+<h3 id="修改記錄-15"><a class="header" href="#修改記錄-15">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月02日修改文章</li>
 </ul>
-<h2 id="-15"><a class="header" href="#-15">？</a></h2>
+<h2 id="-16"><a class="header" href="#-16">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-15"><a class="header" href="#我的微信公眾號-15">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-16"><a class="header" href="#我的微信公眾號-16">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="317-用nginx部署go應用"><a class="header" href="#317-用nginx部署go應用">3.17 用Nginx部署Go應用</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
-<h2 id="知識點-6"><a class="header" href="#知識點-6">知識點</a></h2>
+<h2 id="知識點-7"><a class="header" href="#知識點-7">知識點</a></h2>
 <ul>
 <li>Nginx。</li>
 <li>反向代理。</li>
@@ -9552,24 +9518,24 @@ $ nginx -s reload
 <h2 id="總結-14"><a class="header" href="#總結-14">總結</a></h2>
 <p>在本章節，希望您能夠簡單習得日常使用的 Web Server 背後都是一些什麼邏輯，Nginx 是什麼？反向代理？負載均衡？</p>
 <p>怎麼簡單部署，知道了吧。</p>
-<h2 id="參考-21"><a class="header" href="#參考-21">參考</a></h2>
-<h3 id="本系列示例程式碼-15"><a class="header" href="#本系列示例程式碼-15">本系列示例程式碼</a></h3>
+<h2 id="參考-22"><a class="header" href="#參考-22">參考</a></h2>
+<h3 id="本系列示例程式碼-16"><a class="header" href="#本系列示例程式碼-16">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
-<h2 id="關於-15"><a class="header" href="#關於-15">關於</a></h2>
-<h3 id="修改記錄-15"><a class="header" href="#修改記錄-15">修改記錄</a></h3>
+<h2 id="關於-16"><a class="header" href="#關於-16">關於</a></h2>
+<h3 id="修改記錄-16"><a class="header" href="#修改記錄-16">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月01日修改文章</li>
 </ul>
-<h2 id="-16"><a class="header" href="#-16">？</a></h2>
+<h2 id="-17"><a class="header" href="#-17">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-16"><a class="header" href="#我的微信公眾號-16">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-17"><a class="header" href="#我的微信公眾號-17">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="318-golang交叉編譯"><a class="header" href="#318-golang交叉編譯">3.18 Golang交叉編譯</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
-<h2 id="知識點-7"><a class="header" href="#知識點-7">知識點</a></h2>
+<h2 id="知識點-8"><a class="header" href="#知識點-8">知識點</a></h2>
 <ul>
 <li>跨平臺編譯</li>
 </ul>
@@ -9709,8 +9675,8 @@ usage: go build [-o output] [-i] [build flags] [packages]
         'cmd args /path/to/asm &lt;arguments for asm&gt;'.
 ...
 </code></pre>
-<h2 id="參考-22"><a class="header" href="#參考-22">參考</a></h2>
-<h3 id="本系列示例程式碼-16"><a class="header" href="#本系列示例程式碼-16">本系列示例程式碼</a></h3>
+<h2 id="參考-23"><a class="header" href="#參考-23">參考</a></h2>
+<h3 id="本系列示例程式碼-17"><a class="header" href="#本系列示例程式碼-17">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
@@ -9718,19 +9684,19 @@ usage: go build [-o output] [-i] [build flags] [packages]
 <ul>
 <li>Go併發程式設計實戰 第二版</li>
 </ul>
-<h2 id="關於-16"><a class="header" href="#關於-16">關於</a></h2>
-<h3 id="修改記錄-16"><a class="header" href="#修改記錄-16">修改記錄</a></h3>
+<h2 id="關於-17"><a class="header" href="#關於-17">關於</a></h2>
+<h3 id="修改記錄-17"><a class="header" href="#修改記錄-17">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月01日修改文章</li>
 </ul>
-<h2 id="-17"><a class="header" href="#-17">？</a></h2>
+<h2 id="-18"><a class="header" href="#-18">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-17"><a class="header" href="#我的微信公眾號-17">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-18"><a class="header" href="#我的微信公眾號-18">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="319-請入門-makefile"><a class="header" href="#319-請入門-makefile">3.19 請入門 Makefile</a></h1>
 <p>專案地址：<a href="https://github.com/EDDYCJY/go-gin-example">https://github.com/EDDYCJY/go-gin-example</a></p>
-<h2 id="知識點-8"><a class="header" href="#知識點-8">知識點</a></h2>
+<h2 id="知識點-9"><a class="header" href="#知識點-9">知識點</a></h2>
 <ul>
 <li>寫一個 Makefile</li>
 </ul>
@@ -9813,20 +9779,20 @@ help:
 <p>那麼還有其他的特殊符號嗎？有的，請課後去了解下 +、- 的用途 🤩</p>
 <h2 id="小結-18"><a class="header" href="#小結-18">小結</a></h2>
 <p>這是一篇比較簡潔的文章，希望可以讓您對 Makefile 有一個基本瞭解。</p>
-<h2 id="參考-23"><a class="header" href="#參考-23">參考</a></h2>
-<h3 id="本系列示例程式碼-17"><a class="header" href="#本系列示例程式碼-17">本系列示例程式碼</a></h3>
+<h2 id="參考-24"><a class="header" href="#參考-24">參考</a></h2>
+<h3 id="本系列示例程式碼-18"><a class="header" href="#本系列示例程式碼-18">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-gin-example">go-gin-example</a></li>
 </ul>
-<h2 id="關於-17"><a class="header" href="#關於-17">關於</a></h2>
-<h3 id="修改記錄-17"><a class="header" href="#修改記錄-17">修改記錄</a></h3>
+<h2 id="關於-18"><a class="header" href="#關於-18">關於</a></h2>
+<h3 id="修改記錄-18"><a class="header" href="#修改記錄-18">修改記錄</a></h3>
 <ul>
 <li>第一版：2018年02月16日釋出文章</li>
 <li>第二版：2019年10月01日修改文章</li>
 </ul>
-<h2 id="-18"><a class="header" href="#-18">？</a></h2>
+<h2 id="-19"><a class="header" href="#-19">？</a></h2>
 <p>如果有任何疑問或錯誤，歡迎在 <a href="https://github.com/EDDYCJY/blog">issues</a> 進行提問或給予修正意見，如果喜歡或對你有所幫助，歡迎 Star，對作者是一種鼓勵和推進。</p>
-<h3 id="我的微信公眾號-18"><a class="header" href="#我的微信公眾號-18">我的微信公眾號</a></h3>
+<h3 id="我的微信公眾號-19"><a class="header" href="#我的微信公眾號-19">我的微信公眾號</a></h3>
 <p><img src="di-3-ke-gin/../images/3051dc7d3068-8d0b0c3a11e74efd5fdfd7910257e70b.jpg" alt="image" /></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="第4課-grpc"><a class="header" href="#第4課-grpc">第4課 grpc</a></h1>
 <ul>
@@ -10253,8 +10219,8 @@ $ go run client.go
 </code></pre>
 <h2 id="總結-16"><a class="header" href="#總結-16">總結</a></h2>
 <p>在本章節，我們對 Protobuf、gRPC Client/Server 分別都進行了介紹。希望你結合文中講述內容再寫一個 Demo 進行深入瞭解，肯定會更棒 🤔</p>
-<h2 id="參考-24"><a class="header" href="#參考-24">參考</a></h2>
-<h3 id="本系列示例程式碼-18"><a class="header" href="#本系列示例程式碼-18">本系列示例程式碼</a></h3>
+<h2 id="參考-25"><a class="header" href="#參考-25">參考</a></h2>
+<h3 id="本系列示例程式碼-19"><a class="header" href="#本系列示例程式碼-19">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-grpc-example">go-grpc-example</a></li>
 </ul>
@@ -10689,8 +10655,8 @@ func (x *streamServiceListClient) Recv() (*StreamResponse, error) {
 </code></pre>
 <h2 id="總結-17"><a class="header" href="#總結-17">總結</a></h2>
 <p>在本文共介紹了三類流的互動方式，可以根據實際的業務場景去選擇合適的方式。會事半功倍哦 🎑</p>
-<h2 id="參考-25"><a class="header" href="#參考-25">參考</a></h2>
-<h3 id="本系列示例程式碼-19"><a class="header" href="#本系列示例程式碼-19">本系列示例程式碼</a></h3>
+<h2 id="參考-26"><a class="header" href="#參考-26">參考</a></h2>
+<h3 id="本系列示例程式碼-20"><a class="header" href="#本系列示例程式碼-20">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-grpc-example">go-grpc-example</a></li>
 </ul>
@@ -10737,11 +10703,11 @@ go-grpc-example
 <h2 id="為什麼之前不需要證書"><a class="header" href="#為什麼之前不需要證書">為什麼之前不需要證書</a></h2>
 <p>在 simple_server 中，為什麼“啥事都沒幹”就能在不需要證書的情況下執行呢？</p>
 <h3 id="server-9"><a class="header" href="#server-9">Server</a></h3>
-<pre><code>grpc.NewServer()
+<pre><code class="language-go">grpc.NewServer()
 </code></pre>
 <p>在服務端顯然沒有傳入任何 DialOptions</p>
 <h3 id="client-9"><a class="header" href="#client-9">Client</a></h3>
-<pre><code>conn, err := grpc.Dial(":"+PORT, grpc.WithInsecure())
+<pre><code class="language-go">conn, err := grpc.Dial(":"+PORT, grpc.WithInsecure())
 </code></pre>
 <p>在客戶端留意到 <code>grpc.WithInsecure()</code> 方法</p>
 <pre><code class="language-go">func WithInsecure() DialOption {
@@ -10924,8 +10890,8 @@ func main() {
 <p>你仔細再看看，Client 是基於 Server 端的證書和服務名稱來建立請求的。這樣的話，你就需要將 Server 的證書透過各種手段給到 Client 端，否則是無法完成這項任務的</p>
 <p>問題也就來了，你無法保證你的“各種手段”是安全的，畢竟現在的網路環境是很危險的，萬一被...</p>
 <p>我們將在下一章節解決這個問題，保證其可靠性 🙂</p>
-<h2 id="參考-26"><a class="header" href="#參考-26">參考</a></h2>
-<h3 id="本系列示例程式碼-20"><a class="header" href="#本系列示例程式碼-20">本系列示例程式碼</a></h3>
+<h2 id="參考-27"><a class="header" href="#參考-27">參考</a></h2>
+<h3 id="本系列示例程式碼-21"><a class="header" href="#本系列示例程式碼-21">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-grpc-example">go-grpc-example</a></li>
 </ul>
@@ -11164,8 +11130,8 @@ func main() {
 <h2 id="總結-19"><a class="header" href="#總結-19">總結</a></h2>
 <p>在本章節，我們使用 CA 頒發的根證書對客戶端、服務端的證書進行了簽發。進一步的提高了兩者的通訊安全</p>
 <p>這回是真的大功告成了！</p>
-<h2 id="參考-27"><a class="header" href="#參考-27">參考</a></h2>
-<h3 id="本系列示例程式碼-21"><a class="header" href="#本系列示例程式碼-21">本系列示例程式碼</a></h3>
+<h2 id="參考-28"><a class="header" href="#參考-28">參考</a></h2>
+<h3 id="本系列示例程式碼-22"><a class="header" href="#本系列示例程式碼-22">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-grpc-example">go-grpc-example</a></li>
 </ul>
@@ -11192,7 +11158,7 @@ func main() {
 }
 </code></pre>
 <p>函式原型：</p>
-<pre><code>type UnaryServerInterceptor func(ctx context.Context, req interface{}, info *UnaryServerInfo, handler UnaryHandler) (resp interface{}, err error)
+<pre><code class="language-go">type UnaryServerInterceptor func(ctx context.Context, req interface{}, info *UnaryServerInfo, handler UnaryHandler) (resp interface{}, err error)
 </code></pre>
 <p>透過檢視原始碼可得知，要完成一個攔截器需要實作 <code>UnaryServerInterceptor</code> 方法。形參如下：</p>
 <ul>
@@ -11211,7 +11177,7 @@ func main() {
 <h3 id="如何實作多個攔截器"><a class="header" href="#如何實作多個攔截器">如何實作多個攔截器</a></h3>
 <p>另外，可以發現 gRPC 本身居然只能設定一個攔截器，難道所有的邏輯都只能寫在一起？</p>
 <p>關於這一點，你可以放心。採用開源專案 <a href="https://github.com/grpc-ecosystem/go-grpc-middleware">go-grpc-middleware</a> 就可以解決這個問題，本章也會使用它。</p>
-<pre><code>import "github.com/grpc-ecosystem/go-grpc-middleware"
+<pre><code class="language-go">import "github.com/grpc-ecosystem/go-grpc-middleware"
 
 myServer := grpc.NewServer(
     grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
@@ -11323,8 +11289,8 @@ main.RecoveryInterceptor.func1(0xc420223a10)
 <p>檢查服務是否仍然執行，即可知道 Recovery 是否成功生效</p>
 <h2 id="總結-20"><a class="header" href="#總結-20">總結</a></h2>
 <p>透過本章節，你可以學會最常見的攔截器使用方法。接下來其它“新”需求只要舉一反三即可。</p>
-<h2 id="參考-28"><a class="header" href="#參考-28">參考</a></h2>
-<h3 id="本系列示例程式碼-22"><a class="header" href="#本系列示例程式碼-22">本系列示例程式碼</a></h3>
+<h2 id="參考-29"><a class="header" href="#參考-29">參考</a></h2>
+<h3 id="本系列示例程式碼-23"><a class="header" href="#本系列示例程式碼-23">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-grpc-example">go-grpc-example</a></li>
 </ul>
@@ -11499,8 +11465,8 @@ func main() {
 <p>如果你有一個需求，是要<strong>同時提供</strong> RPC 和 RESTful JSON API 兩種介面的，不要猶豫，點進去：<a href="https://segmentfault.com/a/1190000013339403">gRPC + gRPC Gateway 實踐</a></p>
 <h2 id="問題-9"><a class="header" href="#問題-9">問題</a></h2>
 <p>你以為這個方案就萬能了嗎，不。Envoy Proxy 的支援就不完美，無法同時監聽一個埠的兩種流量 😤</p>
-<h2 id="參考-29"><a class="header" href="#參考-29">參考</a></h2>
-<h3 id="本系列示例程式碼-23"><a class="header" href="#本系列示例程式碼-23">本系列示例程式碼</a></h3>
+<h2 id="參考-30"><a class="header" href="#參考-30">參考</a></h2>
+<h3 id="本系列示例程式碼-24"><a class="header" href="#本系列示例程式碼-24">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-grpc-example">go-grpc-example</a></li>
 </ul>
@@ -11681,8 +11647,8 @@ exit status 1
 <p>我相信你肯定會問一個個加，也太麻煩了吧？有這個想法的你，應當把 <code>type PerRPCCredentials interface</code> 做成一個攔截器（interceptor）</p>
 <h2 id="總結-22"><a class="header" href="#總結-22">總結</a></h2>
 <p>本章節比較簡單，主要是針對 RPC 方法的自定義認證進行了介紹，如果是想做全域性的，建議是舉一反三從攔截器下手哦。</p>
-<h2 id="參考-30"><a class="header" href="#參考-30">參考</a></h2>
-<h3 id="本系列示例程式碼-24"><a class="header" href="#本系列示例程式碼-24">本系列示例程式碼</a></h3>
+<h2 id="參考-31"><a class="header" href="#參考-31">參考</a></h2>
+<h3 id="本系列示例程式碼-25"><a class="header" href="#本系列示例程式碼-25">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-grpc-example">go-grpc-example</a></li>
 </ul>
@@ -11794,8 +11760,8 @@ exit status 1
 <li>為什麼要設定 Deadlines</li>
 </ul>
 <p>你要清楚地明白到，gRPC Deadlines 是很重要的，否則這小小的功能點就會要了你生產的命 🤫</p>
-<h2 id="參考-31"><a class="header" href="#參考-31">參考</a></h2>
-<h3 id="本系列示例程式碼-25"><a class="header" href="#本系列示例程式碼-25">本系列示例程式碼</a></h3>
+<h2 id="參考-32"><a class="header" href="#參考-32">參考</a></h2>
+<h3 id="本系列示例程式碼-26"><a class="header" href="#本系列示例程式碼-26">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-grpc-example">go-grpc-example</a></li>
 </ul>
@@ -11984,8 +11950,8 @@ func main() {
 <h2 id="總結-24"><a class="header" href="#總結-24">總結</a></h2>
 <p>在多服務下的架構下，序列、並行、服務套服務是一個非常常見的情況，用常規的方案往往很難發現問題在哪裡（成本太大）。而這種情況就是<strong>分散式追蹤系統</strong>大展拳腳的機會了</p>
 <p>希望你透過本章節的介紹和學習，能夠了解其概念和搭建且應用一個追蹤系統。</p>
-<h2 id="參考-32"><a class="header" href="#參考-32">參考</a></h2>
-<h3 id="本系列示例程式碼-26"><a class="header" href="#本系列示例程式碼-26">本系列示例程式碼</a></h3>
+<h2 id="參考-33"><a class="header" href="#參考-33">參考</a></h2>
+<h3 id="本系列示例程式碼-27"><a class="header" href="#本系列示例程式碼-27">本系列示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/go-grpc-example">go-grpc-example</a></li>
 </ul>
@@ -12151,7 +12117,7 @@ mv go-genproto/ genproto/
 <pre><code>mv /usr/local/go/path/bin/protoc-gen-grpc-gateway /usr/local/go/bin/
 </code></pre>
 <p>到這裡我們這節就基本完成了，建議多反覆看幾遍加深對各個元件的理解！</p>
-<h2 id="參考-33"><a class="header" href="#參考-33">參考</a></h2>
+<h2 id="參考-34"><a class="header" href="#參考-34">參考</a></h2>
 <h3 id="示例程式碼"><a class="header" href="#示例程式碼">示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/grpc-hello-world">grpc-hello-world</a></li>
@@ -12504,7 +12470,7 @@ func main() {
 <p>作用：</p>
 <p><code>flag</code>是可以持久的，這意味著該<code>flag</code>將被分配給它所分配的命令以及該命令下的每個命令。對於全域性標記，將標記作為根上的持久標誌。</p>
 <p>另外還有<code>Local Flag on Parent Commands</code>、<code>Bind Flags with Config</code>、<code>Required flags</code>等等，使用到再 <a href="https://github.com/spf13/cobra#local-flag-on-parent-commands">傳送</a> 瞭解即可</p>
-<h3 id="測試-3"><a class="header" href="#測試-3">測試</a></h3>
+<h3 id="測試-4"><a class="header" href="#測試-4">測試</a></h3>
 <p>回到<code>grpc-hello-world/</code>目錄下執行<code>go run main.go server</code>，檢視輸出是否為（此時應為預設值）：</p>
 <pre><code>2018/02/25 23:23:21 50052
 2018/02/25 23:23:21 dev
@@ -12734,13 +12700,13 @@ func createInternalServer(conn net.Listener, tlsConfig *tls.Config) (*http.Serve
 <pre><code class="language-go">func NewServer(opt ...ServerOption) *Server
 </code></pre>
 <p>我們在此處建立了一個沒有註冊服務的<code>grpc</code>服務端，還沒有開始接受請求</p>
-<pre><code>grpcServer := grpc.NewServer(opts...)
+<pre><code class="language-go">grpcServer := grpc.NewServer(opts...)
 </code></pre>
 <p><strong>4、註冊<code>grpc</code>服務</strong></p>
 <pre><code>pb.RegisterHelloWorldServer(grpcServer, NewHelloService())
 </code></pre>
 <p><strong>5、建立<code>grpc-gateway</code>關聯元件</strong></p>
-<pre><code>ctx := context.Background()
+<pre><code class="language-go">ctx := context.Background()
 dcreds, err := credentials.NewClientTLSFromFile(CertPemPath, CertName)
 if err != nil {
     log.Println("Failed to create client TLS credentials %v", err)
@@ -12754,7 +12720,7 @@ dopts := []grpc.DialOption{grpc.WithTransportCredentials(dcreds)}
 <li><code>grpc.DialOption</code>：<code>DialOption</code>選項設定我們如何設定連線（其內部具體由多個的<code>DialOption</code>組成，決定其設定連線的內容）</li>
 </ul>
 <p><strong>6、建立<code>HTTP NewServeMux</code>及註冊<code>grpc-gateway</code>邏輯</strong></p>
-<pre><code>gwmux := runtime.NewServeMux()
+<pre><code class="language-go">gwmux := runtime.NewServeMux()
 
 // register grpc-gateway pb
 if err := pb.RegisterHelloWorldHandlerFromEndpoint(ctx, gwmux, EndPoint, dopts); err != nil {
@@ -12794,14 +12760,14 @@ mux.Handle("/", gwmux)
 }
 </code></pre>
 <p>（3）<code>http.NewServeMux()</code>的<code>Handle</code>方法</p>
-<pre><code>func (mux *ServeMux) Handle(pattern string, handler Handler)
+<pre><code class="language-go">func (mux *ServeMux) Handle(pattern string, handler Handler)
 </code></pre>
 <p>透過分析可得知，兩者<code>NewServeMux</code>都是最終返回<code>serveMux</code>，<code>Handler</code>中匯出的方法僅有<code>ServeHTTP</code>，功能是用於響應HTTP請求</p>
 <p>我們回到<code>Handle interface</code>中，可以得出結論就是任何結構體，只要實作了<code>ServeHTTP</code>方法，這個結構就可以稱為<code>Handle</code>，<code>ServeMux</code>會使用該<code>Handler</code>呼叫<code>ServeHTTP</code>方法處理請求，這也就是<strong>自定義<code>Handler</code></strong></p>
 <p>而我們這裡正是將<code>grpc-gateway</code>中註冊好的<code>HTTP Handler</code>無縫的植入到<code>net/http</code>的<code>Handle</code>方法中</p>
 <p><strong>補充：在<code>go</code>中任何結構體只要實作了與介面相同的方法，就等同於實作了介面</strong></p>
 <p><strong>7、註冊具體服務</strong></p>
-<pre><code>if err := pb.RegisterHelloWorldHandlerFromEndpoint(ctx, gwmux, EndPoint, dopts); err != nil {
+<pre><code class="language-go">if err := pb.RegisterHelloWorldHandlerFromEndpoint(ctx, gwmux, EndPoint, dopts); err != nil {
     log.Println("Failed to register gw server: %v\n", err)
 }
 </code></pre>
@@ -12927,7 +12893,7 @@ func main() {
 </code></pre>
 <p>至此本節就結束了，推薦一下<code>jergoo</code>的文章，大家有時間可以看看</p>
 <p>另外本節涉及了許多元件間的知識，值得大家細細的回味，非常有意義！</p>
-<h2 id="參考-34"><a class="header" href="#參考-34">參考</a></h2>
+<h2 id="參考-35"><a class="header" href="#參考-35">參考</a></h2>
 <h3 id="示例程式碼-1"><a class="header" href="#示例程式碼-1">示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/grpc-hello-world">grpc-hello-world</a></li>
@@ -13192,13 +13158,13 @@ func serveSwaggerUI(mux *http.ServeMux) {
     mux.Handle(prefix, http.StripPrefix(prefix, fileServer))
 }
 </code></pre>
-<h2 id="測試-4"><a class="header" href="#測試-4">測試</a></h2>
+<h2 id="測試-5"><a class="header" href="#測試-5">測試</a></h2>
 <p>訪問路徑<code>https://127.0.0.1:50052/swagger/hello.swagger.json</code>，檢視輸出內容是否為<code>hello.swagger.json</code>的內容，例如： [image]</p>
 <p>訪問路徑<code>https://127.0.0.1:50052/swagger-ui/</code>，檢視內容 [image]</p>
 <h2 id="小結-19"><a class="header" href="#小結-19">小結</a></h2>
 <p>至此我們這一章節就完畢了，<code>Swagger</code>和其生態圈十分的豐富，有興趣研究的小夥伴可以到其<a href="https://swagger.io/">官網</a>認真研究</p>
 <p>而目前完成的程度也滿足了日常工作的需求了，可較自動化的生成<code>RESTful Api</code>文件，完成與介面對接</p>
-<h2 id="參考-35"><a class="header" href="#參考-35">參考</a></h2>
+<h2 id="參考-36"><a class="header" href="#參考-36">參考</a></h2>
 <h3 id="示例程式碼-2"><a class="header" href="#示例程式碼-2">示例程式碼</a></h3>
 <ul>
 <li><a href="https://github.com/EDDYCJY/grpc-hello-world">grpc-hello-world</a></li>
@@ -13290,7 +13256,7 @@ func main() {
 </code></pre>
 <h2 id="總結-25"><a class="header" href="#總結-25">總結</a></h2>
 <p>在本文中我介紹了大致的前因後果，且介紹了幾種解決方法，我建議你選擇官方的 <code>h2c</code> 標準庫去實作這個功能，也簡單。在最後，不管你是否曾經為這個問題煩惱過許久，又或者正在糾結，都希望這篇文章能夠幫到你。</p>
-<h2 id="參考-36"><a class="header" href="#參考-36">參考</a></h2>
+<h2 id="參考-37"><a class="header" href="#參考-37">參考</a></h2>
 <ul>
 <li><a href="https://github.com/golang/go/issues/13128">https://github.com/golang/go/issues/13128</a></li>
 <li><a href="https://github.com/golang/go/issues/14141">https://github.com/golang/go/issues/14141</a></li>
@@ -13973,7 +13939,7 @@ TEXT runtime·jmpdefer(SB), NOSPLIT, $0-16
 <ul>
 <li><a href="https://github.com/EDDYCJY/blog/blob/master/golang/pkg/2019-05-18-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Go-panic-and-recover.md">深入理解 Go panic and recover</a></li>
 </ul>
-<h2 id="參考-37"><a class="header" href="#參考-37">參考</a></h2>
+<h2 id="參考-38"><a class="header" href="#參考-38">參考</a></h2>
 <ul>
 <li><a href="https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part1.html">Scheduling In Go</a></li>
 <li><a href="http://hustcat.github.io/dive-into-stack-defer-panic-recover-in-go/">Dive into stack and defer/panic/recover in go</a></li>
@@ -14243,7 +14209,7 @@ dnums: [1 1 2 3], len: 4, cap: 6
 <p><img src="di-7-ke-shu-ju-jie-gou/../images/0bf422b63ada-A3kR8nX.png" alt="image" /></p>
 <h2 id="複製"><a class="header" href="#複製">複製</a></h2>
 <h3 id="原型"><a class="header" href="#原型">原型</a></h3>
-<pre><code>func copy（dst，src [] T）int
+<pre><code class="language-go">func copy（dst，src [] T）int
 </code></pre>
 <p>copy 函式將資料從<strong>源 Slice</strong>複製到<strong>目標 Slice</strong>。它返回複製的元素數。</p>
 <h3 id="示例-2"><a class="header" href="#示例-2">示例</a></h3>
@@ -14366,7 +14332,7 @@ renums: [], len: 0, cap: 0
 }
 </code></pre>
 <h2 id="maxelems"><a class="header" href="#maxelems">maxElems</a></h2>
-<pre><code>var maxElems = [...]uintptr{
+<pre><code class="language-go">var maxElems = [...]uintptr{
     ^uintptr(0),
     maxAlloc / 1, maxAlloc / 2, maxAlloc / 3, maxAlloc / 4,
     maxAlloc / 5, maxAlloc / 6, maxAlloc / 7, maxAlloc / 8,
@@ -14437,7 +14403,7 @@ typedef    uint32        uintptr;
 <li>2 的 64 次方減 1</li>
 </ul>
 <h3 id="maxalloc"><a class="header" href="#maxalloc">maxAlloc</a></h3>
-<pre><code>const GoarchMips = 0
+<pre><code class="language-go">const GoarchMips = 0
 const GoarchMipsle = 0
 const GoarchWasm = 0
 
@@ -15195,7 +15161,7 @@ if nextOverflow != nil {
 </ul>
 <p>但你可能會想，明明用的是 <code>for range</code> 進行迴圈迭代，怎麼出現了這兩個函式，怎麼回事？</p>
 <h2 id="看一下轉換後"><a class="header" href="#看一下轉換後">看一下轉換後</a></h2>
-<pre><code>var hiter map_iteration_struct
+<pre><code class="language-go">var hiter map_iteration_struct
 for mapiterinit(type, range, &amp;hiter); hiter.key != nil; mapiternext(&amp;hiter) {
     index_temp = *hiter.key
     value_temp = *hiter.val
@@ -15291,7 +15257,7 @@ it.bucket = it.startBucket
 <h2 id="總結-32"><a class="header" href="#總結-32">總結</a></h2>
 <p>在本文開始，咱們先提出核心討論點：“為什麼 Go map 遍歷輸出是不固定順序？”。而透過這一番分析，原因也很簡單明瞭。就是 <code>for range map</code> 在開始處理迴圈邏輯的時候，就做了隨機播種...</p>
 <p>你想問為什麼要這麼做？當然是官方有意為之，因為 Go 在早期（1.0）的時候，雖是穩定迭代的，但從結果來講，其實是無法保證每個 Go 版本迭代遍歷規則都是一樣的。而這將會導致可移植性問題。因此，改之。也請不要依賴...</p>
-<h2 id="參考-38"><a class="header" href="#參考-38">參考</a></h2>
+<h2 id="參考-39"><a class="header" href="#參考-39">參考</a></h2>
 <ul>
 <li><a href="https://blog.golang.org/go-maps-in-action">Go maps in action</a></li>
 </ul>
@@ -15544,7 +15510,7 @@ formatLoop:
 <li>常規流程處理完畢</li>
 </ol>
 <p>在特殊情況下，若提供的引數集比 verb 識別符號多。fmt 將會貪婪檢查下去，將多出的引數集以特定的格式輸出，如下：</p>
-<pre><code>fmt.Printf("%d", 1, 2, 3)
+<pre><code class="language-go">fmt.Printf("%d", 1, 2, 3)
 // 1%!(EXTRA int=2, int=3)
 </code></pre>
 <ul>
@@ -15633,7 +15599,7 @@ formatLoop:
 <p>其中有兩個特殊的方法，分別是 <code>handleMethods</code> 和 <code>badVerb</code>，接下來分別來看看他們的作用是什麼</p>
 <p>1、badVerb</p>
 <p>它主要用於格式化並處理錯誤的行為。我們可以一起來看看，程式碼如下：</p>
-<pre><code>func (p *pp) badVerb(verb rune) {
+<pre><code class="language-go">func (p *pp) badVerb(verb rune) {
     p.erroring = true
     p.buf.WriteString(percentBangString)
     p.buf.WriteRune(verb)
@@ -15652,7 +15618,7 @@ formatLoop:
 }
 </code></pre>
 <p>在處理錯誤格式化時，我們可以對比以下例子：</p>
-<pre><code>fmt.Printf("%s", []int64{1, 2, 3})
+<pre><code class="language-go">fmt.Printf("%s", []int64{1, 2, 3})
 // [%!s(int64=1) %!s(int64=2) %!s(int64=3)]%
 </code></pre>
 <p>在 badVerb 中可以看到錯誤字串的處理主要分為以下部分：</p>
@@ -15945,7 +15911,7 @@ func Panic(v ...interface{}) {
 <pre><code class="language-go">func New(out io.Writer, prefix string, flag int) *Logger
 </code></pre>
 <p>其實是在標準庫內，如果你剛剛細心的看了前面的小節，不難發現其預設實作了一個 Logger 元件</p>
-<pre><code>var std = New(os.Stderr, "", LstdFlags)
+<pre><code class="language-go">var std = New(os.Stderr, "", LstdFlags)
 </code></pre>
 <p>這也是一個小小的精妙之處 ⭕️</p>
 <h2 id="總結-34"><a class="header" href="#總結-34">總結</a></h2>
@@ -16117,11 +16083,9 @@ func main() {
 
     http.ListenAndServe("0.0.0.0:6060", nil)
 }
-```go
-（2）data/d.go，檔案內容：
-
-```go
-package data
+</code></pre>
+<p>（2）data/d.go，檔案內容：</p>
+<pre><code class="language-go">package data
 
 var datas []string
 
@@ -16214,7 +16178,7 @@ Showing nodes accounting for 837.48MB, 100% of 837.48MB total
 <p>這是令人期待的一小節。在這之前，我們需要簡單的編寫好測試用例來跑一下</p>
 <p><strong>編寫測試用例</strong></p>
 <p>（1）新建 data/d_test.go，檔案內容：</p>
-<pre><code>package data
+<pre><code class="language-go">package data
 
 import "testing"
 
@@ -16400,7 +16364,7 @@ func main() {
 <h2 id="總結-37"><a class="header" href="#總結-37">總結</a></h2>
 <p>透過本文我們習得了 <code>go tool trace</code> 的武林秘籍，它能夠跟蹤捕獲各種執行中的事件，例如 Goroutine 的建立/阻塞/解除阻塞，Syscall 的進入/退出/阻止，GC 事件，Heap 的大小改變，Processor 啟動/停止等等。</p>
 <p>希望你能夠用好 Go 的兩大殺器 pprof + trace 組合，此乃排查好搭檔，誰用誰清楚，即使他並不萬能。</p>
-<h2 id="參考-39"><a class="header" href="#參考-39">參考</a></h2>
+<h2 id="參考-40"><a class="header" href="#參考-40">參考</a></h2>
 <ul>
 <li><a href="https://about.sourcegraph.com/go/an-introduction-to-go-tool-trace-rhys-hiltner">https://about.sourcegraph.com/go/an-introduction-to-go-tool-trace-rhys-hiltner</a></li>
 <li><a href="https://www.itcodemonkey.com/article/5419.html">https://www.itcodemonkey.com/article/5419.html</a></li>
@@ -16545,7 +16509,7 @@ G18: status=2() m=4 lockedm=-1
 </code></pre>
 <p>在這個片段中，G1 的執行狀態為 <code>_Gwaiting</code>，並沒有分配 M 和鎖定。這時候你可能好奇在片段中括號裡的是什麼東西呢，其實是因為該 <code>status=4</code> 是表示 <code>Goroutine</code> 在<strong>執行時時被阻止</strong>，而阻止它的事件就是 <code>semacquire</code> 事件，是因為 <code>semacquire</code> 會檢查訊號量的情況，在合適的時機就呼叫 <code>goparkunlock</code> 函式，把當前 <code>Goroutine</code> 放進等待佇列，並把它設為 <code>_Gwaiting</code> 狀態。</p>
 <p>那麼在實際執行中還有什麼原因會導致這種現象呢，我們一起看看，如下：</p>
-<pre><code>    waitReasonZero                                    // ""
+<pre><code class="language-go">    waitReasonZero                                    // ""
     waitReasonGCAssistMarking                         // "GC assist marking"
     waitReasonIOWait                                  // "IO wait"
     waitReasonChanReceiveNilChan                      // "chan receive (nil chan)"
@@ -16600,7 +16564,7 @@ G18: status=2() m=4 lockedm=-1
 </div>
 <h2 id="總結-38"><a class="header" href="#總結-38">總結</a></h2>
 <p>透過本文我們學習到了排程的一些基礎知識，再透過神奇的 GODEBUG 掌握了觀察排程器的方式方法，你想想，是不是可以和我上一篇文章的 <code>go tool trace</code> 來結合使用呢，在實際的使用中，類似的辦法有很多，組合巧用是重點。</p>
-<h2 id="參考-40"><a class="header" href="#參考-40">參考</a></h2>
+<h2 id="參考-41"><a class="header" href="#參考-41">參考</a></h2>
 <ul>
 <li><a href="https://software.intel.com/en-us/blogs/2014/05/10/debugging-performance-issues-in-go-programs">Debugging performance issues in Go programs</a></li>
 <li><a href="https://dave.cheney.net/tag/godebug">A whirlwind tour of Go’s runtime environment variables</a></li>
@@ -16728,7 +16692,7 @@ gc 7 @0.140s 1%: 0.031+2.0+0.042 ms clock, 0.12+0.43/1.8/0.049+0.17 ms cpu, 4-&g
 <ul>
 <li><a href="https://mp.weixin.qq.com/s/Brby6D7d1szUIBjcD_8kfg">用 GODEBUG 看排程跟蹤</a></li>
 </ul>
-<h2 id="參考-41"><a class="header" href="#參考-41">參考</a></h2>
+<h2 id="參考-42"><a class="header" href="#參考-42">參考</a></h2>
 <ul>
 <li><a href="https://gocn.vip/question/310">Go GC打印出來的這些資訊都是什麼含義？</a></li>
 <li><a href="http://cbsheng.github.io/posts/godebug%E4%B9%8Bgctrace%E8%A7%A3%E6%9E%90/">GODEBUG之gctrace解析</a></li>
@@ -16900,7 +16864,7 @@ gc 7 @0.140s 1%: 0.031+2.0+0.042 ms clock, 0.12+0.43/1.8/0.049+0.17 ms cpu, 4-&g
 <p>是否側面反應了一線城市的車輛更新換代較快，而較後的城市的車輛倒是換代較慢，公里數基本都槓槓的</p>
 <p><img src="di-10-ke-pa-chong/../images/99247032e4a6-5abf1e4936640.png" alt="image" /></p>
 <p>透過對標題的分析，可以得知車輛產品庫的命名基本都是品牌名稱+自動/手動+XXXX款+屬性，看標題就能知道個概況了</p>
-<h2 id="參考-42"><a class="header" href="#參考-42">參考</a></h2>
+<h2 id="參考-43"><a class="header" href="#參考-43">參考</a></h2>
 <h3 id="爬蟲專案地址"><a class="header" href="#爬蟲專案地址">爬蟲專案地址</a></h3>
 <ul>
 <li><a href="https://github.com/go-crawler/car-prices">https://github.com/go-crawler/car-prices</a></li>
@@ -17109,7 +17073,7 @@ gc 7 @0.140s 1%: 0.031+2.0+0.042 ms clock, 0.12+0.43/1.8/0.049+0.17 ms cpu, 4-&g
 <p>最後放上今天新發布的 Logo :)</p>
 <p><img src="di-10-ke-pa-chong/../images/529e375d4545-nWO32Bl.jpg" alt="image" /></p>
 <p>如果對你有所幫助，歡迎 Star，給文章點個贊，這樣可以讓更多的人看見這篇文章</p>
-<h2 id="參考-43"><a class="header" href="#參考-43">參考</a></h2>
+<h2 id="參考-44"><a class="header" href="#參考-44">參考</a></h2>
 <ul>
 <li>專案地址：<a href="https://github.com/go-crawler/lagou_jobs">https://github.com/go-crawler/lagou_jobs</a></li>
 </ul>

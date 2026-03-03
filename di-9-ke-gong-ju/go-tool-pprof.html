@@ -228,11 +228,9 @@ func main() {
 
     http.ListenAndServe("0.0.0.0:6060", nil)
 }
-```go
-（2）data/d.go，檔案內容：
-
-```go
-package data
+</code></pre>
+<p>（2）data/d.go，檔案內容：</p>
+<pre><code class="language-go">package data
 
 var datas []string
 
@@ -325,7 +323,7 @@ Showing nodes accounting for 837.48MB, 100% of 837.48MB total
 <p>這是令人期待的一小節。在這之前，我們需要簡單的編寫好測試用例來跑一下</p>
 <p><strong>編寫測試用例</strong></p>
 <p>（1）新建 data/d_test.go，檔案內容：</p>
-<pre><code>package data
+<pre><code class="language-go">package data
 
 import "testing"
 

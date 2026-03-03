@@ -221,11 +221,11 @@ go-grpc-example
 <h2 id="為什麼之前不需要證書"><a class="header" href="#為什麼之前不需要證書">為什麼之前不需要證書</a></h2>
 <p>在 simple_server 中，為什麼“啥事都沒幹”就能在不需要證書的情況下執行呢？</p>
 <h3 id="server"><a class="header" href="#server">Server</a></h3>
-<pre><code>grpc.NewServer()
+<pre><code class="language-go">grpc.NewServer()
 </code></pre>
 <p>在服務端顯然沒有傳入任何 DialOptions</p>
 <h3 id="client"><a class="header" href="#client">Client</a></h3>
-<pre><code>conn, err := grpc.Dial(":"+PORT, grpc.WithInsecure())
+<pre><code class="language-go">conn, err := grpc.Dial(":"+PORT, grpc.WithInsecure())
 </code></pre>
 <p>在客戶端留意到 <code>grpc.WithInsecure()</code> 方法</p>
 <pre><code class="language-go">func WithInsecure() DialOption {

@@ -284,7 +284,7 @@ ok      github.com/EDDYCJY/awesomeDefer    3.444s
 </ul>
 <h2 id="四編譯器如何選擇"><a class="header" href="#四編譯器如何選擇">四、編譯器如何選擇</a></h2>
 <h3 id="esc"><a class="header" href="#esc">esc</a></h3>
-<pre><code>// src/cmd/compile/internal/gc/esc.go
+<pre><code class="language-go">// src/cmd/compile/internal/gc/esc.go
 case ODEFER:
     if e.loopdepth == 1 { // top level
         n.Esc = EscNever // force stack allocation of defer record (see ssa.go)
